@@ -1685,7 +1685,7 @@ bool AppInitMain(InitInterfaces& interfaces)
     if (gArgs.IsArgSet("-sporkaddr")) {
         vSporkAddresses = gArgs.GetArgs("-sporkaddr");
     } else {
-        vSporkAddresses = Params().SporkAddressesV2();
+        vSporkAddresses = chainparams.SporkAddressesV2();
     }
     for (const auto& address: vSporkAddresses) {
         if (!sporkManager.SetSporkAddress(address)) {
@@ -1693,7 +1693,7 @@ bool AppInitMain(InitInterfaces& interfaces)
         }
     }
 
-    int minsporkkeys = gArgs.GetArg("-minsporkkeys", Params().MinSporkKeys());
+    int minsporkkeys = gArgs.GetArg("-minsporkkeys", chainparams.MinSporkKeys());
     if (!sporkManager.SetMinSporkKeys(minsporkkeys)) {
         return InitError(_("Invalid minimum number of spork signers specified with -minsporkkeys").translated);
     }
@@ -2492,14 +2492,19 @@ bool AppInitMain(InitInterfaces& interfaces)
 
     // ********************************************************* Step 12.1: uprade sporks
 
+    if (chain_active_height < sporkManager.getNewSporkLockHeight()) {
+        LogPrintf("[init] CSporkManager -- Spork V3 Activation Height: %d  Lock Height: %d\n", sporkManager.getNewSporkActHeight(), sporkManager.getNewSporkLockHeight());
+    }
     if (chain_active_height >= sporkManager.getNewSporkActHeight() && chainparams.NetworkIDString() == CBaseChainParams::MAIN) {
         std::vector<std::string> vSporkAddresses;
         if (gArgs.IsArgSet("-sporkaddr")) {
             vSporkAddresses = gArgs.GetArgs("-sporkaddr");
         } else if (chain_active_height >= sporkManager.getNewSporkLockHeight()) {
             vSporkAddresses = Params().SporkAddressesV3();
+            LogPrintf("Using V3 Spork Addresses\n");
         } else {
             vSporkAddresses = Params().SporkAddressesV2();
+            LogPrintf("Using V2 Spork Addresses\n");
         }
         sporkManager.ClearSporkAddresses();
         for (const auto& address : vSporkAddresses) {
@@ -2511,14 +2516,6 @@ bool AppInitMain(InitInterfaces& interfaces)
             if (!sporkManager.CheckSporkPubkeyIDs()) {
                 LogPrintf("CSporkManager -- WARN: mismatched spork addresses have been updated!\n");
             }
-        }
-        if (chain_active_height < sporkManager.getNewSporkLockHeight()) {
-            LogPrintf("CSporkManager -- Spork V3 Active Height: %d  Lock Height: %d\n", sporkManager.getNewSporkActHeight(), sporkManager.getNewSporkLockHeight());
-        }
-        if (chain_active_height >= sporkManager.getNewSporkActHeight()) {
-            LogPrintf("Using V3 Spork Addresses\n");
-        } else {
-            LogPrintf("Using V2 Spork Addresses\n");
         }
     }
 

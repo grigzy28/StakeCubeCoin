@@ -344,7 +344,7 @@ bool CSporkManager::CheckSporkPubkeyIDs()
     }
 
     int nHeight = ::ChainActive().Tip()->nHeight;
-    if (nHeight > nNewSporkLockHeight + 1) {
+    if (nHeight > nNewSporkLockHeight) {
         return true;
     }
 
@@ -361,13 +361,14 @@ bool CSporkManager::CheckSporkPubkeyIDs()
                 LogPrintf("CSporkManager::CheckSporkPubkeyIDs -- Failed to parse spork address\n");
                 matches = false;
             } else if (setSporkPubKeyIDs.find(*keyID) == setSporkPubKeyIDs.end()) {
-                LogPrintf("CSporkManager::CheckSporkPubkeyIDs -- ERROR: spork address not found\n");
+                LogPrintf("CSporkManager::CheckSporkPubkeyIDs -- WARN: spork address not found\n");
                 matches = false;
             } else {
                 nFound++;
             }
         }
         if (nFound != setSporkPubKeyIDs.size()) {
+            LogPrintf("CSporkManager::CheckSporkPubkeyIDs -- WARN: spork address set length mismatch\n");
             matches = false;
         }
         if (!matches) {

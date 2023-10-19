@@ -108,6 +108,7 @@ static CBlock FindDevNetGenesisBlock(const CBlock &prevBlock, const CAmount& rew
     // iteration of the above loop will give a result already
     error("FindDevNetGenesisBlock: could not find devnet genesis block for %s", devNetName);
     assert(false);
+    return block;
 }
 
 void CChainParams::AddLLMQ(Consensus::LLMQType llmqType)
@@ -344,9 +345,17 @@ public:
         nPoolMaxParticipants = 5;
         nFulfilledRequestExpireTime = 60*60; // fulfilled requests expire in 1 hour
 
-        vSporkAddressesV2 = {"sJbcSRccZQfmgjeW28uEEh9PswngZj1RXb", "sRSMpxfoejLYu7Y7Jd44MPfK76ap6cnXUR"};
-        vSporkAddressesV3 = {"sRSMpxfoejLYu7Y7Jd44MPfK76ap6cnXUR"};
-        nMinSporkKeys = 1;
+        vSporkAddressesV2 = {
+            "sJbcSRccZQfmgjeW28uEEh9PswngZj1RXb", // o
+            "sRSMpxfoejLYu7Y7Jd44MPfK76ap6cnXUR", // c
+            "seHPSLpCmMxTKLSeaBaAvEMZgyk39xCA3q", // s
+        };
+        vSporkAddressesV3 = {
+            "sRSMpxfoejLYu7Y7Jd44MPfK76ap6cnXUR", // c
+            "seHPSLpCmMxTKLSeaBaAvEMZgyk39xCA3q", // s
+            "sKoWUUTADtxHAzpjzrmFzjAFoaapuoz3hs"  // t
+        };
+        nMinSporkKeys = 2;
         fBIP9CheckMasternodesUpgraded = true;
 
         /**
@@ -410,8 +419,6 @@ public:
                 {700000, uint256S("000000000361299a95ea6a73d9a202a94893b3ec4fb441330740e20f9748cf36")},
                 {703355, uint256S("0000000002354cfaeb716435d7cfa632651f32ea22ef9796d25b893e264b2ea5")},
                 {703363, uint256S("00000000013b1c713a1ae71e6328f0f21efa08c7b8432d40bce681e4588645c4")},
-                // 2023/09
-                {717100, uint256S("0000000003189edcd28335b5e8bbb00752bad82c01c87604f4614ef103b14b24")},
                 // 2023/10
                 {750001, uint256S("00000000006ed565d981c2ba21d19fd1b655847fa156e8a1da4647a33bbb5b74")},
                 {750222, uint256S("000000000106b46906143c81532016eb1dcccf9859f3e1fc4f249c797f0c36ac")}
@@ -419,10 +426,10 @@ public:
         };
 
         chainTxData = ChainTxData{
-            1692077442, // * UNIX timestamp of last known number of transactions (Block 1)
-            703363,     // * total number of transactions between genesis and that timestamp
+            1697678866, // * UNIX timestamp of last known number of transactions (Block 1)
+            1498527,     // * total number of transactions between genesis and that timestamp
                         //   (the tx=... number in the SetBestChain debug.log lines)
-            0.0153      // * estimated number of transactions per second after that timestamp
+            0.0208      // * estimated number of transactions per second after that timestamp
         };
     }
 };
@@ -782,6 +789,7 @@ public:
         nFulfilledRequestExpireTime = 5*60; // fulfilled requests expire in 5 minutes
 
         vSporkAddressesV2 = {"yaBHHsZP4MthVVexFXiLgzUw7mwzxY9KRF"};
+        vSporkAddressesV3 = {"yaBHHsZP4MthVVexFXiLgzUw7mwzxY9KRF"};
         nMinSporkKeys = 1;
         // devnets are started with no blocks and no MN, so we can't check for upgraded MN (as there are none)
         fBIP9CheckMasternodesUpgraded = false;
@@ -960,6 +968,7 @@ public:
 
         // privKey: cP4EKFyJsHT39LDqgdcB43Y3YXjNyjb5Fuas1GQSeAtjnZWmZEQK
         vSporkAddressesV2 = {"yj949n1UH6fDhw6HtVE5VMj2iSTaSWBMcW"};
+        vSporkAddressesV3 = {"yj949n1UH6fDhw6HtVE5VMj2iSTaSWBMcW"};
         nMinSporkKeys = 1;
         // regtest usually has no masternodes in most tests, so don't check for upgraged MNs
         fBIP9CheckMasternodesUpgraded = false;
