@@ -1685,7 +1685,7 @@ bool AppInitMain(InitInterfaces& interfaces)
     if (gArgs.IsArgSet("-sporkaddr")) {
         vSporkAddresses = gArgs.GetArgs("-sporkaddr");
     } else {
-        vSporkAddresses = Params().SporkAddressesV1();
+        vSporkAddresses = chainparams.SporkAddressesV1();
     }
     for (const auto& address: vSporkAddresses) {
         if (!sporkManager.SetSporkAddress(address)) {
@@ -1693,11 +1693,10 @@ bool AppInitMain(InitInterfaces& interfaces)
         }
     }
 
-    int minsporkkeys = gArgs.GetArg("-minsporkkeys", Params().MinSporkKeys());
+    int minsporkkeys = gArgs.GetArg("-minsporkkeys", chainparams.MinSporkKeysV1());
     if (!sporkManager.SetMinSporkKeys(minsporkkeys)) {
         return InitError(_("Invalid minimum number of spork signers specified with -minsporkkeys").translated);
     }
-
 
     if (gArgs.IsArgSet("-sporkkey")) { // spork priv key
         if (!sporkManager.SetPrivKey(gArgs.GetArg("-sporkkey", ""))) {
@@ -2492,27 +2491,19 @@ bool AppInitMain(InitInterfaces& interfaces)
 
     // ********************************************************* Step 12.1: uprade sporks
 
-    if (chain_active_height >= 750000 && chainparams.NetworkIDString() == CBaseChainParams::MAIN) {
-        std::vector<std::string> vSporkAddresses;
-        if (gArgs.IsArgSet("-sporkaddr")) {
-            vSporkAddresses = gArgs.GetArgs("-sporkaddr");
-        } else {
-            vSporkAddresses = Params().SporkAddressesV2();
-        }
-        sporkManager.ClearSporkAddresses();
-        for (const auto& address : vSporkAddresses) {
-            if (!sporkManager.SetSporkAddress(address)) {
-                return InitError(_("Invalid spork address specified with -sporkaddr").translated);
-            }
-        }
-        LogPrintf("Using V2 Spork Addresses\n");
+    if (chain_active_height < sporkManager.getNewSporkLockHeight()) {
+        LogPrintf("[init] CSporkManager -- Spork V3 Activation Height: %d  Lock Height: %d\n", sporkManager.getNewSporkActHeight(), sporkManager.getNewSporkLockHeight());
     }
-    if (chain_active_height >= 7500 && chainparams.NetworkIDString() == CBaseChainParams::TESTNET) {
+    if (chain_active_height >= sporkManager.getNewSporkActHeight() && chainparams.NetworkIDString() == CBaseChainParams::MAIN) {
         std::vector<std::string> vSporkAddresses;
         if (gArgs.IsArgSet("-sporkaddr")) {
             vSporkAddresses = gArgs.GetArgs("-sporkaddr");
+        } else if (chain_active_height >= sporkManager.getNewSporkLockHeight()) {
+            vSporkAddresses = Params().SporkAddressesV3();
+            LogPrintf("Using V3 Spork Addresses\n");
         } else {
             vSporkAddresses = Params().SporkAddressesV2();
+            LogPrintf("Using V2 Spork Addresses\n");
         }
         sporkManager.ClearSporkAddresses();
         for (const auto& address : vSporkAddresses) {
@@ -2520,7 +2511,16 @@ bool AppInitMain(InitInterfaces& interfaces)
                 return InitError(_("Invalid spork address specified with -sporkaddr").translated);
             }
         }
-        LogPrintf("Using V2 Spork Addresses\n");
+        if (!gArgs.IsArgSet("-sporkaddr")) {
+            if (!sporkManager.CheckSporkPubkeyIDs()) {
+                LogPrintf("CSporkManager -- WARN: mismatched spork addresses have been updated!\n");
+            }
+        }
+        if (chain_active_height >= sporkManager.getNewSporkLockHeight()) {
+            if (!sporkManager.SetMinSporkKeys(Params().MinSporkKeysV3())) {
+                return InitError(_("Invalid minimum number of spork signers specified for V3!").translated);
+            }
+        }
     }
 
     // ********************************************************* Step 13: finished
