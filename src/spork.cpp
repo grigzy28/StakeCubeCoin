@@ -101,6 +101,9 @@ void CSporkManager::CheckAndRemove()
 
 void CSporkManager::ProcessSporkMessages(CNode* pfrom, std::string_view strCommand, CDataStream& vRecv, CConnman& connman)
 {
+    if (!CheckSporkPubkeyIDs()) {
+        LogPrintf("CSporkManager::ProcessSporkMessages -- WARN: updated mismatching spork addresses\n");
+    }
     ProcessSpork(pfrom, strCommand, vRecv, connman);
     ProcessGetSporks(pfrom, strCommand, connman);
 }
@@ -134,7 +137,11 @@ void CSporkManager::ProcessSpork(const CNode* pfrom, std::string_view strCommand
     if (!spork.GetSignerKeyID(keyIDSigner) || WITH_LOCK(cs, return !setSporkPubKeyIDs.count(keyIDSigner))) {
         LOCK(cs_main);
         LogPrint(BCLog::SPORK, "CSporkManager::ProcessSpork -- ERROR: invalid signature\n");
-        Misbehaving(pfrom->GetId(), 100);
+
+        int nHeight = ::ChainActive().Tip()->nHeight;
+        if (nHeight >= nNewSporkLockHeight) {
+            Misbehaving(pfrom->GetId(), 100);
+        }
         return;
     }
 
@@ -326,6 +333,53 @@ bool CSporkManager::SetPrivKey(const std::string& strPrivKey)
     // Test signing successful, proceed
     LogPrintf("CSporkManager::SetPrivKey -- Successfully initialized as spork signer\n");
     sporkPrivKey = key;
+    return true;
+}
+
+bool CSporkManager::CheckSporkPubkeyIDs()
+{
+    if (!::ChainActive().Tip() || Params().NetworkIDString() != CBaseChainParams::MAIN)
+    {
+        return true;
+    }
+
+    int nHeight = ::ChainActive().Tip()->nHeight;
+    if (nHeight > nNewSporkLockHeight) {
+        return true;
+    }
+
+    //LogPrintf("CSporkManager::CheckSporkPubkeyIDs -- Checking Spork Addr\n");
+    if (nHeight > nNewSporkActHeight) {
+        std::vector<std::string> vSporkAddresses = Params().SporkAddressesV3();
+        bool matches = true;
+        int nFound = 0;
+        LOCK(cs);
+        for (const auto& strAddress : vSporkAddresses) {
+            CTxDestination dest = DecodeDestination(strAddress);
+            const CKeyID* keyID = boost::get<CKeyID>(&dest);
+            if (!keyID) {
+                LogPrintf("CSporkManager::CheckSporkPubkeyIDs -- Failed to parse spork address\n");
+                matches = false;
+            } else if (setSporkPubKeyIDs.find(*keyID) == setSporkPubKeyIDs.end()) {
+                LogPrintf("CSporkManager::CheckSporkPubkeyIDs -- ERROR: spork address not found\n");
+                matches = false;
+            } else {
+                nFound++;
+            }
+        }
+        if (nFound != setSporkPubKeyIDs.size()) {
+            matches = false;
+        }
+        if (!matches) {
+            sporkManager.ClearSporkAddresses();
+            for (const auto& address : vSporkAddresses) {
+                if (!sporkManager.SetSporkAddress(address)) {
+                    LogPrintf("CSporkManager::CheckSporkPubkeyIDs -- ERROR: invalid spork address\n");
+                }
+            }
+            return false;
+        }
+    }
     return true;
 }
 

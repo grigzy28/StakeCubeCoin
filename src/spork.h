@@ -180,6 +180,9 @@ private:
      */
     bool SporkValueIsActive(SporkId nSporkID, int64_t& nActiveValueRet) const EXCLUSIVE_LOCKS_REQUIRED(cs);
 
+    int nNewSporkActHeight = 755040;
+    int nNewSporkLockHeight = 760080;
+
 public:
 
     CSporkManager() = default;
@@ -316,6 +319,19 @@ public:
      * address in the set of valid spork signers (see SetSporkAddress).
      */
     bool SetPrivKey(const std::string& strPrivKey);
+
+    /**
+     * CheckSporkPubkeyIDs is used to check the pubkeys for spork signers
+     * match the expected.  Will update the list if there is mismatching.
+     *
+     * This will return true if there are no mismatches.
+     */
+    bool CheckSporkPubkeyIDs();
+
+    /* Gets height the new sporks should become active. */
+    int getNewSporkActHeight() { return nNewSporkActHeight; };
+    /* Gets height the new sporks should lock. Used for ban control. */
+    int getNewSporkLockHeight() { return nNewSporkLockHeight; };
 
     /**
      * ToString returns the string representation of the SporkManager.

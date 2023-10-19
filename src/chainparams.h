@@ -108,6 +108,7 @@ public:
     int FulfilledRequestExpireTime() const { return nFulfilledRequestExpireTime; }
     const std::vector<std::string>& SporkAddressesV1() const { return vSporkAddressesV1; }
     const std::vector<std::string>& SporkAddressesV2() const { return vSporkAddressesV2; }
+    const std::vector<std::string>& SporkAddressesV3() const { return vSporkAddressesV3; }
     int MinSporkKeys() const { return nMinSporkKeys; }
     bool BIP9CheckMasternodesUpgraded() const { return fBIP9CheckMasternodesUpgraded; }
     const Consensus::LLMQParams& GetLLMQ(Consensus::LLMQType llmqType) const;
@@ -144,6 +145,7 @@ protected:
     int nFulfilledRequestExpireTime;
     std::vector<std::string> vSporkAddressesV1;
     std::vector<std::string> vSporkAddressesV2;
+    std::vector<std::string> vSporkAddressesV3;
     int nMinSporkKeys;
     bool fBIP9CheckMasternodesUpgraded;
 

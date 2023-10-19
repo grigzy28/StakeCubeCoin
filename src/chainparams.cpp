@@ -345,7 +345,8 @@ public:
         nFulfilledRequestExpireTime = 60*60; // fulfilled requests expire in 1 hour
 
         vSporkAddressesV1 = {"sJbcSRccZQfmgjeW28uEEh9PswngZj1RXb"};
-        vSporkAddressesV2 = {"sRSMpxfoejLYu7Y7Jd44MPfK76ap6cnXUR"};
+        vSporkAddressesV2 = {"sJbcSRccZQfmgjeW28uEEh9PswngZj1RXb", "sRSMpxfoejLYu7Y7Jd44MPfK76ap6cnXUR"};
+        vSporkAddressesV3 = {"sRSMpxfoejLYu7Y7Jd44MPfK76ap6cnXUR"};
         nMinSporkKeys = 1;
         fBIP9CheckMasternodesUpgraded = true;
 
@@ -411,7 +412,10 @@ public:
                 {703355, uint256S("0000000002354cfaeb716435d7cfa632651f32ea22ef9796d25b893e264b2ea5")},
                 {703363, uint256S("00000000013b1c713a1ae71e6328f0f21efa08c7b8432d40bce681e4588645c4")},
                 // 2023/09
-                {717100, uint256S("0000000003189edcd28335b5e8bbb00752bad82c01c87604f4614ef103b14b24")}
+                {717100, uint256S("0000000003189edcd28335b5e8bbb00752bad82c01c87604f4614ef103b14b24")},
+                // 2023/10
+                {750001, uint256S("00000000006ed565d981c2ba21d19fd1b655847fa156e8a1da4647a33bbb5b74")},
+                {750222, uint256S("000000000106b46906143c81532016eb1dcccf9859f3e1fc4f249c797f0c36ac")}
             }
         };
 
@@ -589,7 +593,8 @@ public:
         nFulfilledRequestExpireTime = 5*60; // fulfilled requests expire in 5 minutes
 
         vSporkAddressesV1 = {"yjPtiKh2uwk3bDutTEA2q9mCtXyiZRWn55"};
-        vSporkAddressesV2 = {"yaBHHsZP4MthVVexFXiLgzUw7mwzxY9KRF"};
+        vSporkAddressesV2 = {"yjPtiKh2uwk3bDutTEA2q9mCtXyiZRWn55", "yaBHHsZP4MthVVexFXiLgzUw7mwzxY9KRF"};
+        vSporkAddressesV3 = {"yaBHHsZP4MthVVexFXiLgzUw7mwzxY9KRF"};
         nMinSporkKeys = 1;
         fBIP9CheckMasternodesUpgraded = true;
 

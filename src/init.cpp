@@ -2496,6 +2496,8 @@ bool AppInitMain(InitInterfaces& interfaces)
         std::vector<std::string> vSporkAddresses;
         if (gArgs.IsArgSet("-sporkaddr")) {
             vSporkAddresses = gArgs.GetArgs("-sporkaddr");
+        } else if (chain_active_height >= sporkManager.getNewSporkActHeight()) {
+            vSporkAddresses = Params().SporkAddressesV3();
         } else {
             vSporkAddresses = Params().SporkAddressesV2();
         }
@@ -2505,7 +2507,19 @@ bool AppInitMain(InitInterfaces& interfaces)
                 return InitError(_("Invalid spork address specified with -sporkaddr").translated);
             }
         }
-        LogPrintf("Using V2 Spork Addresses\n");
+        if (!gArgs.IsArgSet("-sporkaddr")) {
+            if (!sporkManager.CheckSporkPubkeyIDs()) {
+                LogPrintf("CSporkManager -- WARN: mismatched spork addresses have been updated!\n");
+            }
+        }
+        if (chain_active_height < sporkManager.getNewSporkLockHeight()) {
+            LogPrintf("CSporkManager -- Spork V3 Active Height: %d  Lock Height: %d\n", sporkManager.getNewSporkActHeight(), sporkManager.getNewSporkLockHeight());
+        }
+        if (chain_active_height >= sporkManager.getNewSporkActHeight()) {
+            LogPrintf("Using V3 Spork Addresses\n");
+        } else {
+            LogPrintf("Using V2 Spork Addresses\n");
+        }
     }
     if (chain_active_height >= 7500 && chainparams.NetworkIDString() == CBaseChainParams::TESTNET) {
         std::vector<std::string> vSporkAddresses;
