@@ -1685,7 +1685,7 @@ bool AppInitMain(InitInterfaces& interfaces)
     if (gArgs.IsArgSet("-sporkaddr")) {
         vSporkAddresses = gArgs.GetArgs("-sporkaddr");
     } else {
-        vSporkAddresses = chainparams.SporkAddressesV2();
+        vSporkAddresses = chainparams.SporkAddressesV1();
     }
     for (const auto& address: vSporkAddresses) {
         if (!sporkManager.SetSporkAddress(address)) {
@@ -1693,11 +1693,10 @@ bool AppInitMain(InitInterfaces& interfaces)
         }
     }
 
-    int minsporkkeys = gArgs.GetArg("-minsporkkeys", chainparams.MinSporkKeys());
+    int minsporkkeys = gArgs.GetArg("-minsporkkeys", chainparams.MinSporkKeysV1());
     if (!sporkManager.SetMinSporkKeys(minsporkkeys)) {
         return InitError(_("Invalid minimum number of spork signers specified with -minsporkkeys").translated);
     }
-
 
     if (gArgs.IsArgSet("-sporkkey")) { // spork priv key
         if (!sporkManager.SetPrivKey(gArgs.GetArg("-sporkkey", ""))) {
@@ -2515,6 +2514,11 @@ bool AppInitMain(InitInterfaces& interfaces)
         if (!gArgs.IsArgSet("-sporkaddr")) {
             if (!sporkManager.CheckSporkPubkeyIDs()) {
                 LogPrintf("CSporkManager -- WARN: mismatched spork addresses have been updated!\n");
+            }
+        }
+        if (chain_active_height >= sporkManager.getNewSporkLockHeight()) {
+            if (!sporkManager.SetMinSporkKeys(Params().MinSporkKeysV3())) {
+                return InitError(_("Invalid minimum number of spork signers specified for V3!").translated);
             }
         }
     }

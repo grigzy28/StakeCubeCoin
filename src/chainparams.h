@@ -106,9 +106,11 @@ public:
     int PoolMinParticipants() const { return nPoolMinParticipants; }
     int PoolMaxParticipants() const { return nPoolMaxParticipants; }
     int FulfilledRequestExpireTime() const { return nFulfilledRequestExpireTime; }
+    const std::vector<std::string>& SporkAddressesV1() const { return vSporkAddressesV1; }
     const std::vector<std::string>& SporkAddressesV2() const { return vSporkAddressesV2; }
     const std::vector<std::string>& SporkAddressesV3() const { return vSporkAddressesV3; }
-    int MinSporkKeys() const { return nMinSporkKeys; }
+    int MinSporkKeysV1() const { return nMinSporkKeysV1; }
+    int MinSporkKeysV3() const { return nMinSporkKeysV3; }
     bool BIP9CheckMasternodesUpgraded() const { return fBIP9CheckMasternodesUpgraded; }
     const Consensus::LLMQParams& GetLLMQ(Consensus::LLMQType llmqType) const;
     bool HasLLMQ(Consensus::LLMQType llmqType) const;
@@ -142,9 +144,11 @@ protected:
     int nPoolMinParticipants;
     int nPoolMaxParticipants;
     int nFulfilledRequestExpireTime;
+    std::vector<std::string> vSporkAddressesV1;
     std::vector<std::string> vSporkAddressesV2;
     std::vector<std::string> vSporkAddressesV3;
-    int nMinSporkKeys;
+    int nMinSporkKeysV1;
+    int nMinSporkKeysV3;
     bool fBIP9CheckMasternodesUpgraded;
 
     void AddLLMQ(Consensus::LLMQType llmqType);

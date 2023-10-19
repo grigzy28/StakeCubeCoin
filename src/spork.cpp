@@ -338,21 +338,27 @@ bool CSporkManager::SetPrivKey(const std::string& strPrivKey)
 
 bool CSporkManager::CheckSporkPubkeyIDs()
 {
-    if (!::ChainActive().Tip() || Params().NetworkIDString() != CBaseChainParams::MAIN)
+    const CChainParams& params = Params();
+    if (!::ChainActive().Tip() || params.NetworkIDString() != CBaseChainParams::MAIN)
     {
         return true;
     }
 
     int nHeight = ::ChainActive().Tip()->nHeight;
     if (nHeight > nNewSporkLockHeight) {
+         // change completed. spork changes locked.
         return true;
     }
 
-    //LogPrintf("CSporkManager::CheckSporkPubkeyIDs -- Checking Spork Addr\n");
-    if (nHeight >= nNewSporkActHeight) {
-        std::vector<std::string> vSporkAddresses = Params().SporkAddressesV3();
+    if (nHeight >= nNewSporkActHeight) { // start of checks
+        std::vector<std::string> vSporkAddresses = params.SporkAddressesV2();
+        bool fLocking = false;
         bool matches = true;
         int nFound = 0;
+        if (nHeight >= nNewSporkLockHeight - 200) { // act shortly before lockout
+            vSporkAddresses = params.SporkAddressesV3();
+            fLocking = true;
+        }
         LOCK(cs);
         for (const auto& strAddress : vSporkAddresses) {
             CTxDestination dest = DecodeDestination(strAddress);
@@ -361,7 +367,7 @@ bool CSporkManager::CheckSporkPubkeyIDs()
                 LogPrintf("CSporkManager::CheckSporkPubkeyIDs -- Failed to parse spork address\n");
                 matches = false;
             } else if (setSporkPubKeyIDs.find(*keyID) == setSporkPubKeyIDs.end()) {
-                LogPrintf("CSporkManager::CheckSporkPubkeyIDs -- WARN: spork address not found\n");
+                LogPrintf("CSporkManager::CheckSporkPubkeyIDs -- WARN: spork address %s not found\n", strAddress);
                 matches = false;
             } else {
                 nFound++;
@@ -377,6 +383,11 @@ bool CSporkManager::CheckSporkPubkeyIDs()
                 if (!sporkManager.SetSporkAddress(address)) {
                     LogPrintf("CSporkManager::CheckSporkPubkeyIDs -- ERROR: invalid spork address\n");
                 }
+            }
+            if (fLocking) {
+                nMinSporkKeys = params.MinSporkKeysV3();
+            } else {
+                nMinSporkKeys = params.MinSporkKeysV1();
             }
             return false;
         }

@@ -345,17 +345,23 @@ public:
         nPoolMaxParticipants = 5;
         nFulfilledRequestExpireTime = 60*60; // fulfilled requests expire in 1 hour
 
+        vSporkAddressesV1 = {
+            "sJbcSRccZQfmgjeW28uEEh9PswngZj1RXb" // o
+        };
         vSporkAddressesV2 = {
             "sJbcSRccZQfmgjeW28uEEh9PswngZj1RXb", // o
             "sRSMpxfoejLYu7Y7Jd44MPfK76ap6cnXUR", // c
             "seHPSLpCmMxTKLSeaBaAvEMZgyk39xCA3q", // s
+            "sMXHsSGHCVJAfsebfs3g3g1hRcTioWTjBo"  // d
         };
         vSporkAddressesV3 = {
             "sRSMpxfoejLYu7Y7Jd44MPfK76ap6cnXUR", // c
             "seHPSLpCmMxTKLSeaBaAvEMZgyk39xCA3q", // s
-            "sKoWUUTADtxHAzpjzrmFzjAFoaapuoz3hs"  // t
+            "sMXHsSGHCVJAfsebfs3g3g1hRcTioWTjBo"  // d
         };
-        nMinSporkKeys = 2;
+        nMinSporkKeysV1 = 1;
+        nMinSporkKeysV3 = 2;
+
         fBIP9CheckMasternodesUpgraded = true;
 
         /**
@@ -598,9 +604,11 @@ public:
         nPoolMaxParticipants = 20;
         nFulfilledRequestExpireTime = 5*60; // fulfilled requests expire in 5 minutes
 
+        vSporkAddressesV1 = {"yjPtiKh2uwk3bDutTEA2q9mCtXyiZRWn55"};
         vSporkAddressesV2 = {"yjPtiKh2uwk3bDutTEA2q9mCtXyiZRWn55", "yaBHHsZP4MthVVexFXiLgzUw7mwzxY9KRF"};
         vSporkAddressesV3 = {"yaBHHsZP4MthVVexFXiLgzUw7mwzxY9KRF"};
-        nMinSporkKeys = 1;
+        nMinSporkKeysV1 = 1;
+        nMinSporkKeysV3 = 1;
         fBIP9CheckMasternodesUpgraded = true;
 
         checkpointData = {
@@ -788,9 +796,11 @@ public:
         nPoolMaxParticipants = 20;
         nFulfilledRequestExpireTime = 5*60; // fulfilled requests expire in 5 minutes
 
+        vSporkAddressesV1 = {"yaBHHsZP4MthVVexFXiLgzUw7mwzxY9KRF"};
         vSporkAddressesV2 = {"yaBHHsZP4MthVVexFXiLgzUw7mwzxY9KRF"};
         vSporkAddressesV3 = {"yaBHHsZP4MthVVexFXiLgzUw7mwzxY9KRF"};
-        nMinSporkKeys = 1;
+        nMinSporkKeysV1 = 1;
+        nMinSporkKeysV3 = 1;
         // devnets are started with no blocks and no MN, so we can't check for upgraded MN (as there are none)
         fBIP9CheckMasternodesUpgraded = false;
 
@@ -967,9 +977,11 @@ public:
         nPoolMaxParticipants = 20;
 
         // privKey: cP4EKFyJsHT39LDqgdcB43Y3YXjNyjb5Fuas1GQSeAtjnZWmZEQK
+        vSporkAddressesV1 = {"yj949n1UH6fDhw6HtVE5VMj2iSTaSWBMcW"};
         vSporkAddressesV2 = {"yj949n1UH6fDhw6HtVE5VMj2iSTaSWBMcW"};
         vSporkAddressesV3 = {"yj949n1UH6fDhw6HtVE5VMj2iSTaSWBMcW"};
-        nMinSporkKeys = 1;
+        nMinSporkKeysV1 = 1;
+        nMinSporkKeysV3 = 1;
         // regtest usually has no masternodes in most tests, so don't check for upgraged MNs
         fBIP9CheckMasternodesUpgraded = false;
 

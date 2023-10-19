@@ -181,7 +181,7 @@ private:
     bool SporkValueIsActive(SporkId nSporkID, int64_t& nActiveValueRet) const EXCLUSIVE_LOCKS_REQUIRED(cs);
 
     int nNewSporkActHeight = 755040;
-    int nNewSporkLockHeight = 760080;
+    int nNewSporkLockHeight = 775200;
 
 public:
 
