@@ -1685,7 +1685,7 @@ bool AppInitMain(InitInterfaces& interfaces)
     if (gArgs.IsArgSet("-sporkaddr")) {
         vSporkAddresses = gArgs.GetArgs("-sporkaddr");
     } else {
-        vSporkAddresses = Params().SporkAddressesV1();
+        vSporkAddresses = Params().SporkAddressesV2();
     }
     for (const auto& address: vSporkAddresses) {
         if (!sporkManager.SetSporkAddress(address)) {
@@ -2492,11 +2492,11 @@ bool AppInitMain(InitInterfaces& interfaces)
 
     // ********************************************************* Step 12.1: uprade sporks
 
-    if (chain_active_height >= 750000 && chainparams.NetworkIDString() == CBaseChainParams::MAIN) {
+    if (chain_active_height >= sporkManager.getNewSporkActHeight() && chainparams.NetworkIDString() == CBaseChainParams::MAIN) {
         std::vector<std::string> vSporkAddresses;
         if (gArgs.IsArgSet("-sporkaddr")) {
             vSporkAddresses = gArgs.GetArgs("-sporkaddr");
-        } else if (chain_active_height >= sporkManager.getNewSporkActHeight()) {
+        } else if (chain_active_height >= sporkManager.getNewSporkLockHeight()) {
             vSporkAddresses = Params().SporkAddressesV3();
         } else {
             vSporkAddresses = Params().SporkAddressesV2();
@@ -2520,21 +2520,6 @@ bool AppInitMain(InitInterfaces& interfaces)
         } else {
             LogPrintf("Using V2 Spork Addresses\n");
         }
-    }
-    if (chain_active_height >= 7500 && chainparams.NetworkIDString() == CBaseChainParams::TESTNET) {
-        std::vector<std::string> vSporkAddresses;
-        if (gArgs.IsArgSet("-sporkaddr")) {
-            vSporkAddresses = gArgs.GetArgs("-sporkaddr");
-        } else {
-            vSporkAddresses = Params().SporkAddressesV2();
-        }
-        sporkManager.ClearSporkAddresses();
-        for (const auto& address : vSporkAddresses) {
-            if (!sporkManager.SetSporkAddress(address)) {
-                return InitError(_("Invalid spork address specified with -sporkaddr").translated);
-            }
-        }
-        LogPrintf("Using V2 Spork Addresses\n");
     }
 
     // ********************************************************* Step 13: finished

@@ -139,7 +139,7 @@ void CSporkManager::ProcessSpork(const CNode* pfrom, std::string_view strCommand
         LogPrint(BCLog::SPORK, "CSporkManager::ProcessSpork -- ERROR: invalid signature\n");
 
         int nHeight = ::ChainActive().Tip()->nHeight;
-        if (nHeight >= nNewSporkLockHeight) {
+        if (nHeight > nNewSporkLockHeight) {
             Misbehaving(pfrom->GetId(), 100);
         }
         return;
@@ -344,12 +344,12 @@ bool CSporkManager::CheckSporkPubkeyIDs()
     }
 
     int nHeight = ::ChainActive().Tip()->nHeight;
-    if (nHeight > nNewSporkLockHeight) {
+    if (nHeight > nNewSporkLockHeight + 1) {
         return true;
     }
 
     //LogPrintf("CSporkManager::CheckSporkPubkeyIDs -- Checking Spork Addr\n");
-    if (nHeight > nNewSporkActHeight) {
+    if (nHeight >= nNewSporkActHeight) {
         std::vector<std::string> vSporkAddresses = Params().SporkAddressesV3();
         bool matches = true;
         int nFound = 0;

@@ -106,7 +106,6 @@ public:
     int PoolMinParticipants() const { return nPoolMinParticipants; }
     int PoolMaxParticipants() const { return nPoolMaxParticipants; }
     int FulfilledRequestExpireTime() const { return nFulfilledRequestExpireTime; }
-    const std::vector<std::string>& SporkAddressesV1() const { return vSporkAddressesV1; }
     const std::vector<std::string>& SporkAddressesV2() const { return vSporkAddressesV2; }
     const std::vector<std::string>& SporkAddressesV3() const { return vSporkAddressesV3; }
     int MinSporkKeys() const { return nMinSporkKeys; }
@@ -143,7 +142,6 @@ protected:
     int nPoolMinParticipants;
     int nPoolMaxParticipants;
     int nFulfilledRequestExpireTime;
-    std::vector<std::string> vSporkAddressesV1;
     std::vector<std::string> vSporkAddressesV2;
     std::vector<std::string> vSporkAddressesV3;
     int nMinSporkKeys;
