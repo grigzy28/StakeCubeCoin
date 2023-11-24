@@ -101,9 +101,9 @@ void CSporkManager::CheckAndRemove()
 
 void CSporkManager::ProcessSporkMessages(CNode* pfrom, std::string_view strCommand, CDataStream& vRecv, CConnman& connman)
 {
-    if (!CheckSporkPubkeyIDs()) {
+    /*if (!CheckSporkPubkeyIDs()) {
         LogPrintf("CSporkManager::ProcessSporkMessages -- WARN: updated mismatching spork addresses\n");
-    }
+    }*/
     ProcessSpork(pfrom, strCommand, vRecv, connman);
     ProcessGetSporks(pfrom, strCommand, connman);
 }
@@ -137,11 +137,7 @@ void CSporkManager::ProcessSpork(const CNode* pfrom, std::string_view strCommand
     if (!spork.GetSignerKeyID(keyIDSigner) || WITH_LOCK(cs, return !setSporkPubKeyIDs.count(keyIDSigner))) {
         LOCK(cs_main);
         LogPrint(BCLog::SPORK, "CSporkManager::ProcessSpork -- ERROR: invalid signature\n");
-
-        int nHeight = ::ChainActive().Tip()->nHeight;
-        if (nHeight > nNewSporkLockHeight) {
-            Misbehaving(pfrom->GetId(), 100);
-        }
+        Misbehaving(pfrom->GetId(), 100);
         return;
     }
 
