@@ -273,7 +273,8 @@ void CCoinJoinServer::CheckPool(CConnman& connman)
 {
     if (!fMasternodeMode) return;
 
-    LogPrint(BCLog::COINJOIN, "CCoinJoinServer::CheckPool -- entries count %lu\n", GetEntriesCount());
+    /// reduces logging spam when debug=1  [squid]
+    ///LogPrint(BCLog::COINJOIN, "CCoinJoinServer::CheckPool -- entries count %lu\n", GetEntriesCount());
 
     // If we have an entry for each collateral, then create final tx
     if (nState == POOL_STATE_ACCEPTING_ENTRIES && size_t(GetEntriesCount()) == vecSessionCollaterals.size()) {

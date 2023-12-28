@@ -28,6 +28,9 @@ void CDKGPendingMessages::PushPendingMessage(NodeId from, CDataStream& vRecv)
     hw.write(pm->data(), pm->size());
     uint256 hash = hw.GetHash();
 
+    // Log message on push [squid]
+    LogPrint(BCLog::LLMQ_DKG, "CDKGPendingMessages::%s -- pushed message pending, peer=%d hash=%s\n", __func__, from, hash.ToString());
+
     if (from != -1) {
         LOCK(cs_main);
         EraseObjectRequest(from, CInv(invType, hash));
@@ -102,6 +105,7 @@ void CDKGSessionHandler::UpdatedBlockTip(const CBlockIndex* pindexNew)
 
 void CDKGSessionHandler::ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv)
 {
+    LogPrint(BCLog::LLMQ_DKG, "CDKGSessionHandler::%s -- NetMsgType = %s\n", __func__, strCommand); // [squid] debug
     // We don't handle messages in the calling thread as deserialization/processing of these would block everything
     if (strCommand == NetMsgType::QCONTRIB) {
         pendingContributions.PushPendingMessage(pfrom->GetId(), vRecv);
