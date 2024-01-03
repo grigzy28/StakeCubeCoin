@@ -1540,8 +1540,8 @@ bool AppInitParameterInteraction()
         if (gArgs.GetArg("-prune", 0) > 0) {
             return InitError("Masternode must have no pruning enabled, set -prune=0");
         }
-        if (gArgs.GetArg("-maxconnections", DEFAULT_MAX_PEER_CONNECTIONS) < DEFAULT_MAX_PEER_CONNECTIONS) {
-            return InitError(strprintf("Masternode must be able to handle at least %d connections, set -maxconnections=%d", DEFAULT_MAX_PEER_CONNECTIONS, DEFAULT_MAX_PEER_CONNECTIONS));
+        if (gArgs.GetArg("-maxconnections", DEFAULT_MAX_PEER_CONNECTIONS) < DEFAULT_MAX_MASTERNODE_CONNECTIONS) {
+            return InitError(strprintf("Masternode must be able to handle at least %d connections, set -maxconnections=%d", DEFAULT_MAX_MASTERNODE_CONNECTIONS, DEFAULT_MAX_MASTERNODE_CONNECTIONS));
         }
         if (gArgs.GetBoolArg("-disablegovernance", false)) {
             return InitError(_("You can not disable governance validation on a masternode.").translated);
