@@ -1143,7 +1143,7 @@
     </message>
     <message>
         <source>All masternodes</source>
-        <translation></translation>
+        <translation>所有主节点</translation>
     </message>
     <message>
         <source>Service</source>
