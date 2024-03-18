@@ -1114,6 +1114,14 @@
         <translation>ماسترنوداتي فقط</translation>
     </message>
     <message>
+        <source>Show all masternodes without filter.</source>
+        <translation>إظهار جميع العقد الرئيسية بدون مرشح</translation>
+    </message>
+    <message>
+        <source>All Masternodes</source>
+        <translation>جميع العقد الماسترنودية</translation>
+    </message>
+    <message>
         <source>Service</source>
         <translation>الخدمات</translation>
     </message>

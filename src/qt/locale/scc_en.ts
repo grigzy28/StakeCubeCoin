@@ -1443,6 +1443,16 @@
         <translation>My masternodes only</translation>
     </message>
     <message>
+        <location line="-23"/>
+        <source>Show all masternodes without filter.</source>
+        <translation>Show all masternodes without filter.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>All masternodes</source>
+        <translation>All masternodes</translation>
+    </message>
+    <message>
         <location line="+55"/>
         <source>Service</source>
         <translation>Service</translation>

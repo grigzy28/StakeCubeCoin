@@ -1146,6 +1146,14 @@
         <translation>Только мои мастерноды</translation>
     </message>
     <message>
+        <source>Show all masternodes without filter.</source>
+        <translation>Показать все мастерноды без фильтра.</translation>
+    </message>
+    <message>
+        <source>All masternodes</source>
+        <translation>Bce мастерноды</translation>
+    </message>
+    <message>
         <source>Service</source>
         <translation>Сервис</translation>
     </message>

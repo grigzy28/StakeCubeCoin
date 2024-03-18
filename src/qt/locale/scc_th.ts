@@ -1138,6 +1138,14 @@
         <translation>บัญชี Masternodes ของฉันเท่านั้น</translation>
     </message>
     <message>
+        <source>Show all masternodes without filter.</source>
+        <translation>แสดง masternodes ทั้งหมดโดยไม่มีตัวกรอง</translation>
+    </message>
+    <message>
+        <source>All masternodes</source>
+        <translation>masternode ทั้งหมด</translation>
+    </message>
+    <message>
         <source>Service</source>
         <translation>การให้บริการ</translation>
     </message>

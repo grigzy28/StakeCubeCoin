@@ -1138,6 +1138,14 @@
         <translation>Nur meine Masternodes</translation>
     </message>
     <message>
+        <source>Show all masternodes without filter.</source>
+        <translation>Alle Masternodes ohne Filter anzeigen.</translation>
+    </message>
+    <message>
+        <source>All masternodes</source>
+        <translation>Alle Masternodes</translation>
+    </message>
+    <message>
         <source>Service</source>
         <translation>Dienste</translation>
     </message>

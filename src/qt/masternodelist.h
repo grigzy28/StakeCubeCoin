@@ -83,6 +83,7 @@ private Q_SLOTS:
     void showContextMenuDIP3(const QPoint&);
     void on_filterLineEditDIP3_textChanged(const QString& strFilterIn);
     void on_checkBoxMyMasternodesOnly_stateChanged(int state);
+    void on_checkBoxAllMasternodes_stateChanged(int state);
 
     void extraInfoDIP3_clicked();
     void copyProTxHash_clicked();

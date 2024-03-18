@@ -1138,6 +1138,14 @@
         <translation>仅我的主节点</translation>
     </message>
     <message>
+        <source>Show all masternodes without filter.</source>
+        <translation>显示所有不带过滤器的主节点。</translation>
+    </message>
+    <message>
+        <source>All masternodes</source>
+        <translation></translation>
+    </message>
+    <message>
         <source>Service</source>
         <translation>服务</translation>
     </message>
