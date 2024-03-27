@@ -16,10 +16,7 @@ CBatchedLogger::~CBatchedLogger()
 
 void CBatchedLogger::Flush()
 {
-//    if (!accept || msg.empty()) {
-//        return;
-//    }
-    if (msg.empty()) {
+    if (!accept || msg.empty()) {
         return;
     }
     LogInstance().LogPrintStr(strprintf("%s:\n%s", header, msg));
