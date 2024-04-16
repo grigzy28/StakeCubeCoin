@@ -123,11 +123,6 @@ void MasternodeList::setWalletModel(WalletModel* model)
 {
     this->walletModel = model;
     ui->checkBoxMyMasternodesOnly->setEnabled(model != nullptr);
-}
-
-void MasternodeList::setWalletModel(WalletModel* model)
-{
-    this->walletModel = model;
     ui->checkBoxAllMasternodes->setEnabled(model != nullptr);
 }
 
@@ -220,6 +215,7 @@ void MasternodeList::updateDIP3List()
         }
     }
 
+    bool showAllMn = ui->checkBoxAllMasternodes->isChecked();
     mnList.ForEachMN(false, [&](auto& dmn) {
         if (walletModel && ui->checkBoxMyMasternodesOnly->isChecked()) {
             bool fMyMasternode = setOutpts.count(dmn.collateralOutpoint) ||
@@ -230,33 +226,53 @@ void MasternodeList::updateDIP3List()
             if (!fMyMasternode) return;
         }
 
+        QString strNextPayment = "UNKNOWN";
+        int nNextPayment = 0;
+        if (nextPayments.count(dmn.proTxHash)) {
+            nNextPayment = nextPayments[dmn.proTxHash];
+            strNextPayment = QString::number(nNextPayment);
+        }
+
         QString mnStatus; // Status detail
         if (mnList.IsMNPoSeBanned(dmn)) { // This mn is PoSe banned for some reason... let check if this was recent
+            bool bNodeIgnored = false;
+            mnStatus = tr("POSE_BANNED");
             // check if last paid height is nil, and check if node has gotten a reward in past 30 days
             if (dmn.pdmnState->nLastPaidHeight <= 0 || mnList.GetHeight() - dmn.pdmnState->nLastPaidHeight > 20160) {
-                return; // ignore this mn entry
+                bNodeIgnored = true; // ignore this mn entry
+                mnStatus = tr("POSE_BANNED_OLD");
             }
             // check if node penaly is high within 3 days of last paid height
             if (mnList.GetHeight() - dmn.pdmnState->nLastPaidHeight > 2160 && dmn.pdmnState->nPoSePenalty >= mnList.GetTotalRegisteredCount() * 0.66) {
-                return; // ignore this mn entry
+                bNodeIgnored = true; // ignore this mn entry
+                mnStatus = tr("POSE_BANNED_NEW");
             }
             if (dmn.pdmnState->nPoSePenalty == 0 && mnList.GetHeight() - dmn.pdmnState->nLastPaidHeight > 5040) {
-                return; // ignore this mn entry
+                bNodeIgnored = true; // ignore this mn entry
+                mnStatus = tr("POSE_BANNED_ERROR");
             }
             if (dmn.pdmnState->addr.ToString() == "[::]:0") {
-                return; // ignore this mn entry
+                bNodeIgnored = true; // ignore this mn entry
+                mnStatus = tr("POSE_BANNED_ADDR");
             }
-            mnStatus = tr("POSE_BANNED");
+            if (bNodeIgnored) {
+                if (!showAllMn) {
+                    return;
+                }
+            }
         } else if (!mnList.IsMNValid(dmn)) {
-            if (mnList.GetHeight() - dmn.pdmnState->nLastPaidHeight > 10080) {
-                return;
-            }
             mnStatus = tr("UNKNOWN");
+            if (mnList.GetHeight() - dmn.pdmnState->nLastPaidHeight > 10080) {
+                if (!showAllMn) {
+                    return;
+                }
+                mnStatus = tr("UNKNOWN_INVALID");
+            }
         } else if (mnList.GetHeight() - dmn.pdmnState->nPoSeRevivedHeight < 30) {
             mnStatus = tr("REVIVED");
         } else if (dmn.pdmnState->nPoSePenalty >= mnList.GetTotalRegisteredCount()) {
             mnStatus = tr("POSE_BAN_ACT");
-        } else if (dmn.pdmnState->nPoSePenalty >= mnList.GetTotalRegisteredCount() * 0.90) { // 10% tolerance
+        } else if (dmn.pdmnState->nPoSePenalty >= mnList.GetTotalRegisteredCount() * 0.66) { // 44% tolerance
             mnStatus = tr("POSE_BAN_ALERT");
         } else if (dmn.pdmnState->nPoSePenalty >= mnList.GetTotalRegisteredCount() * 0.33) {
             mnStatus = tr("POSE_WARNING");
@@ -266,7 +282,9 @@ void MasternodeList::updateDIP3List()
             mnStatus = tr("ENABLED_INIT");
         } else if (mnList.GetHeight() > dmn.pdmnState->nLastPaidHeight + mnList.GetTotalRegisteredCount() + 1) {
             mnStatus = tr("REWARDS_STALL");
-        }  else {
+        } else if (nNextPayment - dmn.pdmnState->nLastPaidHeight > projectedPayees.size()) {
+            mnStatus = tr("ENABLED_BEHIND");
+        } else {
             mnStatus = tr("ENABLED");
         }
 
@@ -279,13 +297,6 @@ void MasternodeList::updateDIP3List()
         QTableWidgetItem* PoSeScoreItem = new CMasternodeListWidgetItem<int>(QString::number(dmn.pdmnState->nPoSePenalty), dmn.pdmnState->nPoSePenalty);
         QTableWidgetItem* registeredItem = new CMasternodeListWidgetItem<int>(QString::number(dmn.pdmnState->nRegisteredHeight), dmn.pdmnState->nRegisteredHeight);
         QTableWidgetItem* lastPaidItem = new CMasternodeListWidgetItem<int>(QString::number(dmn.pdmnState->nLastPaidHeight), dmn.pdmnState->nLastPaidHeight);
-
-        QString strNextPayment = "UNKNOWN";
-        int nNextPayment = 0;
-        if (nextPayments.count(dmn.proTxHash)) {
-            nNextPayment = nextPayments[dmn.proTxHash];
-            strNextPayment = QString::number(nNextPayment);
-        }
         QTableWidgetItem* nextPaymentItem = new CMasternodeListWidgetItem<int>(strNextPayment, nNextPayment);
 
         CTxDestination payeeDest;
@@ -377,7 +388,12 @@ void MasternodeList::on_checkBoxMyMasternodesOnly_stateChanged(int state)
     fFilterUpdatedDIP3 = true;
 }
 
-//where checkBoxAllMasternodes logic should go...
+void MasternodeList::on_checkBoxAllMasternodes_stateChanged(int state)
+{
+    // no cooldown
+    nTimeFilterUpdatedDIP3 = GetTime() - MASTERNODELIST_FILTER_COOLDOWN_SECONDS;
+    fFilterUpdatedDIP3 = true;
+}
 
 CDeterministicMNCPtr MasternodeList::GetSelectedDIP3MN()
 {
