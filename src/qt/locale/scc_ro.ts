@@ -1032,6 +1032,15 @@
         <translation>Doar masternode-urile mele</translation>
     </message>
     <message>
+        <source>Show all masternodes without filter.</source>
+        <translation>Afișați toate masternodurile fără filtru.</translation>
+    </message>
+    <message>
+        <source>All masternodes</source>
+        <translation>Toate masternodurile</translation>
+    </message>
+
+    <message>
         <source>Service</source>
         <translation>Serviciu</translation>
     </message>

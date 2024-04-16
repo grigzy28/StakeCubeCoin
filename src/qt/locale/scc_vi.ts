@@ -1100,6 +1100,14 @@
         <translation>Chỉ các masternode của tôi</translation>
     </message>
     <message>
+        <source>Show all masternodes without filter.</source>
+        <translation>Hiển thị tất cả các masternode mà không cần bộ lọc.</translation>
+    </message>
+    <message>
+        <source>All masternodes</source>
+        <translation>Tất cả các masternode</translation>
+    </message>
+    <message>
         <source>Service</source>
         <translation>Dịch vụ</translation>
     </message>

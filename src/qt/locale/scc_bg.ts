@@ -1138,6 +1138,14 @@
         <translation>Само моите masternodes</translation>
     </message>
     <message>
+        <source>Show all masternodes without filter.</source>
+        <translation>Показване на всички главни възли без филтър.</translation>
+    </message>
+    <message>
+        <source>All masternodes</source>
+        <translation>Всички мастерноди</translation>
+    </message>
+    <message>
         <source>Service</source>
         <translation>Услуга</translation>
     </message>

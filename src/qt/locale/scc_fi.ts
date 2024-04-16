@@ -1146,6 +1146,14 @@
         <translation>Vain omat masternodet</translation>
     </message>
     <message>
+        <source>Show all masternodes without filter.</source>
+        <translation>Näytä kaikki pääsolmut ilman suodatinta.</translation>
+    </message>
+    <message>
+        <source>All masternodes</source>
+        <translation>Kaikki masternodet</translation>
+    </message>
+    <message>
         <source>Service</source>
         <translation>Palvelu</translation>
     </message>
