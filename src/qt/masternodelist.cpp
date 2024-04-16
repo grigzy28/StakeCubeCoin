@@ -86,6 +86,7 @@ MasternodeList::MasternodeList(QWidget* parent) :
 
     ui->filterLineEditDIP3->setPlaceholderText(tr("Filter by any property (e.g. address or protx hash)"));
     ui->checkBoxMyMasternodesOnly->setEnabled(false);
+    ui->checkBoxAllMasternodes->setEnabled(false);
 
     QAction* copyProTxHashAction = new QAction(tr("Copy ProTx Hash"), this);
     QAction* copyCollateralOutpointAction = new QAction(tr("Copy Collateral Outpoint"), this);
@@ -122,6 +123,12 @@ void MasternodeList::setWalletModel(WalletModel* model)
 {
     this->walletModel = model;
     ui->checkBoxMyMasternodesOnly->setEnabled(model != nullptr);
+}
+
+void MasternodeList::setWalletModel(WalletModel* model)
+{
+    this->walletModel = model;
+    ui->checkBoxAllMasternodes->setEnabled(model != nullptr);
 }
 
 void MasternodeList::showContextMenuDIP3(const QPoint& point)
@@ -369,6 +376,8 @@ void MasternodeList::on_checkBoxMyMasternodesOnly_stateChanged(int state)
     nTimeFilterUpdatedDIP3 = GetTime() - MASTERNODELIST_FILTER_COOLDOWN_SECONDS;
     fFilterUpdatedDIP3 = true;
 }
+
+//where checkBoxAllMasternodes logic should go...
 
 CDeterministicMNCPtr MasternodeList::GetSelectedDIP3MN()
 {

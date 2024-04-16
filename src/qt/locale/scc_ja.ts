@@ -1009,6 +1009,14 @@
         <translation>自分のマスターノードのみ</translation>
     </message>
     <message>
+        <source>Show all masternodes without filter.</source>
+        <translation>フィルターなしですべてのマスターノードを表示します。</translation>
+    </message>
+    <message>
+        <source>All masternodes</source>
+        <translation>すべてのマスターノード</translation>
+    </message>
+    <message>
         <source>PoSe Score</source>
         <translation>PoSeスコア</translation>
     </message>

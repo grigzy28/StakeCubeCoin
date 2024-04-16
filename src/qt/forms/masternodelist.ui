@@ -76,6 +76,16 @@
           </widget>
          </item>
          <item>
+          <widget class="QCheckBox" name="checkBoxAllMasternodes">
+           <property name="toolTip">
+            <string>Show all masternodes without filter.</string>
+           </property>
+           <property name="text">
+            <string>All masternodes</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <spacer name="horizontalSpacer_4">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>

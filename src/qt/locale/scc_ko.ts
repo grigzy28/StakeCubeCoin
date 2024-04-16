@@ -1138,6 +1138,14 @@
         <translation>나의 마스터노드만</translation>
     </message>
     <message>
+        <source>Show all masternodes without filter.</source>
+        <translation>필터 없이 모든 마스터노드를 표시합니다.</translation>
+    </message>
+    <message>
+        <source>All masternodes</source>
+        <translation>모든 마스터노드</translation>
+    </message>
+    <message>
         <source>Service</source>
         <translation>서비스</translation>
     </message>
