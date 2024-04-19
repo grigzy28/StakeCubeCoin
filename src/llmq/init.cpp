@@ -23,7 +23,7 @@ namespace llmq
 
 CBLSWorker* blsWorker;
 
-void InitLLMQSystem(CEvoDB& evoDb, CChainSate& chainstate, bool unitTests, bool fWipe)
+void InitLLMQSystem(CEvoDB& evoDb, CChainState& chainstate, bool unitTests, bool fWipe)
 {
     blsWorker = new CBLSWorker();
 
