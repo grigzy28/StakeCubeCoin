@@ -12,6 +12,7 @@
 
 class UniValue;
 class CBlockIndex;
+class CChainState;
 
 namespace llmq
 {
@@ -23,6 +24,8 @@ class CDKGSessionManager
 private:
     std::unique_ptr<CDBWrapper> db{nullptr};
     CBLSWorker& blsWorker;
+
+    CChainState& m_chainstate;
 
     std::map<Consensus::LLMQType, CDKGSessionHandler> dkgSessionHandlers;
 
