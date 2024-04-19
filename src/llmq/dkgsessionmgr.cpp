@@ -5,6 +5,7 @@
 #include <llmq/dkgsessionmgr.h>
 #include <llmq/debug.h>
 #include <llmq/utils.h>
+#include <validation.h>
 
 #include <evo/deterministicmns.h>
 
