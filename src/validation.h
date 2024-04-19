@@ -553,15 +553,15 @@ private:
      */
     mutable std::atomic<bool> m_cached_finished_ibd{false};
 
+    //! Manages the UTXO set, which is a reflection of the contents of `m_chain`.
+    std::unique_ptr<CoinsViews> m_coins_views;
+
+public:
     //! Reference to a BlockManager instance which itself is shared across all
     //! CChainState instances. Keeping a local reference allows us to test more
     //! easily as opposed to referencing a global.
     BlockManager& m_blockman;
 
-    //! Manages the UTXO set, which is a reflection of the contents of `m_chain`.
-    std::unique_ptr<CoinsViews> m_coins_views;
-
-public:
     CChainState(BlockManager& blockman) : m_blockman(blockman) {}
     CChainState();
 
