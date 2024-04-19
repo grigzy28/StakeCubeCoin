@@ -49,7 +49,7 @@ private:
     mutable std::map<ContributionsCacheKey, ContributionsCacheEntry> contributionsCache GUARDED_BY(contributionsCacheCs);
 
 public:
-    CDKGSessionManager(CBLSWorker& _blsWorker, bool unitTests, bool fWipe);
+    CDKGSessionManager(CBLSWorker& _blsWorker, CChainState& chainstate, bool unitTests, bool fWipe);
     ~CDKGSessionManager() = default;
 
     void StartThreads();
