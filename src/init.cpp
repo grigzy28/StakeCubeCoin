@@ -81,6 +81,7 @@
 #include <llmq/blockprocessor.h>
 #include <llmq/signing.h>
 #include <llmq/utils.h>
+#include <llmq/dkgsessionmgr.h>
 
 #include <statsd_client.h>
 
