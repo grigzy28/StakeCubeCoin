@@ -104,6 +104,14 @@ namespace {
 BlockManager g_blockman;
 } // anon namespace
 
+CBlockIndex* BlockManager::LookupBlockIndex(const uint256& hash) const
+{
+    AssertLockHeld(cs_main);
+    assert(std::addressof(::BlockIndex()) == std::addressof(m_block_index));
+    BlockMap::const_iterator it = m_block_index.find(hash);
+    return it == m_block_index.end() ? nullptr : it->second;
+}
+
 std::unique_ptr<CChainState> g_chainstate;
 
 CChainState& ChainstateActive() {

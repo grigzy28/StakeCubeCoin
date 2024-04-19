@@ -12,6 +12,7 @@
 
 class UniValue;
 class CBlockIndex;
+class CChainState;
 
 namespace llmq
 {
@@ -23,6 +24,8 @@ class CDKGSessionManager
 private:
     std::unique_ptr<CDBWrapper> db{nullptr};
     CBLSWorker& blsWorker;
+
+    CChainState& m_chainstate;
 
     std::map<Consensus::LLMQType, CDKGSessionHandler> dkgSessionHandlers;
 
@@ -46,7 +49,7 @@ private:
     mutable std::map<ContributionsCacheKey, ContributionsCacheEntry> contributionsCache GUARDED_BY(contributionsCacheCs);
 
 public:
-    CDKGSessionManager(CBLSWorker& _blsWorker, bool unitTests, bool fWipe);
+    CDKGSessionManager(CBLSWorker& _blsWorker, CChainState& chainstate, bool unitTests, bool fWipe);
     ~CDKGSessionManager() = default;
 
     void StartThreads();
@@ -69,6 +72,8 @@ public:
     void WriteEncryptedContributions(Consensus::LLMQType llmqType, const CBlockIndex* pQuorumBaseBlockIndex, const uint256& proTxHash, const CBLSIESMultiRecipientObjects<CBLSSecretKey>& contributions);
     /// Read encrypted (unverified) DKG contributions for the member with the given proTxHash from the llmqDb
     bool GetEncryptedContributions(Consensus::LLMQType llmqType, const CBlockIndex* pQuorumBaseBlockIndex, const std::vector<bool>& validMembers, const uint256& proTxHash, std::vector<CBLSIESEncryptedObject<CBLSSecretKey>>& vecRet) const;
+
+    void CleanupOldContributions() const;
 
 private:
     void MigrateDKG();

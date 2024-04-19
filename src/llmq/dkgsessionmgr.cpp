@@ -5,6 +5,7 @@
 #include <llmq/dkgsessionmgr.h>
 #include <llmq/debug.h>
 #include <llmq/utils.h>
+#include <validation.h>
 
 #include <evo/deterministicmns.h>
 
@@ -21,9 +22,10 @@ static const std::string DB_VVEC = "qdkg_V";
 static const std::string DB_SKCONTRIB = "qdkg_S";
 static const std::string DB_ENC_CONTRIB = "qdkg_E";
 
-CDKGSessionManager::CDKGSessionManager(CBLSWorker& _blsWorker, bool unitTests, bool fWipe) :
+CDKGSessionManager::CDKGSessionManager(CBLSWorker& _blsWorker, CChainState& chainstate, bool unitTests, bool fWipe) :
         db(std::make_unique<CDBWrapper>(unitTests ? "" : (GetDataDir() / "llmq/dkgdb"), 1 << 20, unitTests, fWipe)),
-        blsWorker(_blsWorker)
+        blsWorker(_blsWorker),
+        m_chainstate(chainstate)
 {
     MigrateDKG();
 
@@ -378,6 +380,49 @@ void CDKGSessionManager::CleanupCache() const
             it = contributionsCache.erase(it);
         } else {
             ++it;
+        }
+    }
+}
+
+void CDKGSessionManager::CleanupOldContributions() const
+{
+    if (db->IsEmpty()) {
+        return;
+    }
+
+    const auto prefixes = {DB_VVEC, DB_SKCONTRIB, DB_ENC_CONTRIB};
+
+    for (const auto& params : Params().GetConsensus().llmqs) {
+        LogPrint(BCLog::LLMQ, "CDKGSessionManager::%s -- looking for old entries for llmq type %d\n", __func__, uint8_t(params.type));
+
+        CDBBatch batch(*db);
+        size_t cnt_old{0}, cnt_all{0};
+        for (const auto& prefix : prefixes) {
+            std::unique_ptr<CDBIterator> pcursor(db->NewIterator());
+            auto start = std::make_tuple(prefix, params.type, uint256(), uint256());
+            decltype(start) k;
+
+            pcursor->Seek(start);
+            LOCK(cs_main);
+            while (pcursor->Valid()) {
+                if (!pcursor->GetKey(k) || std::get<0>(k) != prefix || std::get<1>(k) != params.type) {
+                    break;
+                }
+                cnt_all++;
+                const CBlockIndex* pindexQuorum = m_chainstate.m_blockman.LookupBlockIndex(std::get<2>(k));
+                if (pindexQuorum == nullptr || m_chainstate.m_chain.Tip()->nHeight - pindexQuorum->nHeight > params.max_store_depth()) {
+                    // not found or too old
+                    batch.Erase(k);
+                    cnt_old++;
+                }
+                pcursor->Next();
+            }
+            pcursor.reset();
+        }
+        LogPrint(BCLog::LLMQ, "CDKGSessionManager::%s -- found %lld entries for llmq type %d\n", __func__, cnt_all, uint8_t(params.type));
+        if (cnt_old > 0) {
+            db->WriteBatch(batch);
+            LogPrint(BCLog::LLMQ, "CDKGSessionManager::%s -- removed %lld old entries for llmq type %d\n", __func__, cnt_old, uint8_t(params.type));
         }
     }
 }

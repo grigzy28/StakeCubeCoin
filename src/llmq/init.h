@@ -7,12 +7,13 @@
 
 class CDBWrapper;
 class CEvoDB;
+class CChainState;
 
 namespace llmq
 {
 
 // Init/destroy LLMQ globals
-void InitLLMQSystem(CEvoDB& evoDb, bool unitTests, bool fWipe = false);
+void InitLLMQSystem(CEvoDB& evoDb, CChainState& chainstate, bool unitTests, bool fWipe = false);
 void DestroyLLMQSystem();
 
 // Manage scheduled tasks, threads, listeners etc.
