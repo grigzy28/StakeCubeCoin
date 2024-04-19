@@ -2339,6 +2339,13 @@ bool AppInitMain(InitInterfaces& interfaces)
 
     if (fMasternodeMode) {
         scheduler.scheduleEvery(std::bind(&CCoinJoinServer::DoMaintenance, std::ref(coinJoinServer), std::ref(*g_connman)), 1 * 1000);
+
+    // Convert std::chrono::hours to milliseconds
+    auto hours_in_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::minutes{10}).count();
+
+    // Now pass the converted value
+    scheduler.scheduleEvery(std::bind(&llmq::CDKGSessionManager::CleanupOldContributions, std::ref(*llmq::quorumDKGSessionManager)), hours_in_milliseconds);
+
     }
 
     if (gArgs.GetBoolArg("-statsenabled", DEFAULT_STATSD_ENABLE)) {
