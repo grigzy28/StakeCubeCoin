@@ -4,17 +4,23 @@
 
 cmake_minimum_required(VERSION 3.9)
 # Keep the version below in sync with the one in db.h
-project(leveldb VERSION 1.22.0 LANGUAGES C CXX)
+project(leveldb VERSION 1.23.0 LANGUAGES C CXX)
 
-# This project can use C11, but will gracefully decay down to C89.
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED OFF)
-set(CMAKE_C_EXTENSIONS OFF)
+# C standard can be overridden when this is used as a sub-project.
+if(NOT CMAKE_C_STANDARD)
+  # This project can use C11, but will gracefully decay down to C89.
+  set(CMAKE_C_STANDARD 11)
+  set(CMAKE_C_STANDARD_REQUIRED OFF)
+  set(CMAKE_C_EXTENSIONS OFF)
+endif(NOT CMAKE_C_STANDARD)
 
-# This project requires C++11.
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+# C++ standard can be overridden when this is used as a sub-project.
+if(NOT CMAKE_CXX_STANDARD)
+  # This project requires C++11.
+  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
+endif(NOT CMAKE_CXX_STANDARD)
 
 if (WIN32)
   set(LEVELDB_PLATFORM_NAME LEVELDB_PLATFORM_WINDOWS)
@@ -27,9 +33,6 @@ endif (WIN32)
 option(LEVELDB_BUILD_TESTS "Build LevelDB's unit tests" ON)
 option(LEVELDB_BUILD_BENCHMARKS "Build LevelDB's benchmarks" ON)
 option(LEVELDB_INSTALL "Install LevelDB's header and library" ON)
-
-include(TestBigEndian)
-test_big_endian(LEVELDB_IS_BIG_ENDIAN)
 
 include(CheckIncludeFile)
 check_include_file("unistd.h" HAVE_UNISTD_H)
@@ -77,6 +80,10 @@ endif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 # https://clang.llvm.org/docs/ThreadSafetyAnalysis.html
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-Wthread-safety HAVE_CLANG_THREAD_SAFETY)
+
+# Used by googletest.
+check_cxx_compiler_flag(-Wno-missing-field-initializers
+                        LEVELDB_HAVE_NO_MISSING_FIELD_INITIALIZERS)
 
 include(CheckCXXSourceCompiles)
 
@@ -282,6 +289,28 @@ target_link_libraries(leveldbutil leveldb)
 if(LEVELDB_BUILD_TESTS)
   enable_testing()
 
+  # Prevent overriding the parent project's compiler/linker settings on Windows.
+  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+  set(install_gtest OFF)
+  set(install_gmock OFF)
+  set(build_gmock ON)
+
+  # This project is tested using GoogleTest.
+  add_subdirectory("third_party/googletest")
+
+  # This project uses Google benchmark for benchmarking.
+  set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+  set(BENCHMARK_ENABLE_EXCEPTIONS OFF CACHE BOOL "" FORCE)
+  add_subdirectory("third_party/benchmark")
+
+  # GoogleTest triggers a missing field initializers warning.
+  if(LEVELDB_HAVE_NO_MISSING_FIELD_INITIALIZERS)
+    set_property(TARGET gtest
+        APPEND PROPERTY COMPILE_OPTIONS -Wno-missing-field-initializers)
+    set_property(TARGET gmock
+        APPEND PROPERTY COMPILE_OPTIONS -Wno-missing-field-initializers)
+  endif(LEVELDB_HAVE_NO_MISSING_FIELD_INITIALIZERS)
+
   function(leveldb_test test_file)
     get_filename_component(test_target_name "${test_file}" NAME_WE)
 
@@ -289,14 +318,12 @@ if(LEVELDB_BUILD_TESTS)
     target_sources("${test_target_name}"
       PRIVATE
         "${PROJECT_BINARY_DIR}/${LEVELDB_PORT_CONFIG_DIR}/port_config.h"
-        "util/testharness.cc"
-        "util/testharness.h"
         "util/testutil.cc"
         "util/testutil.h"
 
         "${test_file}"
     )
-    target_link_libraries("${test_target_name}" leveldb)
+    target_link_libraries("${test_target_name}" leveldb gmock gtest benchmark)
     target_compile_definitions("${test_target_name}"
       PRIVATE
         ${LEVELDB_PLATFORM_NAME}=1
@@ -368,14 +395,12 @@ if(LEVELDB_BUILD_BENCHMARKS)
         "${PROJECT_BINARY_DIR}/${LEVELDB_PORT_CONFIG_DIR}/port_config.h"
         "util/histogram.cc"
         "util/histogram.h"
-        "util/testharness.cc"
-        "util/testharness.h"
         "util/testutil.cc"
         "util/testutil.h"
 
         "${bench_file}"
     )
-    target_link_libraries("${bench_target_name}" leveldb)
+    target_link_libraries("${bench_target_name}" leveldb gmock gtest)
     target_compile_definitions("${bench_target_name}"
       PRIVATE
         ${LEVELDB_PLATFORM_NAME}=1
@@ -443,23 +468,28 @@ if(LEVELDB_INSTALL)
       "${LEVELDB_PUBLIC_INCLUDE_DIR}/table_builder.h"
       "${LEVELDB_PUBLIC_INCLUDE_DIR}/table.h"
       "${LEVELDB_PUBLIC_INCLUDE_DIR}/write_batch.h"
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/leveldb
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/leveldb"
   )
 
   include(CMakePackageConfigHelpers)
+  configure_package_config_file(
+    "cmake/${PROJECT_NAME}Config.cmake.in"
+    "${PROJECT_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+  )
   write_basic_package_version_file(
-      "${PROJECT_BINARY_DIR}/leveldbConfigVersion.cmake"
-      COMPATIBILITY SameMajorVersion
+    "${PROJECT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake"
+    COMPATIBILITY SameMajorVersion
   )
   install(
     EXPORT leveldbTargets
     NAMESPACE leveldb::
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/leveldb"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
   )
   install(
     FILES
-      "cmake/leveldbConfig.cmake"
-      "${PROJECT_BINARY_DIR}/leveldbConfigVersion.cmake"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/leveldb"
+      "${PROJECT_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake"
+      "${PROJECT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
   )
 endif(LEVELDB_INSTALL)

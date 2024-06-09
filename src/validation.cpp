@@ -104,6 +104,14 @@ namespace {
 BlockManager g_blockman;
 } // anon namespace
 
+CBlockIndex* BlockManager::LookupBlockIndex(const uint256& hash) const
+{
+    AssertLockHeld(cs_main);
+    assert(std::addressof(::BlockIndex()) == std::addressof(m_block_index));
+    BlockMap::const_iterator it = m_block_index.find(hash);
+    return it == m_block_index.end() ? nullptr : it->second;
+}
+
 std::unique_ptr<CChainState> g_chainstate;
 
 CChainState& ChainstateActive() {
@@ -2412,7 +2420,7 @@ bool CChainState::FlushStateToDisk(
         bool fCacheLarge = mode == FlushStateMode::PERIODIC && cache_state >= CoinsCacheSizeState::LARGE;
         // The cache is over the limit, we have to write now.
         bool fCacheCritical = mode == FlushStateMode::IF_NEEDED && cache_state >= CoinsCacheSizeState::CRITICAL;
-	// The evodb cache is too large
+        // The evodb cache is too large
         bool fEvoDbCacheCritical = mode == FlushStateMode::IF_NEEDED && evoDb != nullptr && evoDb->GetMemoryUsage() >= (64 << 20);
         // It's been a while since we wrote the block index to disk. Do this frequently, so we don't need to redownload after a crash.
         bool fPeriodicWrite = mode == FlushStateMode::PERIODIC && nNow > nLastWrite + DATABASE_WRITE_INTERVAL;
