@@ -10,7 +10,7 @@ StakeCubeCoin [SCC] integration/staging tree
 ========================================
 
 
-![StakeCube Logo](https://stakecube.net/public/v3/sc-light-bg-512x125.png)
+![StakeCube Logo](.github/imgs/sc-light-bg-512x125.png)
 
 SCC is the coin of [StakeCube.net](https://stakecube.net/)
 
