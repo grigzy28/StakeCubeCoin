@@ -777,7 +777,7 @@ static UniValue masternodeshortlist(const JSONRPCRequest& request)
     mnList.ForEachMN(false, [&](auto& dmn) {
 
 		if (mnList.IsMNPoSeBanned(dmn)) { 
-			return
+			return;
 		}
 
         std::string strOutpoint = dmn.collateralOutpoint.ToStringShort();
