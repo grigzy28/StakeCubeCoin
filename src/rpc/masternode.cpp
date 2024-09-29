@@ -76,8 +76,6 @@ static UniValue masternode_shortlist(const JSONRPCRequest& request)
     newRequest.params.setArray();
     // forward params but skip "list"
     for (unsigned int i = 1; i < request.params.size(); i++) {
-        if (
-		
 		newRequest.params.push_back(request.params[i]);
     }
     return masternodeshortlist(newRequest);
