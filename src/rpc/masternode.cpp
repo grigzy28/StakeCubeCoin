@@ -732,20 +732,6 @@ static UniValue masternodelist(const JSONRPCRequest& request)
 
     return obj;
 }
-// clang-format off
-static const CRPCCommand commands[] =
-{ //  category              name                      actor (function)         argNames
-  //  --------------------- ------------------------  -----------------------  ----------
-    { "scc",               "masternode",             &masternode,             {} },
-    { "scc",               "masternodelist",         &masternodelist,         {} },
-    { "scc",               "masternodeshortlist",    &masternodeshortlist,    {} },
-};
-// clang-format on
-void RegisterMasternodeRPCCommands(CRPCTable &t)
-{
-    for (unsigned int vcidx = 0; vcidx < ARRAYLEN(commands); vcidx++)
-        t.appendCommand(commands[vcidx].name, &commands[vcidx]);
-}
 
 static UniValue masternodeshortlist(const JSONRPCRequest& request)
 {
@@ -899,3 +885,20 @@ static UniValue masternodeshortlist(const JSONRPCRequest& request)
 
     return obj;
 }
+
+
+// clang-format off
+static const CRPCCommand commands[] =
+{ //  category              name                      actor (function)         argNames
+  //  --------------------- ------------------------  -----------------------  ----------
+    { "scc",               "masternode",             &masternode,             {} },
+    { "scc",               "masternodelist",         &masternodelist,         {} },
+    { "scc",               "masternodeshortlist",    &masternodeshortlist,    {} },
+};
+// clang-format on
+void RegisterMasternodeRPCCommands(CRPCTable &t)
+{
+    for (unsigned int vcidx = 0; vcidx < ARRAYLEN(commands); vcidx++)
+        t.appendCommand(commands[vcidx].name, &commands[vcidx]);
+}
+
