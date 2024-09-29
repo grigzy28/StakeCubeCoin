@@ -776,7 +776,7 @@ static UniValue masternodeshortlist(const JSONRPCRequest& request)
 
     mnList.ForEachMN(false, [&](auto& dmn) {
 
-		if (mnlist.IsMNPoSeBanned(dmn) { 
+		if (mnList.IsMNPoSeBanned(dmn) { 
 			return
 		}
 
