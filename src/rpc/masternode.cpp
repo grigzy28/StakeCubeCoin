@@ -756,7 +756,7 @@ static UniValue masternodeshortlist(const JSONRPCRequest& request)
 
     UniValue obj(UniValue::VOBJ);
 
-    auto mnList = deterministicMNManager->GetActiveListAtChainTip();
+    auto mnList = deterministicMNManager->GetListAtChainTip();
     auto dmnToStatus = [&](auto& dmn) {
         if (mnList.IsMNValid(dmn)) {
             return "ENABLED";
