@@ -24,6 +24,7 @@
 #include <iomanip>
 
 static UniValue masternodelist(const JSONRPCRequest& request);
+static UniValue masternodeshortlist(const JSONRPCRequest& request);
 
 static void masternode_list_help(const JSONRPCRequest& request)
 {
