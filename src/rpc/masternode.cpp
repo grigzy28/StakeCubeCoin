@@ -24,7 +24,7 @@
 #include <iomanip>
 
 static UniValue masternodelist(const JSONRPCRequest& request);
-static UniValue masternodeshortlist(const JSONRPCRequest& request);
+static UniValue masternodeenabledlist(const JSONRPCRequest& request);
 
 static void masternode_list_help(const JSONRPCRequest& request)
 {
@@ -68,7 +68,7 @@ static UniValue masternode_list(const JSONRPCRequest& request)
     return masternodelist(newRequest);
 }
 
-static UniValue masternode_shortlist(const JSONRPCRequest& request)
+static UniValue masternode_list(const JSONRPCRequest& request)
 {
     if (request.fHelp)
         masternode_list_help(request);
@@ -78,7 +78,7 @@ static UniValue masternode_shortlist(const JSONRPCRequest& request)
     for (unsigned int i = 1; i < request.params.size(); i++) {
 		newRequest.params.push_back(request.params[i]);
     }
-    return masternodeshortlist(newRequest);
+    return masternodeenabledlist(newRequest);
 }
 
 static void masternode_connect_help(const JSONRPCRequest& request)
@@ -530,6 +530,7 @@ static UniValue masternode_payments(const JSONRPCRequest& request)
         "\nAvailable commands:\n"
         "  count        - Get information about number of masternodes\n"
         "  current      - DEPRECATED Print info on current masternode winner to be paid the next block (calculated locally)\n"
+		"  enabledlist  - Get list of ALL enabled nodes\n"
 #ifdef ENABLE_WALLET
         "  outputs      - Print masternode compatible outputs\n"
 #endif // ENABLE_WALLET
@@ -559,8 +560,8 @@ static UniValue masternode(const JSONRPCRequest& request)
 
     if (strCommand == "list") {
         return masternode_list(request);
-    } else if (strCommand == "shortlist") {
-        return masternode_shortlist(request);
+    } else if (strCommand == "enabledlist") {
+        return masternode_enabledlist(request);
     } else if (strCommand == "connect") {
         return masternode_connect(request);
     } else if (strCommand == "count") {
@@ -732,7 +733,7 @@ static UniValue masternodelist(const JSONRPCRequest& request)
     return obj;
 }
 
-static UniValue masternodeshortlist(const JSONRPCRequest& request)
+static UniValue masternodeenabledlist(const JSONRPCRequest& request)
 {
     std::string strMode = "json";
     std::string strFilter = "";
@@ -892,7 +893,7 @@ static const CRPCCommand commands[] =
   //  --------------------- ------------------------  -----------------------  ----------
     { "scc",               "masternode",             &masternode,             {} },
     { "scc",               "masternodelist",         &masternodelist,         {} },
-    { "scc",               "masternodeshortlist",    &masternodeshortlist,    {} },
+    { "scc",               "masternodeenabledlist",    &masternodeenabledlist,    {} },
 };
 // clang-format on
 void RegisterMasternodeRPCCommands(CRPCTable &t)
