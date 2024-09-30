@@ -68,7 +68,7 @@ static UniValue masternode_list(const JSONRPCRequest& request)
     return masternodelist(newRequest);
 }
 
-static UniValue masternode_list(const JSONRPCRequest& request)
+static UniValue masternode_enabledlist(const JSONRPCRequest& request)
 {
     if (request.fHelp)
         masternode_list_help(request);
