@@ -24,10 +24,40 @@
 #include <iomanip>
 
 static UniValue masternodelist(const JSONRPCRequest& request);
+static UniValue masternodeenabledlist(const JSONRPCRequest& request);
 
 static void masternode_list_help(const JSONRPCRequest& request)
 {
     RPCHelpMan{"masternodelist",
+        "Get a list of masternodes in different modes. This call is identical to 'masternode list' call.\n"
+        "Available modes:\n"
+        "  addr           - Print ip address associated with a masternode (can be additionally filtered, partial match)\n"
+        "  full           - Print info in format 'status payee lastpaidtime lastpaidblock IP'\n"
+        "                   (can be additionally filtered, partial match)\n"
+        "  info           - Print info in format 'status payee IP'\n"
+        "                   (can be additionally filtered, partial match)\n"
+        "  json           - Print info in JSON format (can be additionally filtered, partial match)\n"
+        "  lastpaidblock  - Print the last block height a node was paid on the network\n"
+        "  lastpaidtime   - Print the last time a node was paid on the network\n"
+        "  owneraddress   - Print the masternode owner Dash address\n"
+        "  payee          - Print the masternode payout Dash address (can be additionally filtered,\n"
+        "                   partial match)\n"
+        "  pubKeyOperator - Print the masternode operator public key\n"
+        "  status         - Print masternode status: ENABLED / POSE_BANNED\n"
+        "                   (can be additionally filtered, partial match)\n"
+        "  votingaddress  - Print the masternode voting Dash address\n",
+        {
+            {"mode", RPCArg::Type::STR, /* default */ "json", "The mode to run list in"},
+            {"filter", RPCArg::Type::STR, /* default */ "", "Filter results. Partial match by outpoint by default in all modes, additional matches in some modes are also available"},
+        },
+        RPCResults{},
+        RPCExamples{""},
+    }.Check(request);
+}
+
+static void masternode_list_enabledhelp(const JSONRPCRequest& request)
+{
+    RPCHelpMan{"masternodeenabledlist",
         "Get a list of masternodes in different modes. This call is identical to 'masternode list' call.\n"
         "Available modes:\n"
         "  addr           - Print ip address associated with a masternode (can be additionally filtered, partial match)\n"
@@ -65,6 +95,19 @@ static UniValue masternode_list(const JSONRPCRequest& request)
         newRequest.params.push_back(request.params[i]);
     }
     return masternodelist(newRequest);
+}
+
+static UniValue masternode_enabledlist(const JSONRPCRequest& request)
+{
+    if (request.fHelp)
+        masternode_list_help(request);
+    JSONRPCRequest newRequest = request;
+    newRequest.params.setArray();
+    // forward params but skip "list"
+    for (unsigned int i = 1; i < request.params.size(); i++) {
+		newRequest.params.push_back(request.params[i]);
+    }
+    return masternodeenabledlist(newRequest);
 }
 
 static void masternode_connect_help(const JSONRPCRequest& request)
@@ -516,6 +559,7 @@ static UniValue masternode_payments(const JSONRPCRequest& request)
         "\nAvailable commands:\n"
         "  count        - Get information about number of masternodes\n"
         "  current      - DEPRECATED Print info on current masternode winner to be paid the next block (calculated locally)\n"
+		"  enabledlist  - Get list of ALL enabled nodes\n"
 #ifdef ENABLE_WALLET
         "  outputs      - Print masternode compatible outputs\n"
 #endif // ENABLE_WALLET
@@ -545,6 +589,8 @@ static UniValue masternode(const JSONRPCRequest& request)
 
     if (strCommand == "list") {
         return masternode_list(request);
+    } else if (strCommand == "enabledlist") {
+        return masternode_enabledlist(request);
     } else if (strCommand == "connect") {
         return masternode_connect(request);
     } else if (strCommand == "count") {
@@ -715,12 +761,168 @@ static UniValue masternodelist(const JSONRPCRequest& request)
 
     return obj;
 }
+
+static UniValue masternodeenabledlist(const JSONRPCRequest& request)
+{
+    std::string strMode = "json";
+    std::string strFilter = "";
+
+    if (!request.params[0].isNull()) strMode = request.params[0].get_str();
+    if (!request.params[1].isNull()) strFilter = request.params[1].get_str();
+
+    strMode = ToLower(strMode);
+
+    if (request.fHelp || (
+                strMode != "addr" && strMode != "full" && strMode != "info" && strMode != "json" &&
+                strMode != "owneraddress" && strMode != "votingaddress" &&
+                strMode != "lastpaidtime" && strMode != "lastpaidblock" &&
+                strMode != "payee" && strMode != "pubkeyoperator" &&
+                strMode != "status"))
+    {
+        masternode_list_enabledhelp(request);
+    }
+
+    UniValue obj(UniValue::VOBJ);
+
+    auto mnList = deterministicMNManager->GetListAtChainTip();
+    auto dmnToStatus = [&](auto& dmn) {
+        if (mnList.IsMNValid(dmn)) {
+            return "ENABLED";
+        }
+        if (mnList.IsMNPoSeBanned(dmn)) {
+            return "POSE_BANNED";
+        }
+        return "UNKNOWN";
+    };
+    auto dmnToLastPaidTime = [&](auto& dmn) {
+        if (dmn.pdmnState->nLastPaidHeight == 0) {
+            return (int)0;
+        }
+
+        LOCK(cs_main);
+        const CBlockIndex* pindex = ::ChainActive()[dmn.pdmnState->nLastPaidHeight];
+        return (int)pindex->nTime;
+    };
+
+    mnList.ForEachMN(false, [&](auto& dmn) {
+
+		if (mnList.IsMNPoSeBanned(dmn)) { 
+			return;
+		}
+
+        std::string strOutpoint = dmn.collateralOutpoint.ToStringShort();
+        Coin coin;
+        std::string collateralAddressStr = "UNKNOWN";
+        if (GetUTXOCoin(dmn.collateralOutpoint, coin)) {
+            CTxDestination collateralDest;
+            if (ExtractDestination(coin.out.scriptPubKey, collateralDest)) {
+                collateralAddressStr = EncodeDestination(collateralDest);
+            }
+        }
+
+        CScript payeeScript = dmn.pdmnState->scriptPayout;
+        CTxDestination payeeDest;
+        std::string payeeStr = "UNKNOWN";
+        if (ExtractDestination(payeeScript, payeeDest)) {
+            payeeStr = EncodeDestination(payeeDest);
+        }
+
+        if (strMode == "addr") {
+            std::string strAddress = dmn.pdmnState->addr.ToString(false);
+            if (strFilter !="" && strAddress.find(strFilter) == std::string::npos &&
+                strOutpoint.find(strFilter) == std::string::npos) return;
+            obj.pushKV(strOutpoint, strAddress);
+        } else if (strMode == "full") {
+            std::ostringstream streamFull;
+            streamFull << std::setw(18) <<
+                           dmnToStatus(dmn) << " " <<
+                           dmn.pdmnState->nPoSePenalty << " " <<
+                           payeeStr << " " << std::setw(10) <<
+                           dmnToLastPaidTime(dmn) << " "  << std::setw(6) <<
+                           dmn.pdmnState->nLastPaidHeight << " " <<
+                           dmn.pdmnState->addr.ToString();
+            std::string strFull = streamFull.str();
+            if (strFilter !="" && strFull.find(strFilter) == std::string::npos &&
+                strOutpoint.find(strFilter) == std::string::npos) return;
+            obj.pushKV(strOutpoint, strFull);
+        } else if (strMode == "info") {
+            std::ostringstream streamInfo;
+            streamInfo << std::setw(18) <<
+                           dmnToStatus(dmn) << " " <<
+                           dmn.pdmnState->nPoSePenalty << " " <<
+                           payeeStr << " " <<
+                           dmn.pdmnState->addr.ToString();
+            std::string strInfo = streamInfo.str();
+            if (strFilter !="" && strInfo.find(strFilter) == std::string::npos &&
+                strOutpoint.find(strFilter) == std::string::npos) return;
+            obj.pushKV(strOutpoint, strInfo);
+        } else if (strMode == "json") {
+            std::ostringstream streamInfo;
+            streamInfo <<  dmn.proTxHash.ToString() << " " <<
+                           dmn.pdmnState->addr.ToString() << " " <<
+                           payeeStr << " " <<
+                           dmnToStatus(dmn) << " " <<
+                           dmn.pdmnState->nPoSePenalty << " " <<
+                           dmnToLastPaidTime(dmn) << " " <<
+                           dmn.pdmnState->nLastPaidHeight << " " <<
+                           EncodeDestination(dmn.pdmnState->keyIDOwner) << " " <<
+                           EncodeDestination(dmn.pdmnState->keyIDVoting) << " " <<
+                           collateralAddressStr << " " <<
+                           dmn.pdmnState->pubKeyOperator.Get().ToString();
+            std::string strInfo = streamInfo.str();
+            if (strFilter !="" && strInfo.find(strFilter) == std::string::npos &&
+                strOutpoint.find(strFilter) == std::string::npos) return;
+            UniValue objMN(UniValue::VOBJ);
+            objMN.pushKV("proTxHash", dmn.proTxHash.ToString());
+            objMN.pushKV("address", dmn.pdmnState->addr.ToString());
+            objMN.pushKV("payee", payeeStr);
+            objMN.pushKV("status", dmnToStatus(dmn));
+            objMN.pushKV("pospenaltyscore", dmn.pdmnState->nPoSePenalty);
+            objMN.pushKV("lastpaidtime", dmnToLastPaidTime(dmn));
+            objMN.pushKV("lastpaidblock", dmn.pdmnState->nLastPaidHeight);
+            objMN.pushKV("owneraddress", EncodeDestination(dmn.pdmnState->keyIDOwner));
+            objMN.pushKV("votingaddress", EncodeDestination(dmn.pdmnState->keyIDVoting));
+            objMN.pushKV("collateraladdress", collateralAddressStr);
+            objMN.pushKV("pubkeyoperator", dmn.pdmnState->pubKeyOperator.Get().ToString());
+            obj.pushKV(strOutpoint, objMN);
+        } else if (strMode == "lastpaidblock") {
+            if (strFilter !="" && strOutpoint.find(strFilter) == std::string::npos) return;
+            obj.pushKV(strOutpoint, dmn.pdmnState->nLastPaidHeight);
+        } else if (strMode == "lastpaidtime") {
+            if (strFilter !="" && strOutpoint.find(strFilter) == std::string::npos) return;
+            obj.pushKV(strOutpoint, dmnToLastPaidTime(dmn));
+        } else if (strMode == "payee") {
+            if (strFilter !="" && payeeStr.find(strFilter) == std::string::npos &&
+                strOutpoint.find(strFilter) == std::string::npos) return;
+            obj.pushKV(strOutpoint, payeeStr);
+        } else if (strMode == "owneraddress") {
+            if (strFilter !="" && strOutpoint.find(strFilter) == std::string::npos) return;
+            obj.pushKV(strOutpoint, EncodeDestination(dmn.pdmnState->keyIDOwner));
+        } else if (strMode == "pubkeyoperator") {
+            if (strFilter !="" && strOutpoint.find(strFilter) == std::string::npos) return;
+            obj.pushKV(strOutpoint, dmn.pdmnState->pubKeyOperator.Get().ToString());
+        } else if (strMode == "status") {
+            std::string strStatus = dmnToStatus(dmn);
+            if (strFilter !="" && strStatus.find(strFilter) == std::string::npos &&
+                strOutpoint.find(strFilter) == std::string::npos) return;
+            obj.pushKV(strOutpoint, strStatus);
+        } else if (strMode == "votingaddress") {
+            if (strFilter !="" && strOutpoint.find(strFilter) == std::string::npos) return;
+            obj.pushKV(strOutpoint, EncodeDestination(dmn.pdmnState->keyIDVoting));
+        }
+    });
+
+    return obj;
+}
+
+
 // clang-format off
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         argNames
   //  --------------------- ------------------------  -----------------------  ----------
     { "scc",               "masternode",             &masternode,             {} },
     { "scc",               "masternodelist",         &masternodelist,         {} },
+    { "scc",               "masternodeenabledlist",  &masternodeenabledlist,  {} },
 };
 // clang-format on
 void RegisterMasternodeRPCCommands(CRPCTable &t)
@@ -728,3 +930,4 @@ void RegisterMasternodeRPCCommands(CRPCTable &t)
     for (unsigned int vcidx = 0; vcidx < ARRAYLEN(commands); vcidx++)
         t.appendCommand(commands[vcidx].name, &commands[vcidx]);
 }
+
