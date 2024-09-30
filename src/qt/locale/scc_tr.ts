@@ -1138,6 +1138,14 @@
         <translation>Sadece benim anadüğümlerim</translation>
     </message>
     <message>
+        <source>Show all masternodes without filter.</source>
+        <translation>Filtresiz tüm masternodları göster.</translation>
+    </message>
+    <message>
+        <source>All masternodes</source>
+        <translation>Tüm masternodlar</translation>
+    </message>
+    <message>
         <source>Service</source>
         <translation>Hizmet</translation>
     </message>

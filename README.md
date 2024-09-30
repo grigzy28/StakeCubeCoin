@@ -1,8 +1,16 @@
+![](https://custom-icon-badges.demolab.com/badge/-SCC%20Core-0094f6?style=for-the-badge&logo=package&logoColor=1dffb4)
+![C](https://img.shields.io/badge/c-%2300599C.svg?style=for-the-badge&logo=c&logoColor=white)
+![C++](https://img.shields.io/badge/c++-%2300599C.svg?style=for-the-badge&logo=c%2B%2B&logoColor=white)
+[![Licence](https://custom-icon-badges.demolab.com/badge/License-MIT-yellow.svg?style=for-the-badge&color=1dffb4&logo=law)](./COPYING)
+[![Tag](https://custom-icon-badges.demolab.com/github/v/tag/stakecube/StakeCubeCoin?logo=tag&logoColor=white&style=for-the-badge&color=0fcad5)](https://github.com/stakecube/StakeCubeCoin/releases)
+[![](https://custom-icon-badges.demolab.com/github/issues-raw/stakecube/StakeCubeCoin?logo=issue&style=for-the-badge)](https://github.com/stakecube/StakeCubeCoin/issues)
+
+
 StakeCubeCoin [SCC] integration/staging tree
 ========================================
 
 
-![StakeCube Logo](https://stakecube.net/public/v3/sc-light-bg-512x125.png)
+![StakeCube Logo](.github/imgs/sc-light-bg-512x125.png)
 
 SCC is the coin of [StakeCube.net](https://stakecube.net/)
 

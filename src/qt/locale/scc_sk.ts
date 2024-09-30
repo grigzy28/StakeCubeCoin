@@ -1138,6 +1138,14 @@
         <translation>Iba moje masternódy</translation>
     </message>
     <message>
+        <source>Show all masternodes without filter.</source>
+        <translation>Zobraziť všetky masternody bez filtra.</translation>
+    </message>
+    <message>
+        <source>All masternodes</source>
+        <translation>Všetky masternody</translation>
+    </message>
+    <message>
         <source>Service</source>
         <translation>Služba</translation>
     </message>
