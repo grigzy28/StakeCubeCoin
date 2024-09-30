@@ -55,6 +55,35 @@ static void masternode_list_help(const JSONRPCRequest& request)
     }.Check(request);
 }
 
+static void masternode_list_enabledhelp(const JSONRPCRequest& request)
+{
+    RPCHelpMan{"masternodeenabledlist",
+        "Get a list of masternodes in different modes. This call is identical to 'masternode list' call.\n"
+        "Available modes:\n"
+        "  addr           - Print ip address associated with a masternode (can be additionally filtered, partial match)\n"
+        "  full           - Print info in format 'status payee lastpaidtime lastpaidblock IP'\n"
+        "                   (can be additionally filtered, partial match)\n"
+        "  info           - Print info in format 'status payee IP'\n"
+        "                   (can be additionally filtered, partial match)\n"
+        "  json           - Print info in JSON format (can be additionally filtered, partial match)\n"
+        "  lastpaidblock  - Print the last block height a node was paid on the network\n"
+        "  lastpaidtime   - Print the last time a node was paid on the network\n"
+        "  owneraddress   - Print the masternode owner Dash address\n"
+        "  payee          - Print the masternode payout Dash address (can be additionally filtered,\n"
+        "                   partial match)\n"
+        "  pubKeyOperator - Print the masternode operator public key\n"
+        "  status         - Print masternode status: ENABLED / POSE_BANNED\n"
+        "                   (can be additionally filtered, partial match)\n"
+        "  votingaddress  - Print the masternode voting Dash address\n",
+        {
+            {"mode", RPCArg::Type::STR, /* default */ "json", "The mode to run list in"},
+            {"filter", RPCArg::Type::STR, /* default */ "", "Filter results. Partial match by outpoint by default in all modes, additional matches in some modes are also available"},
+        },
+        RPCResults{},
+        RPCExamples{""},
+    }.Check(request);
+}
+
 static UniValue masternode_list(const JSONRPCRequest& request)
 {
     if (request.fHelp)
@@ -750,7 +779,7 @@ static UniValue masternodeenabledlist(const JSONRPCRequest& request)
                 strMode != "payee" && strMode != "pubkeyoperator" &&
                 strMode != "status"))
     {
-        masternode_list_help(request);
+        masternode_list_enabledhelp(request);
     }
 
     UniValue obj(UniValue::VOBJ);
@@ -893,7 +922,7 @@ static const CRPCCommand commands[] =
   //  --------------------- ------------------------  -----------------------  ----------
     { "scc",               "masternode",             &masternode,             {} },
     { "scc",               "masternodelist",         &masternodelist,         {} },
-    { "scc",               "masternodeenabledlist",    &masternodeenabledlist,    {} },
+    { "scc",               "masternodeenabledlist",  &masternodeenabledlist,  {} },
 };
 // clang-format on
 void RegisterMasternodeRPCCommands(CRPCTable &t)
