@@ -168,53 +168,53 @@ endef
 
 define int_add_cmds
 $($(1)_fetched):
-	mkdir -p $$(@D) $(SOURCES_PATH)
-	rm -f $$@
-	touch $$@
-	cd $$(@D); $($(1)_fetch_cmds)
-	cd $($(1)_source_dir); $(foreach source,$($(1)_all_sources),$(build_SHA256SUM) $(source) >> $$(@);)
-	touch $$@
+	$(AT)mkdir -p $$(@D) $(SOURCES_PATH)
+	$(AT)rm -f $$@
+	$(AT)touch $$@
+	$(AT)cd $$(@D); $(call $(1)_fetch_cmds,$(1))
+	$(AT)cd $($(1)_source_dir); $(foreach source,$($(1)_all_sources),$(build_SHA256SUM) $(source) >> $$(@);)
+	$(AT)touch $$@
 $($(1)_extracted): | $($(1)_fetched)
-	echo Extracting $(1)...
-	mkdir -p $$(@D)
-	cd $$(@D); $($(1)_extract_cmds)
-	touch $$@
+	$(AT)echo Extracting $(1)...
+	$(AT)mkdir -p $$(@D)
+	$(AT)cd $$(@D); $(call $(1)_extract_cmds,$(1))
+	$(AT)touch $$@
 $($(1)_preprocessed): | $($(1)_extracted)
-	echo Preprocessing $(1)...
-	mkdir -p $$(@D) $($(1)_patch_dir)
-	$(foreach patch,$($(1)_patches),cd $(PATCHES_PATH)/$(1); cp $(patch) $($(1)_patch_dir) ;)
-	cd $$(@D); $($(1)_preprocess_cmds)
-	touch $$@
+	$(AT)echo Preprocessing $(1)...
+	$(AT)mkdir -p $$(@D) $($(1)_patch_dir)
+	$(AT)$(foreach patch,$($(1)_patches),cd $(PATCHES_PATH)/$(1); cp $(patch) $($(1)_patch_dir) ;)
+	$(AT)cd $$(@D); $(call $(1)_preprocess_cmds, $(1))
+	$(AT)touch $$@
 $($(1)_configured): | $($(1)_dependencies) $($(1)_preprocessed)
-	echo Configuring $(1)...
-	rm -rf $(host_prefix); mkdir -p $(host_prefix)/lib; cd $(host_prefix); $(foreach package,$($(1)_all_dependencies), $(build_TAR) --no-same-owner -xf $($(package)_cached); )
-	mkdir -p $$(@D)
-	+cd $$(@D); $($(1)_config_env) $($(1)_config_cmds)
-	touch $$@
+	$(AT)echo Configuring $(1)...
+	$(AT)rm -rf $(host_prefix); mkdir -p $(host_prefix)/lib; cd $(host_prefix); $(foreach package,$($(1)_all_dependencies), tar --no-same-owner -xf $($(package)_cached); )
+	$(AT)mkdir -p $$(@D)
+	$(AT)+cd $$(@D); $($(1)_config_env) $(call $(1)_config_cmds, $(1))
+	$(AT)touch $$@
 $($(1)_built): | $($(1)_configured)
-	echo Building $(1)...
-	mkdir -p $$(@D)
-	+cd $$(@D); $($(1)_build_env) $($(1)_build_cmds)
-	touch $$@
+	$(AT)echo Building $(1)...
+	$(AT)mkdir -p $$(@D)
+	$(AT)+cd $$(@D); $($(1)_build_env) $(call $(1)_build_cmds, $(1))
+	$(AT)touch $$@
 $($(1)_staged): | $($(1)_built)
-	echo Staging $(1)...
-	mkdir -p $($(1)_staging_dir)/$(host_prefix)
-	cd $($(1)_build_dir); $($(1)_stage_env) $($(1)_stage_cmds)
-	rm -rf $($(1)_extract_dir)
-	touch $$@
+	$(AT)echo Staging $(1)...
+	$(AT)mkdir -p $($(1)_staging_dir)/$(host_prefix)
+	$(AT)cd $($(1)_build_dir); $($(1)_stage_env) $(call $(1)_stage_cmds, $(1))
+	$(AT)rm -rf $($(1)_extract_dir)
+	$(AT)touch $$@
 $($(1)_postprocessed): | $($(1)_staged)
-	echo Postprocessing $(1)...
-	cd $($(1)_staging_prefix_dir); $($(1)_postprocess_cmds)
-	touch $$@
+	$(AT)echo Postprocessing $(1)...
+	$(AT)cd $($(1)_staging_prefix_dir); $(call $(1)_postprocess_cmds)
+	$(AT)touch $$@
 $($(1)_cached): | $($(1)_dependencies) $($(1)_postprocessed)
-	echo Caching $(1)...
-	cd $$($(1)_staging_dir)/$(host_prefix); find . | sort | $(build_TAR) --no-recursion -czf $$($(1)_staging_dir)/$$(@F) -T -
-	mkdir -p $$(@D)
-	rm -rf $$(@D) && mkdir -p $$(@D)
-	mv $$($(1)_staging_dir)/$$(@F) $$(@)
-	rm -rf $($(1)_staging_dir)
+	$(AT)echo Caching $(1)...
+	$(AT)cd $$($(1)_staging_dir)/$(host_prefix); find . | sort | tar --no-recursion -czf $$($(1)_staging_dir)/$$(@F) -T -
+	$(AT)mkdir -p $$(@D)
+	$(AT)rm -rf $$(@D) && mkdir -p $$(@D)
+	$(AT)mv $$($(1)_staging_dir)/$$(@F) $$(@)
+	$(AT)rm -rf $($(1)_staging_dir)
 $($(1)_cached_checksum): $($(1)_cached)
-	cd $$(@D); $(build_SHA256SUM) $$(<F) > $$(@)
+	$(AT)cd $$(@D); $(build_SHA256SUM) $$(<F) > $$(@)
 
 .PHONY: $(1)
 $(1): | $($(1)_cached_checksum)

@@ -97,9 +97,9 @@ host_prefix=$($(host_arch)_$(host_os)_prefix)
 build_prefix=$(host_prefix)/native
 build_host=$(build)
 
-#AT_$(V):=
-#AT_:=@
-#AT:=$(AT_$(V))
+AT_$(V):=
+AT_:=@
+AT:=$(AT_$(V))
 
 all: install
 
@@ -109,53 +109,26 @@ include builders/$(build_os).mk
 include builders/default.mk
 include packages/packages.mk
 
-# Previously, we directly invoked the well-known programs using $(shell ...)
-# to contruct build_id_string. However, that was problematic because:
-#
-# 1. When invoking a shell, GNU Make special-cases exit code 127 (command not
-#    found) by not capturing the output but instead passing it through. This is
-#    not done for any other exit code.
-#
-# 2. Characters like '#' (from these programs' output) would end up in make
-#    variables like build_id_string, which would be wrongly interpreted by make
-#    when these variables were used.
-#
-# Therefore, we should avoid having arbitrary strings in make variables where
-# possible. The gen_id script used here hashes the output to construct a
-# "make-safe" id.
-#
-# Also note that these lines need to be:
-#
-#     1. After including {hosts,builders}/*.mk, since they rely on the tool
-#        variables (e.g. build_CC, host_STRIP, etc.) to be set.
-#
-#     2. Before including packages/*.mk (excluding packages/packages.mk), since
-#        they rely on the build_id variables
-#
-build_id:=$(shell env CC='$(build_CC)' CXX='$(build_CXX)' AR='$(build_AR)' RANLIB='$(build_RANLIB)' STRIP='$(build_STRIP)' SHA256SUM='$(build_SHA256SUM)' DEBUG='$(DEBUG)' ./gen_id '$(BUILD_ID_SALT)' 'GUIX_ENVIRONMENT=$(realpath $(GUIX_ENVIRONMENT))')
-$(host_arch)_$(host_os)_id:=$(shell env CC='$(host_CC)' CXX='$(host_CXX)' AR='$(host_AR)' RANLIB='$(host_RANLIB)' STRIP='$(host_STRIP)' SHA256SUM='$(build_SHA256SUM)' DEBUG='$(DEBUG)' ./gen_id '$(HOST_ID_SALT)' 'GUIX_ENVIRONMENT=$(realpath $(GUIX_ENVIRONMENT))')
+build_id_string:=$(BUILD_ID_SALT)
+build_id_string+=$(shell $(build_CC) --version 2>/dev/null)
+build_id_string+=$(shell $(build_AR) --version 2>/dev/null)
+build_id_string+=$(shell $(build_CXX) --version 2>/dev/null)
+build_id_string+=$(shell $(build_RANLIB) --version 2>/dev/null)
+build_id_string+=$(shell $(build_STRIP) --version 2>/dev/null)
 
+$(host_arch)_$(host_os)_id_string:=$(HOST_ID_SALT)
+$(host_arch)_$(host_os)_id_string+=$(shell $(host_CC) --version 2>/dev/null)
+$(host_arch)_$(host_os)_id_string+=$(shell $(host_AR) --version 2>/dev/null)
+$(host_arch)_$(host_os)_id_string+=$(shell $(host_CXX) --version 2>/dev/null)
+$(host_arch)_$(host_os)_id_string+=$(shell $(host_RANLIB) --version 2>/dev/null)
+$(host_arch)_$(host_os)_id_string+=$(shell $(host_STRIP) --version 2>/dev/null)
 
-#build_id_string:=$(BUILD_ID_SALT)
-#build_id_string+=$(shell $(build_CC) --version 2>/dev/null)
-#build_id_string+=$(shell $(build_AR) --version 2>/dev/null)
-#build_id_string+=$(shell $(build_CXX) --version 2>/dev/null)
-#build_id_string+=$(shell $(build_RANLIB) --version 2>/dev/null)
-#build_id_string+=$(shell $(build_STRIP) --version 2>/dev/null)
-
-#$(host_arch)_$(host_os)_id_string:=$(HOST_ID_SALT)
-#$(host_arch)_$(host_os)_id_string+=$(shell $(host_CC) --version 2>/dev/null)
-#$(host_arch)_$(host_os)_id_string+=$(shell $(host_AR) --version 2>/dev/null)
-#$(host_arch)_$(host_os)_id_string+=$(shell $(host_CXX) --version 2>/dev/null)
-#$(host_arch)_$(host_os)_id_string+=$(shell $(host_RANLIB) --version 2>/dev/null)
-#$(host_arch)_$(host_os)_id_string+=$(shell $(host_STRIP) --version 2>/dev/null)
-
-#ifneq ($(strip $(FORCE_USE_SYSTEM_CLANG)),)
+ifneq ($(strip $(FORCE_USE_SYSTEM_CLANG)),)
 # Make sure that cache is invalidated when switching between system and
 # depends-managed, pinned clang
-#build_id_string+=system_clang
-#$(host_arch)_$(host_os)_id_string+=system_clang
-#endif
+build_id_string+=system_clang
+$(host_arch)_$(host_os)_id_string+=system_clang
+endif
 
 qt_packages_$(NO_QT) = $(qt_packages) $(qt_$(host_os)_packages) $(qt_$(host_arch)_$(host_os)_packages)
 wallet_packages_$(NO_WALLET) = $(wallet_packages)
@@ -183,12 +156,12 @@ include funcs.mk
 final_build_id_long+=$(shell $(build_SHA256SUM) config.site.in)
 final_build_id+=$(shell echo -n "$(final_build_id_long)" | $(build_SHA256SUM) | cut -c-$(HASH_LENGTH))
 $(host_prefix)/.stamp_$(final_build_id): $(native_packages) $(packages)
-	rm -rf $(@D)
-	mkdir -p $(@D)
-	echo copying packages: $^
-	echo to: $(@D)
-	cd $(@D); $(foreach package,$^, tar xf $($(package)_cached); )
-	touch $@
+	$(AT)rm -rf $(@D)
+	$(AT)mkdir -p $(@D)
+	$(AT)echo copying packages: $^
+	$(AT)echo to: $(@D)
+	$(AT)cd $(@D); $(foreach package,$^, tar xf $($(package)_cached); )
+	$(AT)touch $@
 
 # $PATH is not preserved between ./configure and make by convention. Its
 # modification and overriding at ./configure time is (as I understand it)
@@ -215,8 +188,8 @@ $(host_prefix)/.stamp_$(final_build_id): $(native_packages) $(packages)
 # we expect them to be available in $PATH at all times, more specificity does
 # not hurt.
 $(host_prefix)/share/config.site : config.site.in $(host_prefix)/.stamp_$(final_build_id)
-	@mkdir -p $(@D)
-	sed -e 's|@HOST@|$(host)|' \
+	$(AT)@mkdir -p $(@D)
+	$(AT)sed -e 's|@HOST@|$(host)|' \
             -e 's|@CC@|$(host_CC)|' \
             -e 's|@CXX@|$(host_CXX)|' \
             -e 's|@AR@|$(host_AR)|' \
@@ -237,7 +210,7 @@ $(host_prefix)/share/config.site : config.site.in $(host_prefix)/.stamp_$(final_
             -e 's|@no_natpmp@|$(NO_NATPMP)|' \
             -e 's|@debug@|$(DEBUG)|' \
             $< > $@
-	touch $@
+	$(AT)touch $@
 
 
 define check_or_remove_cached
