@@ -97,9 +97,9 @@ host_prefix=$($(host_arch)_$(host_os)_prefix)
 build_prefix=$(host_prefix)/native
 build_host=$(build)
 
-AT_$(V):=
-AT_:=@
-AT:=$(AT_$(V))
+#AT_$(V):=
+#AT_:=@
+#AT:=$(AT_$(V))
 
 all: install
 
