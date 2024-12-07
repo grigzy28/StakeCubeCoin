@@ -24,6 +24,7 @@ class QLineEdit;
 class QMenu;
 class QModelIndex;
 class QTableView;
+class QDateTime;
 QT_END_NAMESPACE
 
 /** Widget showing the transaction list for a wallet, including a filter row.
