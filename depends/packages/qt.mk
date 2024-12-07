@@ -1,25 +1,44 @@
 PACKAGE=qt
-$(package)_version=5.9.8
-$(package)_download_path=https://download.qt.io/new_archive/qt/5.9/$($(package)_version)/submodules
+$(package)_version=5.15.11
+$(package)_download_path=https://download.qt.io/official_releases/qt/5.15/$($(package)_version)/submodules
 $(package)_suffix=opensource-src-$($(package)_version).tar.xz
 $(package)_file_name=qtbase-$($(package)_suffix)
-$(package)_sha256_hash=9b9dec1f67df1f94bce2955c5604de992d529dde72050239154c56352da0907d
+$(package)_sha256_hash=425ad301acd91ca66c10c0dabee0704e2d0cd2801a6b670115800cbb95f84846
 $(package)_dependencies=zlib
 $(package)_linux_dependencies=freetype fontconfig libxcb
 $(package)_qt_libs=corelib network widgets gui plugins testlib
-$(package)_patches=fix_qt_pkgconfig.patch mac-qmake.conf fix_configure_mac.patch fix_no_printer.patch fix_riscv64_arch.patch
-$(package)_patches+= fix_rcc_determinism.patch xkb-default.patch no-xlib.patch
-$(package)_patches+= fix_android_qmake_conf.patch fix_android_jni_static.patch dont_hardcode_pwd.patch
-$(package)_patches+= freetype_back_compat.patch drop_lrelease_dependency.patch fix_powerpc_libpng.patch
-$(package)_patches+= fix_mingw_cross_compile.patch fix_qpainter_non_determinism.patch
-$(package)_patches+= fix_limits_header.patch
+
+#$(package)_patches=fix_qt_pkgconfig.patch mac-qmake.conf fix_configure_mac.patch fix_no_printer.patch fix_riscv64_arch.patch
+#$(package)_patches+= fix_rcc_determinism.patch xkb-default.patch no-xlib.patch
+#$(package)_patches+= fix_android_qmake_conf.patch fix_android_jni_static.patch dont_hardcode_pwd.patch
+#$(package)_patches+= freetype_back_compat.patch drop_lrelease_dependency.patch fix_powerpc_libpng.patch
+#$(package)_patches+= fix_mingw_cross_compile.patch fix_qpainter_non_determinism.patch
+#$(package)_patches+= fix_limits_header.patch
+
+$(package)_patches = qt.pro
+$(package)_patches += qttools_src.pro
+$(package)_patches += mac-qmake.conf
+$(package)_patches += fix_qt_pkgconfig.patch
+$(package)_patches += fix_qt_placeholders.patch
+$(package)_patches += no-xlib.patch
+$(package)_patches += fix_android_jni_static.patch
+$(package)_patches += dont_hardcode_pwd.patch
+$(package)_patches += qtbase-moc-ignore-gcc-macro.patch
+$(package)_patches += use_android_ndk23.patch
+$(package)_patches += rcc_hardcode_timestamp.patch
+$(package)_patches += duplicate_lcqpafonts.patch
+$(package)_patches += guix_cross_lib_path.patch
+$(package)_patches += fast_fixed_dtoa_no_optimize.patch
+$(package)_patches += fix-macos-linker.patch
+$(package)_patches += memory_resource.patch
+
 
 # Update OSX_QT_TRANSLATIONS when this is updated
 $(package)_qttranslations_file_name=qttranslations-$($(package)_suffix)
-$(package)_qttranslations_sha256_hash=fb5a47799754af73d3bf501fe513342cfe2fc37f64e80df5533f6110e804220c
+$(package)_qttranslations_sha256_hash=a31785948c640b7c66d9fe2db4993728ca07f64e41c560b3625ad191b276ff20
 
 $(package)_qttools_file_name=qttools-$($(package)_suffix)
-$(package)_qttools_sha256_hash=a97556eb7b2f30252cdd8a598c396cfce2b2f79d2bae883af6d3b26a2cdcc63c
+$(package)_qttools_sha256_hash=7cd847ae6ff09416df617136eadcaf0eb98e3bc9b89979219a3ea8111fb8d339
 
 $(package)_extra_sources  = $($(package)_qttranslations_file_name)
 $(package)_extra_sources += $($(package)_qttools_file_name)
