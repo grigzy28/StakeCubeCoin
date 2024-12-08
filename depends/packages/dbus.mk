@@ -3,8 +3,7 @@ $(package)_version=1.15.90
 $(package)_download_path=https://dbus.freedesktop.org/releases/dbus
 $(package)_file_name=$(package)-$($(package)_version).tar.xz
 $(package)_sha256_hash=54136AA36411F370A22D3C7D866E12EDEA4E5B0943A1D96DFE8A51E473023260
-$(package)_dependencies=expat
-
+$(package)_dependencies=expat cmake
 define $(package)_set_vars
   $(package)_config_opts=-DCMAKE_INSTALL_PREFIX=$(host_prefix)
   $(package)_config_opts+= -DCMAKE_PREFIX_PATH=$(host_prefix)
