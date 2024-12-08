@@ -21,8 +21,8 @@ define $(package)_stage_cmds
   $(MAKE) DESTDIR=$($(package)_staging_dir) install
 endef
 
-define $(package)_postprocess_cmds
 #  find -name "*.pyc" -delete && \
 #  find -name "*.pyo" -delete
+define $(package)_postprocess_cmds
   rm -rf lib/python*/site-packages/xcbgen/__pycache__
 endef
