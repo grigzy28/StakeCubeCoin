@@ -24,6 +24,9 @@ $(package)_patches += fast_fixed_dtoa_no_optimize.patch
 $(package)_patches += fix-macos-linker.patch
 $(package)_patches += memory_resource.patch
 
+
+build_TAR = tar
+
 $(package)_qttranslations_file_name=qttranslations-$($(package)_suffix)
 $(package)_qttranslations_sha256_hash=a31785948c640b7c66d9fe2db4993728ca07f64e41c560b3625ad191b276ff20
 
