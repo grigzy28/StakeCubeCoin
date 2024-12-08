@@ -249,7 +249,7 @@ endef
 # 7. Adjust a regex in toolchain.prf, to accommodate Guix's usage of
 # CROSS_LIBRARY_PATH. See #15277.
 define $(package)_preprocess_cmds
-  cp $($(package)_patch_dir)/xcb.pro src/plugins/platforms/xcb && \
+  cp $($(package)_patch_dir)/xcb.pro qtbase/src/plugins/platforms/xcb && \
   cp $($(package)_patch_dir)/qt.pro qt.pro && \
   cp $($(package)_patch_dir)/qttools_src.pro qttools/src/src.pro && \
   patch -p1 -i $($(package)_patch_dir)/fix-macos-linker.patch && \
