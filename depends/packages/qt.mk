@@ -1,3 +1,4 @@
+build_TAR = tar
 package=qt
 $(package)_version=5.15.11
 $(package)_download_path=https://download.qt.io/official_releases/qt/5.15/$($(package)_version)/submodules
