@@ -248,6 +248,9 @@ endef
 #
 # 7. Adjust a regex in toolchain.prf, to accommodate Guix's usage of
 # CROSS_LIBRARY_PATH. See #15277.
+
+#  patch -p1 -i $($(package)_patch_dir)/fix_android_jni_static.patch && \
+
 define $(package)_preprocess_cmds
   cp $($(package)_patch_dir)/xcb.pro qtbase/src/plugins/platforms/xcb && \
   cp $($(package)_patch_dir)/qt.pro qt.pro && \
@@ -256,7 +259,6 @@ define $(package)_preprocess_cmds
   patch -p1 -i $($(package)_patch_dir)/dont_hardcode_pwd.patch && \
   patch -p1 -i $($(package)_patch_dir)/fix_qt_pkgconfig.patch && \
   patch -p1 -i $($(package)_patch_dir)/fix_qt_placeholders.patch && \
-#  patch -p1 -i $($(package)_patch_dir)/fix_android_jni_static.patch && \
   patch -p1 -i $($(package)_patch_dir)/no-xlib.patch && \
   patch -p1 -i $($(package)_patch_dir)/use_android_ndk23.patch && \
   patch -p1 -i $($(package)_patch_dir)/memory_resource.patch && \
