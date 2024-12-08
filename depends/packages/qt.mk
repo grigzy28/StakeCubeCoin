@@ -8,6 +8,7 @@ $(package)_linux_dependencies=freetype fontconfig libxcb libxkbcommon libxcb_uti
 $(package)_qt_libs=corelib network widgets gui plugins testlib
 $(package)_linguist_tools = lrelease lupdate lconvert
 $(package)_patches = qt.pro
+$(package)_patches += xcb.pro
 $(package)_patches += qttools_src.pro
 $(package)_patches += mac-qmake.conf
 $(package)_patches += fix_qt_pkgconfig.patch
