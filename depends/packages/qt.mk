@@ -8,7 +8,7 @@ $(package)_linux_dependencies=freetype fontconfig libxcb libxkbcommon libxcb_uti
 $(package)_qt_libs=corelib network widgets gui plugins testlib
 $(package)_linguist_tools = lrelease lupdate lconvert
 $(package)_patches = qt.pro
-$(package)_patches += xcb.pro
+#$(package)_patches += xcb.pro
 $(package)_patches += qttools_src.pro
 $(package)_patches += mac-qmake.conf
 $(package)_patches += fix_qt_pkgconfig.patch
@@ -252,9 +252,9 @@ endef
 
 #  patch -p1 -i $($(package)_patch_dir)/fix_android_jni_static.patch && \
 #  patch -p1 -i $($(package)_patch_dir)/use_android_ndk23.patch && \
+#  cp $($(package)_patch_dir)/xcb.pro qtbase/src/plugins/platforms/xcb && \
 
 define $(package)_preprocess_cmds
-  cp $($(package)_patch_dir)/xcb.pro qtbase/src/plugins/platforms/xcb && \
   cp $($(package)_patch_dir)/qt.pro qt.pro && \
   cp $($(package)_patch_dir)/qttools_src.pro qttools/src/src.pro && \
   patch -p1 -i $($(package)_patch_dir)/fix-macos-linker.patch && \
