@@ -154,6 +154,7 @@ $(package)_config_opts_x86_64_darwin += -device-option QMAKE_APPLE_DEVICE_ARCHS=
 endif
 
 $(package)_config_opts_linux = -xcb
+$(package)_config_opts_linux += -static
 $(package)_config_opts_linux += -no-xcb-xlib
 $(package)_config_opts_linux += -no-feature-xlib
 $(package)_config_opts_linux += -system-freetype
