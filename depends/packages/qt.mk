@@ -14,7 +14,7 @@ $(package)_patches += mac-qmake.conf
 $(package)_patches += fix_qt_pkgconfig.patch
 $(package)_patches += fix_qt_placeholders.patch
 $(package)_patches += no-xlib.patch
-$(package)_patches += fix_android_jni_static.patch
+#$(package)_patches += fix_android_jni_static.patch
 $(package)_patches += dont_hardcode_pwd.patch
 $(package)_patches += qtbase-moc-ignore-gcc-macro.patch
 $(package)_patches += use_android_ndk23.patch
@@ -256,7 +256,7 @@ define $(package)_preprocess_cmds
   patch -p1 -i $($(package)_patch_dir)/dont_hardcode_pwd.patch && \
   patch -p1 -i $($(package)_patch_dir)/fix_qt_pkgconfig.patch && \
   patch -p1 -i $($(package)_patch_dir)/fix_qt_placeholders.patch && \
-  patch -p1 -i $($(package)_patch_dir)/fix_android_jni_static.patch && \
+#  patch -p1 -i $($(package)_patch_dir)/fix_android_jni_static.patch && \
   patch -p1 -i $($(package)_patch_dir)/no-xlib.patch && \
   patch -p1 -i $($(package)_patch_dir)/use_android_ndk23.patch && \
   patch -p1 -i $($(package)_patch_dir)/memory_resource.patch && \
