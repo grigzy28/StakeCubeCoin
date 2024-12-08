@@ -141,14 +141,23 @@ $(package)_config_opts_aarch64_darwin += -device-option QMAKE_APPLE_DEVICE_ARCHS
 $(package)_config_opts_x86_64_darwin += -device-option QMAKE_APPLE_DEVICE_ARCHS=x86_64
 endif
 
-$(package)_config_opts_linux = -xcb
+$(package)_config_opts_linux  = -qt-xkbcommon-x11
+$(package)_config_opts_linux += -qt-xcb
 $(package)_config_opts_linux += -no-xcb-xlib
 $(package)_config_opts_linux += -no-feature-xlib
 $(package)_config_opts_linux += -system-freetype
 $(package)_config_opts_linux += -fontconfig
 $(package)_config_opts_linux += -no-opengl
-$(package)_config_opts_linux += -no-feature-vulkan
 $(package)_config_opts_linux += -dbus-runtime
+
+$(package)_config_opts_linux += -xcb
+#$(package)_config_opts_linux += -no-xcb-xlib
+#$(package)_config_opts_linux += -no-feature-xlib
+#$(package)_config_opts_linux += -system-freetype
+#$(package)_config_opts_linux += -fontconfig
+#$(package)_config_opts_linux += -no-opengl
+$(package)_config_opts_linux += -no-feature-vulkan
+#$(package)_config_opts_linux += -dbus-runtime
 ifneq ($(LTO),)
 $(package)_config_opts_linux += -ltcg
 endif
