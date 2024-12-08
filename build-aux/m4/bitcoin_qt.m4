@@ -141,7 +141,7 @@ AC_DEFUN([BITCOIN_QT_CONFIGURE],[
       _BITCOIN_QT_CHECK_STATIC_PLUGIN([QWindowsIntegrationPlugin], [-lqwindows])
       AC_DEFINE(QT_QPA_PLATFORM_WINDOWS, 1, [Define this symbol if the qt platform is windows])
     elif test "x$TARGET_OS" = xlinux; then
-      _BITCOIN_QT_CHECK_STATIC_PLUGIN([QXcbIntegrationPlugin], [-lqxcb -lxcb-static])
+      _BITCOIN_QT_CHECK_STATIC_PLUGIN([QXcbIntegrationPlugin], [-lqxcb])
       AC_DEFINE(QT_QPA_PLATFORM_XCB, 1, [Define this symbol if the qt platform is xcb])
     elif test "x$TARGET_OS" = xdarwin; then
       _BITCOIN_QT_CHECK_STATIC_PLUGIN([QCocoaIntegrationPlugin], [-lqcocoa])
