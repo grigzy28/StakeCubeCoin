@@ -257,7 +257,7 @@ BIP9Stats VersionBitsStatistics(const CBlockIndex* pindexPrev, const Consensus::
 }
 */
 
-BIP9Stats VersionBitsCache::Statistics(const CBlockIndex* pindex, const Consensus::Params& params, Consensus::DeploymentPos pos, std::vector<bool>* signalling_blocks)
+BIP9Stats VersionBitsStatistics(const CBlockIndex* pindex, const Consensus::Params& params, Consensus::DeploymentPos pos, std::vector<bool>* signalling_blocks)
 {
     return VersionBitsConditionChecker(pos).GetStateStatisticsFor(pindex, params, signalling_blocks);
 }
