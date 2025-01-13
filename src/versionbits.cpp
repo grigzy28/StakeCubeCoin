@@ -252,15 +252,15 @@ ThresholdState VersionBitsState(const CBlockIndex* pindexPrev, const Consensus::
 
 BIP9Stats VersionBitsStatistics(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache)
 {
-    return VersionBitsConditionChecker(pos).GetStateStatisticsFor(pindexPrev, params, cache.caches[pos]);
+    return VersionBitsConditionChecker(pos).GetStateStatisticsFor(pindexPrev, params, nullptr);
+//    return VersionBitsConditionChecker(pos).GetStateStatisticsFor(pindexPrev, params, cache.caches[pos]);
 }
 
-/*
 BIP9Stats VersionBitsStatistics(const CBlockIndex* pindex, const Consensus::Params& params, Consensus::DeploymentPos pos, std::vector<bool>* signalling_blocks)
 {
-    return VersionBitsConditionChecker(pos).GetStateStatisticsFor(pindex, params, signalling_blocks);
+    return VersionBitsConditionChecker(pos).GetStateStatisticsFor(pindex, params, signalling_blocks = nullptr);
+//    return VersionBitsConditionChecker(pos).GetStateStatisticsFor(pindex, params, signalling_blocks;
 }
-*/
 
 int VersionBitsStateSinceHeight(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache)
 {
