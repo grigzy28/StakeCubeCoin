@@ -5254,8 +5254,7 @@ ThresholdState VersionBitsTipState(const Consensus::Params& params, Consensus::D
 BIP9Stats VersionBitsTipStatistics(const Consensus::Params& params, Consensus::DeploymentPos pos)
 {
     LOCK(cs_main);
-//    return VersionBitsStatistics(::ChainActive().Tip(), params, pos, versionbitscache);
-    return VersionBitsStatistics(::ChainActive().Tip(), params, pos, true);
+    return VersionBitsStatistics(::ChainActive().Tip(), params, pos, versionbitscache);
 }
 
 int VersionBitsTipStateSinceHeight(const Consensus::Params& params, Consensus::DeploymentPos pos)
