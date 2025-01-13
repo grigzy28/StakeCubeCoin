@@ -33,6 +33,7 @@
 #include <validationinterface.h>
 #include <versionbitsinfo.h>
 #include <warnings.h>
+#include <versionbits.h>
 
 #include <evo/specialtx.h>
 #include <evo/cbtx.h>
