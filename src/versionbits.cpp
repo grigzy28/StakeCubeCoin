@@ -97,11 +97,12 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
 }
 
 BIP9Stats AbstractThresholdConditionChecker::GetStateStatisticsFor(const CBlockIndex* pindex, const Consensus::Params& params, ThresholdConditionCache& cache) const
+/*
 {
     BIP9Stats stats = {};
 
     stats.period = Period(params);
-    stats.threshold = Threshold(params, 0);
+    stats.threshold = Threshold(params);
 
     if (pindex == nullptr)
         return stats;
@@ -117,7 +118,9 @@ BIP9Stats AbstractThresholdConditionChecker::GetStateStatisticsFor(const CBlockI
         int nStartHeight = GetStateSinceHeightFor(pindexEndOfPrevPeriod, params, cache);
         nAttempt = (pindexEndOfPrevPeriod->nHeight + 1 - nStartHeight)/stats.period;
     }
-    stats.threshold = Threshold(params, nAttempt);
+
+    stats.threshold = Threshold(params);
+//    stats.threshold = Threshold(params, nAttempt);
 
     // Count from current block to beginning of period
     int count = 0;
@@ -128,6 +131,43 @@ BIP9Stats AbstractThresholdConditionChecker::GetStateStatisticsFor(const CBlockI
         currentIndex = currentIndex->pprev;
     }
 
+    stats.count = count;
+    stats.possible = (stats.period - stats.threshold ) >= (stats.elapsed - count);
+
+    return stats;
+}
+*/
+{
+    BIP9Stats stats = {};
+
+    stats.period = Period(params);
+    stats.threshold = Threshold(params);
+
+    if (pindex == nullptr) return stats;
+
+    // Find how many blocks are in the current period
+    int blocks_in_period = 1 + (pindex->nHeight % stats.period);
+
+    // Reset signalling_blocks
+    if (signalling_blocks) {
+        signalling_blocks->assign(blocks_in_period, false);
+    }
+
+    // Count from current block to beginning of period
+    int elapsed = 0;
+    int count = 0;
+    const CBlockIndex* currentIndex = pindex;
+    do {
+        ++elapsed;
+        --blocks_in_period;
+        if (Condition(currentIndex, params)) {
+            ++count;
+            if (signalling_blocks) signalling_blocks->at(blocks_in_period) = true;
+        }
+        currentIndex = currentIndex->pprev;
+    } while(blocks_in_period > 0);
+
+    stats.elapsed = elapsed;
     stats.count = count;
     stats.possible = (stats.period - stats.threshold ) >= (stats.elapsed - count);
 
