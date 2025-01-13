@@ -218,8 +218,9 @@ protected:
     int64_t BeginTime(const Consensus::Params& params) const override { return params.vDeployments[id].nStartTime; }
     int64_t EndTime(const Consensus::Params& params) const override { return params.vDeployments[id].nTimeout; }
     int Period(const Consensus::Params& params) const override { return params.vDeployments[id].nWindowSize ? params.vDeployments[id].nWindowSize : params.nMinerConfirmationWindow; }
-    int Threshold(const Consensus::Params& params) const override
-//    int Threshold(const Consensus::Params& params, int nAttempt) const override
+    int Threshold(const Consensus::Params& params) const override { return params.nRuleChangeActivationThreshold; }
+
+/*    int Threshold(const Consensus::Params& params, int nAttempt) const override
     {
         if (params.vDeployments[id].nThresholdStart == 0) {
             return params.nRuleChangeActivationThreshold;
@@ -230,6 +231,7 @@ protected:
         int64_t nThresholdCalc = params.vDeployments[id].nThresholdStart - nAttempt * nAttempt * Period(params) / 100 / params.vDeployments[id].nFalloffCoeff;
         return std::max(params.vDeployments[id].nThresholdMin, nThresholdCalc);
     }
+*/
 
     bool Condition(const CBlockIndex* pindex, const Consensus::Params& params) const override
     {
