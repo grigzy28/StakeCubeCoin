@@ -64,7 +64,7 @@ protected:
 
 public:
     /** Returns the numerical statistics of an in-progress BIP9 softfork in the current period */
-//    BIP9Stats GetStateStatisticsFor(const CBlockIndex* pindex, const Consensus::Params& params, ThresholdConditionCache& cache) const;
+    BIP9Stats GetStateStatisticsFor(const CBlockIndex* pindex, const Consensus::Params& params, ThresholdConditionCache& cache) const;
     BIP9Stats GetStateStatisticsFor(const CBlockIndex* pindex, const Consensus::Params& params, std::vector<bool>* signalling_blocks = nullptr) const;
 
     /** Returns the state for pindex A based on parent pindexPrev B. Applies any state transition if conditions are present.
