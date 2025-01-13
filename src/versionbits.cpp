@@ -177,6 +177,42 @@ BIP9Stats AbstractThresholdConditionChecker::GetStateStatisticsFor(const CBlockI
 
 int AbstractThresholdConditionChecker::GetStateSinceHeightFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const
 {
+    int64_t start_time = BeginTime(params);
+//    if (start_time == Consensus::BIP9Deployment::ALWAYS_ACTIVE || start_time == Consensus::BIP9Deployment::NEVER_ACTIVE) {
+//        return 0;
+//    }
+
+    const ThresholdState initialState = GetStateFor(pindexPrev, params, cache);
+
+    // BIP 9 about state DEFINED: "The genesis block is by definition in this state for each deployment."
+    if (initialState == ThresholdState::DEFINED) {
+        return 0;
+    }
+
+    const int nPeriod = Period(params);
+
+    // A block's state is always the same as that of the first of its period, so it is computed based on a pindexPrev whose height equals a multiple of nPeriod - 1.
+    // To ease understanding of the following height calculation, it helps to remember that
+    // right now pindexPrev points to the block prior to the block that we are computing for, thus:
+    // if we are computing for the last block of a period, then pindexPrev points to the second to last block of the period, and
+    // if we are computing for the first block of a period, then pindexPrev points to the last block of the previous period.
+    // The parent of the genesis block is represented by nullptr.
+    pindexPrev = Assert(pindexPrev->GetAncestor(pindexPrev->nHeight - ((pindexPrev->nHeight + 1) % nPeriod)));
+
+    const CBlockIndex* previousPeriodParent = pindexPrev->GetAncestor(pindexPrev->nHeight - nPeriod);
+
+    while (previousPeriodParent != nullptr && GetStateFor(previousPeriodParent, params, cache) == initialState) {
+        pindexPrev = previousPeriodParent;
+        previousPeriodParent = pindexPrev->GetAncestor(pindexPrev->nHeight - nPeriod);
+    }
+
+    // Adjust the result because right now we point to the parent block.
+    return pindexPrev->nHeight + 1;
+}
+
+/*
+int AbstractThresholdConditionChecker::GetStateSinceHeightFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const
+{
     const ThresholdState initialState = GetStateFor(pindexPrev, params, cache);
 
     // BIP 9 about state DEFINED: "The genesis block is by definition in this state for each deployment."
@@ -204,6 +240,7 @@ int AbstractThresholdConditionChecker::GetStateSinceHeightFor(const CBlockIndex*
     // Adjust the result because right now we point to the parent block.
     return pindexPrev->nHeight + 1;
 }
+*/
 
 namespace
 {
