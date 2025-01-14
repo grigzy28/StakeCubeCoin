@@ -7,6 +7,7 @@
 
 #include <chain.h>
 #include <map>
+#include <sync.h>
 
 /** What block version to use for new blocks (pre versionbits) */
 static const int32_t VERSIONBITS_LAST_OLD_BLOCK_VERSION = 4;
