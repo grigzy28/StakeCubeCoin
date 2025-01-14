@@ -5,6 +5,7 @@
 #include <versionbits.h>
 #include <consensus/params.h>
 #include <logging.h>
+#include <util/check.h>
 
 ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const
 {
