@@ -5254,7 +5254,7 @@ CBlockFileInfo* GetBlockFileInfo(size_t n)
 ThresholdState VersionBitsTipState(const Consensus::Params& params, Consensus::DeploymentPos pos)
 {
     AssertLockHeld(cs_main);
-    return VersionBitsState(::ChainActive().Tip(), params, pos, versionbitscache);
+    return VersionBitsCache::VersionBitsState(::ChainActive().Tip(), params, pos, versionbitscache);
 }
 
 BIP9Stats VersionBitsTipStatistics(const Consensus::Params& params, Consensus::DeploymentPos pos)
