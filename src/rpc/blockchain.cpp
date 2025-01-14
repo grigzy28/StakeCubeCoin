@@ -28,6 +28,7 @@
 #include <txmempool.h>
 #include <util/strencodings.h>
 #include <util/validation.h>
+#include <util/check.h>
 #include <util/system.h>
 #include <validation.h>
 #include <validationinterface.h>
