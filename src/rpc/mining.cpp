@@ -660,11 +660,13 @@ static UniValue getblocktemplate(const JSONRPCRequest& request)
     UniValue result(UniValue::VOBJ);
     result.pushKV("capabilities", aCaps);
 
-    UniValue aRules(UniValue::VARR);
+	VersionBitsCache vbc;
+
+	UniValue aRules(UniValue::VARR);
     UniValue vbavailable(UniValue::VOBJ);
     for (int j = 0; j < (int)Consensus::MAX_VERSION_BITS_DEPLOYMENTS; ++j) {
         Consensus::DeploymentPos pos = Consensus::DeploymentPos(j);
-        ThresholdState state = VersionBitsCache::VersionBitsState(pindexPrev, consensusParams, pos, versionbitscache);
+        ThresholdState state = vbc.VersionBitsState(pindexPrev, consensusParams, pos, versionbitscache);
         switch (state) {
             case ThresholdState::DEFINED:
             case ThresholdState::FAILED:
@@ -681,7 +683,7 @@ static UniValue getblocktemplate(const JSONRPCRequest& request)
                 if (setClientRules.find(vbinfo.name) == setClientRules.end()) {
                     if (!vbinfo.gbt_force) {
                         // If the client doesn't support this, don't indicate it in the [default] version
-                        pblock->nVersion &= ~VersionBitsCache::VersionBitsMask(consensusParams, pos);
+                        pblock->nVersion &= ~vbc.VersionBitsMask(consensusParams, pos);
                     }
                 }
                 break;
