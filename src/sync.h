@@ -118,10 +118,25 @@ public:
  * TODO: We should move away from using the recursive lock by default.
  */
 using RecursiveMutex = AnnotatedMixin<std::recursive_mutex>;
+
+/** Wrapped mutex: supports waiting but not recursive locking */
+using Mutex = AnnotatedMixin<std::mutex>;
+
+/** Different type to mark Mutex at global scope
+ *
+ * Thread safety analysis can't handle negative assertions about mutexes
+ * with global scope well, so mark them with a separate type, and
+ * eventually move all the mutexes into classes so they are not globally
+ * visible.
+ *
+ * See: https://github.com/bitcoin/bitcoin/pull/20272#issuecomment-720755781
+ */
+class GlobalMutex : public Mutex { };
+
 typedef AnnotatedMixin<std::recursive_mutex> CCriticalSection;
 
 /** Wrapped mutex: supports waiting but not recursive locking */
-typedef AnnotatedMixin<std::mutex> Mutex;
+//typedef AnnotatedMixin<std::mutex> Mutex;
 
 #ifdef DEBUG_LOCKCONTENTION
 void PrintLockContention(const char* pszName, const char* pszFile, int nLine);
