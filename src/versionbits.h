@@ -104,10 +104,10 @@ public:
 
 	static ThresholdState VersionBitsState(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache) EXCLUSIVE_LOCKS_REQUIRED(!m_mutex);
 	static BIP9Stats VersionBitsStatistics(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
-	int VersionBitsStateSinceHeight(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache) EXCLUSIVE_LOCKS_REQUIRED(!m_mutex);
-	uint32_t VersionBitsMask(const Consensus::Params& params, Consensus::DeploymentPos pos);
+	static int VersionBitsStateSinceHeight(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache) EXCLUSIVE_LOCKS_REQUIRED(!m_mutex);
+	static uint32_t VersionBitsMask(const Consensus::Params& params, Consensus::DeploymentPos pos);
 
-    void Clear() EXCLUSIVE_LOCKS_REQUIRED(!m_mutex);
+    static void Clear() EXCLUSIVE_LOCKS_REQUIRED(!m_mutex);
 };
 /*
  * BIP 9 allows multiple softforks to be deployed in parallel. We cache per-period state for every one of them
