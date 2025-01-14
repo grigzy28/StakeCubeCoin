@@ -1836,13 +1836,13 @@ int32_t ComputeBlockVersion(const CBlockIndex* pindexPrev, const Consensus::Para
 
     for (int i = 0; i < (int)Consensus::MAX_VERSION_BITS_DEPLOYMENTS; i++) {
         Consensus::DeploymentPos pos = Consensus::DeploymentPos(i);
-        ThresholdState state = VersionBitsState(pindexPrev, params, pos, versionbitscache);
+        ThresholdState state = VersionBitsCache::VersionBitsState(pindexPrev, params, pos, versionbitscache);
         const struct VBDeploymentInfo& vbinfo = VersionBitsDeploymentInfo[pos];
         if (vbinfo.check_mn_protocol && state == ThresholdState::STARTED && fCheckMasternodesUpgraded) {
             // TODO implement new logic for MN upgrade checks (e.g. with LLMQ based feature/version voting)
         }
         if (state == ThresholdState::LOCKED_IN || state == ThresholdState::STARTED) {
-            nVersion |= VersionBitsMask(params, static_cast<Consensus::DeploymentPos>(i));
+            nVersion |= VersionBitsCache::VersionBitsMask(params, static_cast<Consensus::DeploymentPos>(i));
         }
     }
 
@@ -2059,7 +2059,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
 
     // Start enforcing BIP68 (sequence locks) and BIP112 (CHECKSEQUENCEVERIFY) using versionbits logic.
     int nLockTimeFlags = 0;
-    if (VersionBitsState(pindex->pprev, chainparams.GetConsensus(), Consensus::DEPLOYMENT_CSV, versionbitscache) == ThresholdState::ACTIVE) {
+    if (VersionBitsCache::VersionBitsState(pindex->pprev, chainparams.GetConsensus(), Consensus::DEPLOYMENT_CSV, versionbitscache) == ThresholdState::ACTIVE) {
         nLockTimeFlags |= LOCKTIME_VERIFY_SEQUENCE;
     }
 
@@ -3853,7 +3853,7 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
 
     // Start enforcing BIP113 (Median Time Past) using versionbits logic.
     int nLockTimeFlags = 0;
-    if (VersionBitsState(pindexPrev, consensusParams, Consensus::DEPLOYMENT_CSV, versionbitscache) == ThresholdState::ACTIVE) {
+    if (VersionBitsCache::VersionBitsState(pindexPrev, consensusParams, Consensus::DEPLOYMENT_CSV, versionbitscache) == ThresholdState::ACTIVE) {
         assert(pindexPrev != nullptr);
         nLockTimeFlags |= LOCKTIME_MEDIAN_TIME_PAST;
     }
@@ -5260,13 +5260,13 @@ ThresholdState VersionBitsTipState(const Consensus::Params& params, Consensus::D
 BIP9Stats VersionBitsTipStatistics(const Consensus::Params& params, Consensus::DeploymentPos pos)
 {
     LOCK(cs_main);
-    return VersionBitsStatistics(::ChainActive().Tip(), params, pos, versionbitscache);
+    return VersionBitsCache::VersionBitsStatistics(::ChainActive().Tip(), params, pos, versionbitscache);
 }
 
 int VersionBitsTipStateSinceHeight(const Consensus::Params& params, Consensus::DeploymentPos pos)
 {
     LOCK(cs_main);
-    return VersionBitsStateSinceHeight(::ChainActive().Tip(), params, pos, versionbitscache);
+    return VersionBitsCache::VersionBitsStateSinceHeight(::ChainActive().Tip(), params, pos, versionbitscache);
 }
 
 static const uint64_t MEMPOOL_DUMP_VERSION = 1;

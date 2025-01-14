@@ -672,7 +672,7 @@ static UniValue getblocktemplate(const JSONRPCRequest& request)
                 break;
             case ThresholdState::LOCKED_IN:
                 // Ensure bit is set in block version
-                pblock->nVersion |= VersionBitsMask(consensusParams, pos);
+                pblock->nVersion |= VersionBitsCache::VersionBitsMask(consensusParams, pos);
                 // FALL THROUGH to get vbavailable set...
             case ThresholdState::STARTED:
             {
