@@ -58,14 +58,13 @@ protected:
     virtual int64_t BeginTime(const Consensus::Params& params) const =0;
     virtual int64_t EndTime(const Consensus::Params& params) const =0;
     virtual int Period(const Consensus::Params& params) const =0;
-//    virtual int Threshold(const Consensus::Params& params, int nAttempt) const =0;
-    virtual int Threshold(const Consensus::Params& params) const =0;
+    virtual int Threshold(const Consensus::Params& params, int nAttempt) const =0;
+//    virtual int Threshold(const Consensus::Params& params) const =0;
     virtual int MinActivationHeight(const Consensus::Params& params) const { return 0; }
 
 public:
     /** Returns the numerical statistics of an in-progress BIP9 softfork in the current period */
     BIP9Stats GetStateStatisticsFor(const CBlockIndex* pindex, const Consensus::Params& params, ThresholdConditionCache& cache) const;
-    BIP9Stats GetStateStatisticsFor(const CBlockIndex* pindex, const Consensus::Params& params, std::vector<bool>* signalling_blocks = nullptr) const;
 
     /** Returns the state for pindex A based on parent pindexPrev B. Applies any state transition if conditions are present.
      *  Caches state from first block of period. */
@@ -74,14 +73,44 @@ public:
     int GetStateSinceHeightFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const;
 };
 
-/** BIP 9 allows multiple softforks to be deployed in parallel. We cache per-period state for every one of them
- *  keyed by the bit position used to signal support. */
+/** BIP 9 allows multiple softforks to be deployed in parallel. We cache
+ *  per-period state for every one of them. */
+class VersionBitsCache
+{
+private:
+    Mutex m_mutex;
+    ThresholdConditionCache m_caches[Consensus::MAX_VERSION_BITS_DEPLOYMENTS] GUARDED_BY(m_mutex);
+
+public:
+    /** Get the numerical statistics for a given deployment for the signalling period that includes pindex.
+     * If provided, signalling_blocks is set to true/false based on whether each block in the period signalled
+     */
+//    static BIP9Stats Statistics(const CBlockIndex* pindex, const Consensus::Params& params, Consensus::DeploymentPos pos, std::vector<bool>* signalling_blocks = nullptr);
+
+    static uint32_t Mask(const Consensus::Params& params, Consensus::DeploymentPos pos);
+
+    /** Get the BIP9 state for a given deployment for the block after pindexPrev. */
+    ThresholdState State(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos) EXCLUSIVE_LOCKS_REQUIRED(!m_mutex);
+
+    /** Get the block height at which the BIP9 deployment switched into the state for the block after pindexPrev. */
+    int StateSinceHeight(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos) EXCLUSIVE_LOCKS_REQUIRED(!m_mutex);
+
+    /** Determine what nVersion a new block should use
+     */
+    int32_t ComputeBlockVersion(const CBlockIndex* pindexPrev, const Consensus::Params& params) EXCLUSIVE_LOCKS_REQUIRED(!m_mutex);
+
+    void Clear() EXCLUSIVE_LOCKS_REQUIRED(!m_mutex);
+};
+/*
+ * BIP 9 allows multiple softforks to be deployed in parallel. We cache per-period state for every one of them
+ *  keyed by the bit position used to signal support.
 struct VersionBitsCache
 {
     ThresholdConditionCache caches[Consensus::MAX_VERSION_BITS_DEPLOYMENTS];
 
     void Clear();
 };
+*/
 
 ThresholdState VersionBitsState(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
 BIP9Stats VersionBitsStatistics(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
