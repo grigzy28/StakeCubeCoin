@@ -38,7 +38,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
     }
 
     // At this point, cache[pindexPrev] is known
-    assert(cache.count(pindexPrev));
+    Assert(cache.count(pindexPrev));
     ThresholdState state = cache[pindexPrev];
 
     int nStartHeight{std::numeric_limits<int>::max()};
