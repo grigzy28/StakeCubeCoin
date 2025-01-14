@@ -10,7 +10,7 @@
 ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const
 {
     int nPeriod = Period(params);
-    int nThreshold = Threshold(params);
+//    int nThreshold = Threshold(params);
     int min_activation_height = MinActivationHeight(params);
     int64_t nTimeStart = BeginTime(params);
     int64_t nTimeTimeout = EndTime(params);
@@ -109,7 +109,7 @@ BIP9Stats AbstractThresholdConditionChecker::GetStateStatisticsFor(const CBlockI
     BIP9Stats stats = {};
 
     stats.period = Period(params);
-    stats.threshold = Threshold(params);
+    stats.threshold = Threshold(params, 0);
 
     if (pindex == nullptr)
         return stats;
@@ -126,7 +126,7 @@ BIP9Stats AbstractThresholdConditionChecker::GetStateStatisticsFor(const CBlockI
         nAttempt = (pindexEndOfPrevPeriod->nHeight + 1 - nStartHeight)/stats.period;
     }
 
-    stats.threshold = Threshold(params);
+    stats.threshold = Threshold(params, nAttempt);
 //    stats.threshold = Threshold(params, nAttempt);
 
     // Count from current block to beginning of period
