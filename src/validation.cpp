@@ -1831,18 +1831,20 @@ VersionBitsCache versionbitscache GUARDED_BY(cs_main);
 
 int32_t ComputeBlockVersion(const CBlockIndex* pindexPrev, const Consensus::Params& params, bool fCheckMasternodesUpgraded)
 {
-    LOCK(cs_main);
+    VersionBitsCache vbc;
+
+	LOCK(cs_main);
     int32_t nVersion = VERSIONBITS_TOP_BITS;
 
     for (int i = 0; i < (int)Consensus::MAX_VERSION_BITS_DEPLOYMENTS; i++) {
         Consensus::DeploymentPos pos = Consensus::DeploymentPos(i);
-        ThresholdState state = VersionBitsCache::VersionBitsState(pindexPrev, params, pos, versionbitscache);
+        ThresholdState state = vbc.VersionBitsState(pindexPrev, params, pos, versionbitscache);
         const struct VBDeploymentInfo& vbinfo = VersionBitsDeploymentInfo[pos];
         if (vbinfo.check_mn_protocol && state == ThresholdState::STARTED && fCheckMasternodesUpgraded) {
             // TODO implement new logic for MN upgrade checks (e.g. with LLMQ based feature/version voting)
         }
         if (state == ThresholdState::LOCKED_IN || state == ThresholdState::STARTED) {
-            nVersion |= VersionBitsCache::VersionBitsMask(params, static_cast<Consensus::DeploymentPos>(i));
+            nVersion |= vbc.VersionBitsMask(params, static_cast<Consensus::DeploymentPos>(i));
         }
     }
 
@@ -2057,9 +2059,11 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
 
     /// END SCC
 
+	VersionBitsCache vbc;
+
     // Start enforcing BIP68 (sequence locks) and BIP112 (CHECKSEQUENCEVERIFY) using versionbits logic.
     int nLockTimeFlags = 0;
-    if (VersionBitsCache::VersionBitsState(pindex->pprev, chainparams.GetConsensus(), Consensus::DEPLOYMENT_CSV, versionbitscache) == ThresholdState::ACTIVE) {
+    if (vbc.VersionBitsState(pindex->pprev, chainparams.GetConsensus(), Consensus::DEPLOYMENT_CSV, versionbitscache) == ThresholdState::ACTIVE) {
         nLockTimeFlags |= LOCKTIME_VERIFY_SEQUENCE;
     }
 
@@ -3841,7 +3845,9 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
  */
 static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, const Consensus::Params& consensusParams, const CBlockIndex* pindexPrev)
 {
-    AssertLockHeld(cs_main);
+    VersionBitsCache vbc;
+
+	AssertLockHeld(cs_main);
     const int nHeight = pindexPrev == nullptr ? 0 : pindexPrev->nHeight + 1;
 
     // once ProgPow always ProgPow
@@ -3853,7 +3859,7 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
 
     // Start enforcing BIP113 (Median Time Past) using versionbits logic.
     int nLockTimeFlags = 0;
-    if (VersionBitsCache::VersionBitsState(pindexPrev, consensusParams, Consensus::DEPLOYMENT_CSV, versionbitscache) == ThresholdState::ACTIVE) {
+    if (vbc.VersionBitsState(pindexPrev, consensusParams, Consensus::DEPLOYMENT_CSV, versionbitscache) == ThresholdState::ACTIVE) {
         assert(pindexPrev != nullptr);
         nLockTimeFlags |= LOCKTIME_MEDIAN_TIME_PAST;
     }
@@ -5253,20 +5259,26 @@ CBlockFileInfo* GetBlockFileInfo(size_t n)
 
 ThresholdState VersionBitsTipState(const Consensus::Params& params, Consensus::DeploymentPos pos)
 {
-    AssertLockHeld(cs_main);
-    return VersionBitsCache::VersionBitsState(::ChainActive().Tip(), params, pos, versionbitscache);
+    VersionBitsCache vbc;
+
+	AssertLockHeld(cs_main);
+    return vbc.VersionBitsState(::ChainActive().Tip(), params, pos, versionbitscache);
 }
 
 BIP9Stats VersionBitsTipStatistics(const Consensus::Params& params, Consensus::DeploymentPos pos)
 {
+    VersionBitsCache vbc;
+
     LOCK(cs_main);
-    return VersionBitsCache::VersionBitsStatistics(::ChainActive().Tip(), params, pos, versionbitscache);
+    return vbc.VersionBitsStatistics(::ChainActive().Tip(), params, pos, versionbitscache);
 }
 
 int VersionBitsTipStateSinceHeight(const Consensus::Params& params, Consensus::DeploymentPos pos)
 {
+    VersionBitsCache vbc;
+
     LOCK(cs_main);
-    return VersionBitsCache::VersionBitsStateSinceHeight(::ChainActive().Tip(), params, pos, versionbitscache);
+    return vbc.VersionBitsStateSinceHeight(::ChainActive().Tip(), params, pos, versionbitscache);
 }
 
 static const uint64_t MEMPOOL_DUMP_VERSION = 1;
