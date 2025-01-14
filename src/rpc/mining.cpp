@@ -664,7 +664,7 @@ static UniValue getblocktemplate(const JSONRPCRequest& request)
     UniValue vbavailable(UniValue::VOBJ);
     for (int j = 0; j < (int)Consensus::MAX_VERSION_BITS_DEPLOYMENTS; ++j) {
         Consensus::DeploymentPos pos = Consensus::DeploymentPos(j);
-        ThresholdState state = VersionBitsState(pindexPrev, consensusParams, pos, versionbitscache);
+        ThresholdState state = VersionBitsCache::VersionBitsState(pindexPrev, consensusParams, pos, versionbitscache);
         switch (state) {
             case ThresholdState::DEFINED:
             case ThresholdState::FAILED:
