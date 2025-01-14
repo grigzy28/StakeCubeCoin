@@ -527,7 +527,8 @@ CAmount CGovernanceObject::GetMinCollateralFee(bool fork_active) const
 
 bool CGovernanceObject::IsCollateralValid(std::string& strError, bool& fMissingConfirmations) const
 {
-    strError = "";
+    VersionBitsCache vbc;
+	strError = "";
     fMissingConfirmations = false;
     uint256 nExpectedHash = GetHash();
 
@@ -560,7 +561,7 @@ bool CGovernanceObject::IsCollateralValid(std::string& strError, bool& fMissingC
     findScript << OP_RETURN << ToByteVector(nExpectedHash);
 
     AssertLockHeld(cs_main);
-    bool fork_active = VersionBitsCache::VersionBitsState(LookupBlockIndex(nBlockHash), Params().GetConsensus(), Consensus::DEPLOYMENT_GOV_FEE, versionbitscache) == ThresholdState::ACTIVE;
+    bool fork_active = vbc.VersionBitsState(LookupBlockIndex(nBlockHash), Params().GetConsensus(), Consensus::DEPLOYMENT_GOV_FEE, versionbitscache) == ThresholdState::ACTIVE;
     CAmount nMinFee = GetMinCollateralFee(fork_active);
 
     LogPrint(BCLog::GOBJECT, "CGovernanceObject::IsCollateralValid -- txCollateral->vout.size() = %s, findScript = %s, nMinFee = %lld\n",
