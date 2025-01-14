@@ -66,6 +66,9 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
                 const CBlockIndex* pindexCount = pindexPrev;
                 int count = 0;
                 for (int i = 0; i < nPeriod; i++) {
+
+    LogPrint(BCLog::BENCHMARK, "count: %s\n", i);
+
                     if (Condition(pindexCount, params)) {
                         count++;
                     }
