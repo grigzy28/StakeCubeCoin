@@ -9,6 +9,7 @@
 ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const
 {
     int nPeriod = Period(params);
+    int nThreshold = Threshold(params, 0);
     int64_t nTimeStart = BeginTime(params);
     int64_t nTimeTimeout = EndTime(params);
 
@@ -42,8 +43,9 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
 
     int nStartHeight{std::numeric_limits<int>::max()};
 
-    LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", nStartHeight);
 /*
+    LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", nStartHeight);
+
     for (const auto& pair : cache) {
         if (pair.second == ThresholdState::STARTED && nStartHeight > pair.first->nHeight + 1) {
             nStartHeight = pair.first->nHeight + 1;
@@ -186,6 +188,9 @@ protected:
     int64_t BeginTime(const Consensus::Params& params) const override { return params.vDeployments[id].nStartTime; }
     int64_t EndTime(const Consensus::Params& params) const override { return params.vDeployments[id].nTimeout; }
     int Period(const Consensus::Params& params) const override { return params.vDeployments[id].nWindowSize ? params.vDeployments[id].nWindowSize : params.nMinerConfirmationWindow; }
+    int Threshold(const Consensus::Params& params, int nAttempt) const override  { return params.nRuleChangeActivationThreshold; }
+
+/*
     int Threshold(const Consensus::Params& params, int nAttempt) const override
     {
         if (params.vDeployments[id].nThresholdStart == 0) {
@@ -202,6 +207,7 @@ protected:
     {
         return (((pindex->nVersion & VERSIONBITS_TOP_MASK) == VERSIONBITS_TOP_BITS) && (pindex->nVersion & Mask(params)) != 0);
     }
+*/
 
 public:
     explicit VersionBitsConditionChecker(Consensus::DeploymentPos id_) : id(id_) {}
