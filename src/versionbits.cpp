@@ -5,6 +5,7 @@
 #include <versionbits.h>
 #include <consensus/params.h>
 #include <logging.h>
+#include <chain.h>
 
 ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const
 {
@@ -248,13 +249,13 @@ void VersionBitsCache::Clear()
     }
 }
 
-PreLoadCacheBits(const CBlockIndex* pindex, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache)
+void PreLoadCacheBits(const CBlockIndex* pindex, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache)
 {
 
         for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
 			for (pindex = ::ChainActive().Tip(); pindex && pindex->pprev; pindex = pindex->pprev) {
 				LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", pindex->nHeight);
-				ThresholdState stateNext = Threshold(params, pindex->nHeight);
+				ThresholdState stateNext = VersionBitsConditionChecker::Threshold(params, pindex->nHeight);
 				cache[pindex] = stateNext;
 			}
 		}
