@@ -86,6 +86,6 @@ BIP9Stats VersionBitsStatistics(const CBlockIndex* pindexPrev, const Consensus::
 int VersionBitsStateSinceHeight(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
 uint32_t VersionBitsMask(const Consensus::Params& params, Consensus::DeploymentPos pos);
 
-void PreLoadCacheBits(const CBlockIndex* pindex, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache)
+void PreLoadCacheBits(const CBlockIndex* pindex, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
 
 #endif // BITCOIN_VERSIONBITS_H
