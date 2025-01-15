@@ -12,6 +12,8 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
     int nThreshold = Threshold(params, 0);
     int64_t nTimeStart = BeginTime(params);
     int64_t nTimeTimeout = EndTime(params);
+    int min_activation_height = MinActivationHeight(params);
+
 
     LogPrint(BCLog::BENCHMARK, "period: %s\n", nPeriod);
 
