@@ -202,12 +202,12 @@ protected:
         int64_t nThresholdCalc = params.vDeployments[id].nThresholdStart - nAttempt * nAttempt * Period(params) / 100 / params.vDeployments[id].nFalloffCoeff;
         return std::max(params.vDeployments[id].nThresholdMin, nThresholdCalc);
     }
+*/
 
     bool Condition(const CBlockIndex* pindex, const Consensus::Params& params) const override
     {
         return (((pindex->nVersion & VERSIONBITS_TOP_MASK) == VERSIONBITS_TOP_BITS) && (pindex->nVersion & Mask(params)) != 0);
     }
-*/
 
 public:
     explicit VersionBitsConditionChecker(Consensus::DeploymentPos id_) : id(id_) {}
