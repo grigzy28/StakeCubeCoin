@@ -196,9 +196,7 @@ protected:
     int64_t BeginTime(const Consensus::Params& params) const override { return params.vDeployments[id].nStartTime; }
     int64_t EndTime(const Consensus::Params& params) const override { return params.vDeployments[id].nTimeout; }
     int Period(const Consensus::Params& params) const override { return params.vDeployments[id].nWindowSize ? params.vDeployments[id].nWindowSize : params.nMinerConfirmationWindow; }
-    int Threshold(const Consensus::Params& params, int nAttempt) const override  { return params.nRuleChangeActivationThreshold; }
 
-/*
     int Threshold(const Consensus::Params& params, int nAttempt) const override
     {
         if (params.vDeployments[id].nThresholdStart == 0) {
@@ -210,7 +208,6 @@ protected:
         int64_t nThresholdCalc = params.vDeployments[id].nThresholdStart - nAttempt * nAttempt * Period(params) / 100 / params.vDeployments[id].nFalloffCoeff;
         return std::max(params.vDeployments[id].nThresholdMin, nThresholdCalc);
     }
-*/
 
     bool Condition(const CBlockIndex* pindex, const Consensus::Params& params) const override
     {
@@ -250,3 +247,17 @@ void VersionBitsCache::Clear()
         caches[d].clear();
     }
 }
+
+PreLoadCacheBits(const CBlockIndex* pindex, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache)
+{
+
+        for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
+			for (pindex = ::ChainActive().Tip(); pindex && pindex->pprev; pindex = pindex->pprev) {
+				LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", pindex->nHeight);
+				ThresholdState stateNext = Threshold(params, pindex->nHeight);
+				cache[pindex] = stateNext;
+			}
+		}
+
+}
+
