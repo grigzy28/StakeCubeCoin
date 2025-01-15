@@ -4,12 +4,15 @@
 
 #include <versionbits.h>
 #include <consensus/params.h>
+#include <logging.h>
 
 ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const
 {
     int nPeriod = Period(params);
     int64_t nTimeStart = BeginTime(params);
     int64_t nTimeTimeout = EndTime(params);
+
+    LogPrint(BCLog::BENCHMARK, "period: %s\n", nPeriod);
 
     // A block's state is always the same as that of the first of its period, so it is computed based on a pindexPrev whose height equals a multiple of nPeriod - 1.
     if (pindexPrev != nullptr) {
@@ -38,11 +41,13 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
     ThresholdState state = cache[pindexPrev];
 
     int nStartHeight{std::numeric_limits<int>::max()};
+/*
     for (const auto& pair : cache) {
         if (pair.second == ThresholdState::STARTED && nStartHeight > pair.first->nHeight + 1) {
             nStartHeight = pair.first->nHeight + 1;
         }
     }
+*/
 
     // Now walk forward and compute the state of descendants of pindexPrev
     while (!vToCompute.empty()) {
