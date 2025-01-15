@@ -253,9 +253,10 @@ void PreLoadCacheBits(const CBlockIndex* pindex, const Consensus::Params& params
 {
 
         for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
+				LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
 			for (pindex = ::ChainActive().Tip(); pindex && pindex->pprev; pindex = pindex->pprev) {
 				LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", pindex->nHeight);
-				ThresholdState stateNext = VersionBitsConditionChecker::Threshold(params, pindex->nHeight);
+				ThresholdState stateNext = Threshold(params, pindex->nHeight);
 				cache[pindex] = stateNext;
 			}
 		}
