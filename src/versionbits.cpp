@@ -41,6 +41,8 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
     ThresholdState state = cache[pindexPrev];
 
     int nStartHeight{std::numeric_limits<int>::max()};
+
+    LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", nStartHeight);
 /*
     for (const auto& pair : cache) {
         if (pair.second == ThresholdState::STARTED && nStartHeight > pair.first->nHeight + 1) {
