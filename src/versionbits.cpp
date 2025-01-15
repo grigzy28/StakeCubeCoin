@@ -251,7 +251,7 @@ void VersionBitsCache::Clear()
 
 void PreLoadCacheBits(const CBlockIndex* pindex, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache)
 {
-	const VersionBitsConditionChecker test;
+	VersionBitsConditionChecker test;
 
         for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
 				LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
