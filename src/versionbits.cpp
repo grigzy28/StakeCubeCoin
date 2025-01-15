@@ -9,7 +9,6 @@
 ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const
 {
     int nPeriod = Period(params);
-    int nThreshold = Threshold(params, 0);
     int64_t nTimeStart = BeginTime(params);
     int64_t nTimeTimeout = EndTime(params);
     int min_activation_height = MinActivationHeight(params);
@@ -44,16 +43,13 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
     ThresholdState state = cache[pindexPrev];
 
     int nStartHeight{std::numeric_limits<int>::max()};
-
-/*
-    LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", nStartHeight);
-
     for (const auto& pair : cache) {
         if (pair.second == ThresholdState::STARTED && nStartHeight > pair.first->nHeight + 1) {
             nStartHeight = pair.first->nHeight + 1;
         }
     }
-*/
+
+    LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", nStartHeight);
 
     // Now walk forward and compute the state of descendants of pindexPrev
     while (!vToCompute.empty()) {
@@ -76,6 +72,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
                     stateNext = ThresholdState::FAILED;
                     break;
                 }
+
                 // We need to count
                 const CBlockIndex* pindexCount = pindexPrev;
                 int count = 0;
@@ -85,17 +82,15 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
                     }
                     pindexCount = pindexCount->pprev;
                 }
+
+                assert(nStartHeight > 0 && nStartHeight < std::numeric_limits<int>::max());
+                int nAttempt = (pindexCount->nHeight + 1 - nStartHeight) / nPeriod;
+				int nThreshold = Threshold(params, nAttempt);
                 if (count >= nThreshold) {
                     stateNext = ThresholdState::LOCKED_IN;
                 } else if (pindexPrev->GetMedianTimePast() >= nTimeTimeout) {
                     stateNext = ThresholdState::FAILED;
                 }
-/*              assert(nStartHeight > 0 && nStartHeight < std::numeric_limits<int>::max());
-                int nAttempt = (pindexCount->nHeight + 1 - nStartHeight) / nPeriod;
-                if (count >= Threshold(params, nAttempt)) {
-                    stateNext = ThresholdState::LOCKED_IN;
-                }
-*/
                 break;
             }
             case ThresholdState::LOCKED_IN: {
