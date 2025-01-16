@@ -267,12 +267,13 @@ int ThresholdNew(const Consensus::Params& params, int nAttempt) const override
 
 void PreLoadCacheBits(const CBlockIndex* pindex, ThresholdConditionCache& cache)
 {
+	int maxtip = pindex->nHeight;
 
         for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
 				LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
-			for (int startheight = 1; startheight < ::ChainActive().Tip(); startheight--) {
+			for (int startheight = 1; startheight < maxtip; startheight++) {
 				LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", pindex->nHeight);
-				pindex = pindexPrev;
+				pindex = pindex->pNext;
 
 				assert(cache.count(pindex));
 				ThresholdState stateNext = cache[pindex];
