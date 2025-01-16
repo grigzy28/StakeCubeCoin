@@ -118,7 +118,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
 
 ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const
 {
-	int maxtip = pindex->nHeight;
+	int maxtip = pindexPrev->nHeight;
 
     int nPeriod = Period(params);
     int64_t nTimeStart = BeginTime(params);
