@@ -273,8 +273,8 @@ void PreLoadCacheBits(const CBlockIndex* pindex, const Consensus::Params& params
 			for (pindex = ::ChainActive().Tip(); pindex && pindex->pprev; pindex = pindex->pprev) {
 				LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", pindex->nHeight);
 
-				assert(cache.count(pindexPrev));
-				stateNext = cache[pindexPrev];
+				assert(cache.count(pindex));
+				stateNext = cache[pindex];
 
 //				stateNext = ThresholdNew(params, pindex->nHeight);
 				cache[pindex] = stateNext;
