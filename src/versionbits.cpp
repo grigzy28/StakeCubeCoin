@@ -134,8 +134,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
 
     while (cache.count(pindexPrev) == 0) {
-        ThresholdState state = nullptr;
-		if (pindexPrev == nullptr) {
+        if (pindexPrev == nullptr) {
             // The genesis block is by definition defined.
             break;
         }
@@ -147,7 +146,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
 		if (pindexPrev->nHeight == 1) { break; }
 
-		pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
+		pindexPrev = pindexPrev->nHeight(pindexPrev->nHeight - 1);
 
 		LogPrint(BCLog::BENCHMARK, "Height: %s\n", pindexPrev->nHeight);
 
