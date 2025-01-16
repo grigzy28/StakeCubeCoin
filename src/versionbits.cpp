@@ -265,7 +265,7 @@ int ThresholdNew(const Consensus::Params& params, int nAttempt) const override
 }
 */
 
-void PreLoadCacheBits(const CBlockIndex* pindex, ThresholdConditionCache& cache)
+void PreLoadCacheBits(const CBlockIndex* pindex, VersionBitsCache& cache)
 {
 	int maxtip = pindex->nHeight;
 	const CBlockIndex* currentIndex = pindex;
@@ -275,12 +275,13 @@ void PreLoadCacheBits(const CBlockIndex* pindex, ThresholdConditionCache& cache)
 				LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", pindex->nHeight);
 				LogPrint(BCLog::BENCHMARK, "maxtip: %s\n", maxtip);
 
-			for (int startheight = 1; startheight <= maxtip; startheight++) {
-				LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", pindex->nHeight);
+			for (int startheight = maxtip; startheight >= 1; startheight--) {
+				LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", startheight);
 				LogPrint(BCLog::BENCHMARK, "maxtip: %s\n", maxtip);
+				pindex = pindex->GetAncestor(pindex->nHeight);
 //				pindex = (pindex->nHeight + 1);
 
-//				assert(cache.count(pindex));
+				assert(cache.count(pindex));
 				LogPrint(BCLog::BENCHMARK, "past asset");
 				ThresholdState stateNext = cache[pindex];
 				LogPrint(BCLog::BENCHMARK, "past threshold");
