@@ -281,8 +281,10 @@ void PreLoadCacheBits(const CBlockIndex* pindex, ThresholdConditionCache& cache)
 //				pindex = (pindex->nHeight + 1);
 
 				assert(cache.count(pindex));
+				LogPrint(BCLog::BENCHMARK, "past asset");
 				ThresholdState stateNext = cache[pindex];
-
+				LogPrint(BCLog::BENCHMARK, "past threshold");
+			
 //				stateNext = ThresholdNew(params, pindex->nHeight);
 				cache[pindex] = stateNext;
 			}
