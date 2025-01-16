@@ -2592,7 +2592,7 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
 
 			WarningBitsConditionChecker checker(bit);
 
-            if (!preloadedchain) ThresholdState state = check.GetStateForCacheBuild(pindex, warningcache[bit]);
+            if (!preloadedchain) ThresholdState state = checker.GetStateForBuildCache(pindex, chainParams.GetConsensus(), warningcache[bit]);
 
 //			WarningBitsConditionChecker checker(bit);
             ThresholdState state = checker.GetStateFor(pindex, chainParams.GetConsensus(), warningcache[bit]);
