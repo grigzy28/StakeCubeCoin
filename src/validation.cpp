@@ -2590,7 +2590,7 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
         const CBlockIndex* pindex = pindexNew;
         for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
 
-            if (!preloaded) PreLoadCacheBits(pindex, warningcache[bi]);
+            if (!preloaded) PreLoadCacheBits(pindex, warningcache[bit]);
 
 			WarningBitsConditionChecker checker(bit);
             ThresholdState state = checker.GetStateFor(pindex, chainParams.GetConsensus(), warningcache[bit]);
