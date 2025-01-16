@@ -157,7 +157,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 //		pindexPrev = vToCompute.back(pindexPrev);
 //		maxtip = maxtip - 1;
 
-		if (pindexPrev->nHeight == 0 || pindex->nHeight == 1) { break; }
+		if (pindexPrev->nHeight == 0 || pindexPrev->nHeight == 1) { break; }
 
 //		pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
 
