@@ -18,7 +18,7 @@ static const int32_t VERSIONBITS_TOP_MASK = 0xE0000000UL;
 static const int32_t VERSIONBITS_NUM_BITS = 29;
 
 //
-bool preloaded = false;
+bool preloadedchain = false;
 
 /** BIP 9 defines a finite-state-machine to deploy a softfork in multiple stages.
  *  State transitions happen during retarget period if conditions are met

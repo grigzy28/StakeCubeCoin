@@ -281,6 +281,6 @@ void PreLoadCacheBits(const CBlockIndex* pindex, ThresholdConditionCache& cache)
 			}
 		}
 
-		preloaded = true;
+		preloadedchain = true;
 }
 
