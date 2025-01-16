@@ -265,7 +265,7 @@ int ThresholdNew(const Consensus::Params& params, int nAttempt) const override
 }
 */
 
-void PreLoadCacheBits(const CBlockIndex* pindex, VersionBitsCache& cache)
+void PreLoadCacheBits(const CBlockIndex* pindex, ThresholdConditionCache& cache)
 {
 
         for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
