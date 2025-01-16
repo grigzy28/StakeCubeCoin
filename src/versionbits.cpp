@@ -135,7 +135,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
     // Walk backwards in steps of nPeriod to find a pindexPrev whose information is known
     std::vector<const CBlockIndex*> vToCompute;
-	int maxtip = pindex->nHeight;
+	int maxtip = pindexPrev->nHeight;
 
     while (cache.count(pindexPrev) == 0) {
         if (pindexPrev == nullptr) {
