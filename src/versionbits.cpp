@@ -118,11 +118,6 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
 
 ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const
 {
-    int nPeriod = Period(params);
-    int64_t nTimeStart = BeginTime(params);
-    int64_t nTimeTimeout = EndTime(params);
-    int min_activation_height = MinActivationHeight(params);
-
 
 //    LogPrint(BCLog::BENCHMARK, "period: %s\n", nPeriod);
 
@@ -137,27 +132,28 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
     std::vector<const CBlockIndex*> vToCompute;
 	int maxtip = pindexPrev->nHeight;
 
-	ThresholdState state = cache[pindexPrev];
 
     while (cache.count(pindexPrev) == 0) {
-        if (pindexPrev == nullptr) {
+        state = nullptr;
+		if (pindexPrev == nullptr) {
             // The genesis block is by definition defined.
             break;
         }
 //        if (pindexPrev->GetMedianTimePast() < nTimeStart) {
 //            break;
 //        }
-        pindexPrev = vToCompute.back(pindexPrev);
+//		pindexPrev = vToCompute.back(pindexPrev);
 //		maxtip = maxtip - 1;
 
 		if (pindexPrev->nHeight == 1) { break; }
 
-//		pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
+		pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
 
 		LogPrint(BCLog::BENCHMARK, "Height: %s\n", pindexPrev->nHeight);
 
 //		assert(cache.count(pindexPrev));
 //		ThresholdState state = cache[pindexPrev];
+		ThresholdState state = cache[pindexPrev];
 		ThresholdState stateNext = state;
 		cache[pindexPrev] = state = stateNext;
 
