@@ -118,13 +118,15 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
 
 ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const
 {
+	int maxtip = pindex->nHeight;
+
     int nPeriod = Period(params);
     int64_t nTimeStart = BeginTime(params);
     int64_t nTimeTimeout = EndTime(params);
     int min_activation_height = MinActivationHeight(params);
 
 
-    LogPrint(BCLog::BENCHMARK, "period: %s\n", nPeriod);
+//    LogPrint(BCLog::BENCHMARK, "period: %s\n", nPeriod);
 
 /*
     // A block's state is always the same as that of the first of its period, so it is computed based on a pindexPrev whose height equals a multiple of nPeriod - 1.
@@ -135,7 +137,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
     // Walk backwards in steps of nPeriod to find a pindexPrev whose information is known
     std::vector<const CBlockIndex*> vToCompute;
-    while (cache.count(pindexPrev) == 0) {
+    while (cache.count(pindexPrev) != maxtip) {
         if (pindexPrev == nullptr) {
             // The genesis block is by definition defined.
             cache[pindexPrev] = ThresholdState::DEFINED;
@@ -150,6 +152,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
         pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
 
 		LogPrint(BCLog::BENCHMARK, "Height: %s\n", pindexPrev->nHeight);
+		assert(cache.count(pindexPrev));
     }
 
 	preloadedchain = true;
