@@ -132,12 +132,25 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
     std::vector<const CBlockIndex*> vToCompute;
 	int maxtip = pindexPrev->nHeight;
 
-
     while (cache.count(pindexPrev) == 0) {
         if (pindexPrev == nullptr) {
             // The genesis block is by definition defined.
+            cache[pindexPrev] = ThresholdState::DEFINED;
             break;
         }
+        vToCompute.push_back(pindexPrev);
+        pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight);
+    }
+
+    // At this point, cache[pindexPrev] is known
+    assert(cache.count(pindexPrev));
+    ThresholdState state = cache[pindexPrev];
+
+    while (!vToCompute.empty) {
+        ThresholdState stateNext = state;
+        pindexPrev = vToCompute.back();
+        vToCompute.pop_back();
+
 //        if (pindexPrev->GetMedianTimePast() < nTimeStart) {
 //            break;
 //        }
@@ -146,7 +159,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
 		if (pindexPrev->nHeight == 1) { break; }
 
-		pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
+//		pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
 
 		LogPrint(BCLog::BENCHMARK, "Height: %s\n", pindexPrev->nHeight);
 
@@ -155,7 +168,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 //		ThresholdState state = cache[pindexPrev];
 //		ThresholdState stateNext = state;
 		if (pindexPrev->nVersion == 0) { break; }
-		cache[pindexPrev] = pindexPrev;
+		cache[pindexPrev] = state;
 
     }
 
