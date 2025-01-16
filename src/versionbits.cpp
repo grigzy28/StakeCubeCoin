@@ -139,7 +139,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 //            break;
 //        }
         vToCompute.push_back(pindexPrev);
-        pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight) - 1;
+        pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
     }
 
     // At this point, cache[pindexPrev] is known
