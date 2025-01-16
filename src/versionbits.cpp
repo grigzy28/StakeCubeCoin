@@ -274,7 +274,7 @@ void PreLoadCacheBits(const CBlockIndex* pindex, const Consensus::Params& params
 				LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", pindex->nHeight);
 
 				assert(cache.count(pindex));
-				stateNext = cache[pindex];
+				ThresholdState stateNext = cache[pindex];
 
 //				stateNext = ThresholdNew(params, pindex->nHeight);
 				cache[pindex] = stateNext;
