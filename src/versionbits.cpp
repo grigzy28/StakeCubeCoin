@@ -146,15 +146,16 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
 		if (pindexPrev->nHeight == 1) { break; }
 
-		pindexPrev = pindexPrev->nHeight(pindexPrev->nHeight - 1);
+		pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
 
 		LogPrint(BCLog::BENCHMARK, "Height: %s\n", pindexPrev->nHeight);
 
 //		assert(cache.count(pindexPrev));
 //		ThresholdState state = cache[pindexPrev];
-		ThresholdState state = cache[pindexPrev];
-		ThresholdState stateNext = state;
-		cache[pindexPrev] = state = stateNext;
+//		ThresholdState state = cache[pindexPrev];
+//		ThresholdState stateNext = state;
+		if (pindexPrev->nVersion == 0) { break; }
+		cache[pindexPrev] = pindexPrev->nVersion;
 
     }
 
