@@ -146,7 +146,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
     assert(cache.count(pindexPrev));
     ThresholdState state = cache[pindexPrev];
 
-    while (!vToCompute.empty) {
+    while (!vToCompute.empty()) {
         ThresholdState stateNext = state;
         pindexPrev = vToCompute.back();
         vToCompute.pop_back();
