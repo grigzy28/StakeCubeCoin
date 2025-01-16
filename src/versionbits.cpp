@@ -133,13 +133,13 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 	int maxtip = pindexPrev->nHeight;
 
     while (cache.count(pindexPrev) == 0) {
-        if (pindexPrev == nullptr) {
-            // The genesis block is by definition defined.
-            cache[pindexPrev] = ThresholdState::DEFINED;
-            break;
-        }
+//        if (pindexPrev == nullptr) {
+//            // The genesis block is by definition defined.
+//            cache[pindexPrev] = ThresholdState::DEFINED;
+//            break;
+//        }
         vToCompute.push_back(pindexPrev);
-        pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight);
+        pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight) - 1;
     }
 
     // At this point, cache[pindexPrev] is known
