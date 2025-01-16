@@ -17,6 +17,9 @@ static const int32_t VERSIONBITS_TOP_MASK = 0xE0000000UL;
 /** Total bits available for versionbits */
 static const int32_t VERSIONBITS_NUM_BITS = 29;
 
+//
+bool preloaded = false;
+
 /** BIP 9 defines a finite-state-machine to deploy a softfork in multiple stages.
  *  State transitions happen during retarget period if conditions are met
  *  In case of reorg, transitions can go backward. Without transition, state is
@@ -86,6 +89,6 @@ BIP9Stats VersionBitsStatistics(const CBlockIndex* pindexPrev, const Consensus::
 int VersionBitsStateSinceHeight(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
 uint32_t VersionBitsMask(const Consensus::Params& params, Consensus::DeploymentPos pos);
 
-void PreLoadCacheBits(const CBlockIndex* pindex, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
+void PreLoadCacheBits(const CBlockIndex* pindex, VersionBitsCache& cache);
 
 #endif // BITCOIN_VERSIONBITS_H
