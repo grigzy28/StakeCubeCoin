@@ -124,7 +124,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
     int min_activation_height = MinActivationHeight(params);
 
 
-    LogPrint(BCLog::BENCHMARK, "period: %s\n", nPeriod);
+//    LogPrint(BCLog::BENCHMARK, "period: %s\n", nPeriod);
 
 /*
     // A block's state is always the same as that of the first of its period, so it is computed based on a pindexPrev whose height equals a multiple of nPeriod - 1.
@@ -147,8 +147,11 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
         pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
 
 		LogPrint(BCLog::BENCHMARK, "Height: %s\n", pindexPrev->nHeight);
-	if (pindexPrev->nHeight == 1) { break; }
+
 		assert(cache.count(pindexPrev));
+		ThresholdState state = cache[pindexxPrev];
+		
+		if (pindexPrev->nHeight == 1) { break; }
     }
 
 	preloadedchain = true;
