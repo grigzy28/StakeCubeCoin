@@ -135,7 +135,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
     // Walk backwards in steps of nPeriod to find a pindexPrev whose information is known
     std::vector<const CBlockIndex*> vToCompute;
-    while (cache.count(pindexPrev) == 1) {
+    while (cache.count(pindexPrev) == 0) {
         if (pindexPrev == nullptr) {
             // The genesis block is by definition defined.
             break;
@@ -147,6 +147,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
         pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
 
 		LogPrint(BCLog::BENCHMARK, "Height: %s\n", pindexPrev->nHeight);
+	if (pindexPrev->nHeight == 1) { break; }
 		assert(cache.count(pindexPrev));
     }
 
