@@ -249,8 +249,11 @@ void VersionBitsCache::Clear()
     }
 }
 
+/*
 int ThresholdNew(const Consensus::Params& params, int nAttempt) const override
 {
+    const Consensus::DeploymentPos id;
+
         if (params.vDeployments[id].nThresholdStart == 0) {
             return params.nRuleChangeActivationThreshold;
         }
@@ -260,6 +263,7 @@ int ThresholdNew(const Consensus::Params& params, int nAttempt) const override
         int64_t nThresholdCalc = params.vDeployments[id].nThresholdStart - nAttempt * nAttempt * Period(params) / 100 / params.vDeployments[id].nFalloffCoeff;
         return std::max(params.vDeployments[id].nThresholdMin, nThresholdCalc);
 }
+*/
 
 void PreLoadCacheBits(const CBlockIndex* pindex, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache)
 {
@@ -268,7 +272,11 @@ void PreLoadCacheBits(const CBlockIndex* pindex, const Consensus::Params& params
 				LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
 			for (pindex = ::ChainActive().Tip(); pindex && pindex->pprev; pindex = pindex->pprev) {
 				LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", pindex->nHeight);
-				ThresholdState stateNext = ThresholdNew(params, pindex->nHeight);
+
+				assert(cache.count(pindexPrev));
+				stateNext = cache[pindexPrev];
+
+//				stateNext = ThresholdNew(params, pindex->nHeight);
 				cache[pindex] = stateNext;
 			}
 		}
