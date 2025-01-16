@@ -270,8 +270,7 @@ void PreLoadCacheBits(const CBlockIndex* pindex, ThresholdConditionCache& cache)
 
         for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
 				LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
-			int ;
-			for (int startheight = ::ChainActive().Tip(); startheight < 1; startheight--) {
+			for (int startheight = 1; startheight < ::ChainActive().Tip(); startheight--) {
 				LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", pindex->nHeight);
 				pindex = pindexPrev;
 
