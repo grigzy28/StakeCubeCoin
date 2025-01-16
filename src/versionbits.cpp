@@ -273,7 +273,7 @@ void PreLoadCacheBits(const CBlockIndex* pindex, ThresholdConditionCache& cache)
 				LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
 			for (int startheight = 1; startheight < maxtip; startheight++) {
 				LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", pindex->nHeight);
-				pindex = pindex->nHeight + 1;
+				pindex = (pindex->nHeight + 1);
 
 				assert(cache.count(pindex));
 				ThresholdState stateNext = cache[pindex];
