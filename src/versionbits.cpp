@@ -281,7 +281,7 @@ void PreLoadCacheBits(const CBlockIndex* pindex, ThresholdConditionCache& cache)
 //				pindex = (pindex->nHeight + 1);
 
 				assert(cache.count(pindex));
-				ThresholdState stateNext = cache[currentIndex];
+				ThresholdState stateNext = cache[pindex];
 
 //				stateNext = ThresholdNew(params, pindex->nHeight);
 				cache[pindex] = stateNext;
