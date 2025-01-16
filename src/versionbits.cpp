@@ -134,7 +134,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
 
     while (cache.count(pindexPrev) == 0) {
-        state = nullptr;
+        ThresholdState state = nullptr;
 		if (pindexPrev == nullptr) {
             // The genesis block is by definition defined.
             break;
