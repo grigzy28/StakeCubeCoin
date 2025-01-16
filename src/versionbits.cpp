@@ -265,16 +265,38 @@ int ThresholdNew(const Consensus::Params& params, int nAttempt) const override
 }
 */
 
-void PreLoadCacheBits(const CBlockIndex* pindex, VersionBitsCache& cache)
+void PreLoadCacheBits(const CBlockIndex* pindexPrev, VersionBitsCache& cache)
 {
 	int maxtip = pindex->nHeight;
-	const CBlockIndex* currentIndex = pindex;
+	const CBlockIndex* currentIndex = pindexPrev;
 
         for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
 				LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
 				LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", pindex->nHeight);
 				LogPrint(BCLog::BENCHMARK, "maxtip: %s\n", maxtip);
 
+    // Walk backwards in steps of nPeriod to find a pindexPrev whose information is known
+    std::vector<const CBlockIndex*> vToCompute;
+    while (cache.count(pindexPrev) == 0) {
+        if (pindexPrev == nullptr) {
+            // The genesis block is by definition defined.
+            cache[pindexPrev] = ThresholdState::DEFINED;
+            break;
+        }
+        if (pindexPrev->GetMedianTimePast() < nTimeStart) {
+            // Optimization: don't recompute down further, as we know every earlier block will be before the start time
+            cache[pindexPrev] = ThresholdState::DEFINED;
+            break;
+        }
+        vToCompute.push_back(pindexPrev);
+				assert(cache.count(pindexPrev));
+				LogPrint(BCLog::BENCHMARK, "past asset");
+				ThresholdState stateNext = cache[pindexPrev];
+				LogPrint(BCLog::BENCHMARK, "past threshold");
+        pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
+    }
+
+/*
 			for (int startheight = maxtip; startheight >= 1; startheight--) {
 				LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", startheight);
 				LogPrint(BCLog::BENCHMARK, "maxtip: %s\n", maxtip);
@@ -290,6 +312,7 @@ void PreLoadCacheBits(const CBlockIndex* pindex, VersionBitsCache& cache)
 				cache[pindex] = stateNext;
 			}
 		}
+*/
 
 		preloadedchain = true;
 }
