@@ -155,7 +155,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 //		ThresholdState state = cache[pindexPrev];
 //		ThresholdState stateNext = state;
 		if (pindexPrev->nVersion == 0) { break; }
-		cache[pindexPrev] = pindexPrev->nVersion;
+		cache[pindexPrev] = pindexPrev;
 
     }
 
