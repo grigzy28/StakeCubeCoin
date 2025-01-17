@@ -116,7 +116,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
     return state;
 }
 
-ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const
+ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache, int bitIn) const
 {
 
     // Walk backwards in steps of nPeriod to find a pindexPrev whose information is known
@@ -126,6 +126,11 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
     while (cache.count(pindexPrev) == 0) {
         if (pindexPrev == nullptr) {
             // The genesis block is by definition defined.
+            cache[pindexPrev] = ThresholdState::DEFINED;
+            break;
+        }
+        if (pindexPrev->GetMedianTimePast() < nTimeStart) {
+            // Optimization: don't recompute down further, as we know every earlier block will be before the start time
             cache[pindexPrev] = ThresholdState::DEFINED;
             break;
         }
@@ -155,7 +160,8 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
 //		LogPrint(BCLog::BENCHMARK, "Second Height: %s - Counter: %s\n", pindexPrev->nHeight, counter);
 
-		cache[pindexPrev] = state = stateNext;
+		if (!Condition(pindexPrev, params)) cache[pindexPrev] = state = stateNext;
+
 
     }
 
@@ -299,7 +305,7 @@ void VersionBitsCache::Clear()
 
 ThresholdState VersionBitsStateBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache)
 {
-    return VersionBitsConditionChecker(pos).GetStateForBuildCache(pindexPrev, params, cache.caches[pos]);
+    return VersionBitsConditionChecker(pos).GetStateForBuildCache(pindexPrev, params, cache.caches[pos]), pos;
 }
 
 /*
