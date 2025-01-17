@@ -15,7 +15,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
     int min_activation_height = MinActivationHeight(params);
 
 
-	LogPrint(BCLog::BENCHMARK, "period: %s\n", nPeriod);
+//	LogPrint(BCLog::BENCHMARK, "period: %s\n", nPeriod);
 
     // A block's state is always the same as that of the first of its period, so it is computed based on a pindexPrev whose height equals a multiple of nPeriod - 1.
     if (pindexPrev != nullptr) {
@@ -50,7 +50,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
         }
     }
 
-	LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", nStartHeight);
+//	LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", nStartHeight);
 
     // Now walk forward and compute the state of descendants of pindexPrev
     while (!vToCompute.empty()) {
