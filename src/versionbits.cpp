@@ -145,12 +145,15 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
 //	LogPrint(BCLog::BENCHMARK, "Height: %s\n", pindexPrev->nHeight);
 
-    while (!vToCompute.empty()) {
+	int counter = 1;
+
+	while (!vToCompute.empty()) {
         ThresholdState stateNext = state;
         pindexPrev = vToCompute.back();
         vToCompute.pop_back();
+		counter = counter + 1;
 
-		LogPrint(BCLog::BENCHMARK, "Second Height: %s\n");
+		LogPrint(BCLog::BENCHMARK, "Second Height: %s - Counter: %s\n", pindexPrev->nHeight, counter);
 
 //        if (pindexPrev->GetMedianTimePast() < nTimeStart) {
 //            break;
