@@ -119,15 +119,6 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
 ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const
 {
 
-//    LogPrint(BCLog::BENCHMARK, "period: %s\n", nPeriod);
-
-/*
-    // A block's state is always the same as that of the first of its period, so it is computed based on a pindexPrev whose height equals a multiple of nPeriod - 1.
-    if (pindexPrev != nullptr) {
-        pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - ((pindexPrev->nHeight + 1) % nPeriod));
-    }
-*/
-
     // Walk backwards in steps of nPeriod to find a pindexPrev whose information is known
     std::vector<const CBlockIndex*> vToCompute;
 	int maxtip = pindexPrev->nHeight;
@@ -149,6 +140,8 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
     assert(cache.count(pindexPrev));
     ThresholdState state = cache[pindexPrev];
 
+	LogPrint(BCLog::BENCHMARK, "Height: %s\n", pindexPrev->nHeight);
+
     while (!vToCompute.empty()) {
         ThresholdState stateNext = state;
         pindexPrev = vToCompute.back();
@@ -166,8 +159,6 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
 //		pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
 
-//		assert(cache.count(pindexPrev));
-//		ThresholdState state = cache[pindexPrev];
 //		ThresholdState state = cache[pindexPrev];
 //		ThresholdState stateNext = state;
 		if (pindexPrev->nVersion == 0) { break; }
@@ -178,82 +169,6 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 	preloadedchain = true;
 
 	return state;
-/*
-    // At this point, cache[pindexPrev] is known
-    assert(cache.count(pindexPrev));
-    ThresholdState state = cache[pindexPrev];
-
-    int nStartHeight{std::numeric_limits<int>::max()};
-    for (const auto& pair : cache) {
-        if (pair.second == ThresholdState::STARTED && nStartHeight > pair.first->nHeight + 1) {
-            nStartHeight = pair.first->nHeight + 1;
-        }
-    }
-
-
-    // Now walk forward and compute the state of descendants of pindexPrev
-    while (!vToCompute.empty()) {
-        ThresholdState stateNext = state;
-        pindexPrev = vToCompute.back();
-        vToCompute.pop_back();
-
-        switch (state) {
-            case ThresholdState::DEFINED: {
-                if (pindexPrev->GetMedianTimePast() >= nTimeTimeout) {
-                    stateNext = ThresholdState::FAILED;
-                } else if (pindexPrev->GetMedianTimePast() >= nTimeStart) {
-                    stateNext = ThresholdState::STARTED;
-                    nStartHeight = pindexPrev->nHeight + 1;
-                }
-                break;
-            }
-            case ThresholdState::STARTED: {
-                if (pindexPrev->GetMedianTimePast() >= nTimeTimeout) {
-                    stateNext = ThresholdState::FAILED;
-                    break;
-                }
-
-                // We need to count
-                const CBlockIndex* pindexCount = pindexPrev;
-                int count = 0;
-                for (int i = 0; i < nPeriod; i++) {
-                    if (Condition(pindexCount, params)) {
-                        count++;
-                    }
-                    pindexCount = pindexCount->pprev;
-                }
-
-                assert(nStartHeight > 0 && nStartHeight < std::numeric_limits<int>::max());
-                int nAttempt = (pindexCount->nHeight + 1 - nStartHeight) / nPeriod;
-				int nThreshold = Threshold(params, nAttempt);
-                if (count >= nThreshold) {
-                    stateNext = ThresholdState::LOCKED_IN;
-                } else if (pindexPrev->GetMedianTimePast() >= nTimeTimeout) {
-                    stateNext = ThresholdState::FAILED;
-                }
-                break;
-            }
-            case ThresholdState::LOCKED_IN: {
-                // Always progresses into ACTIVE.
-                // stateNext = ThresholdState::ACTIVE;
-
-                if (pindexPrev->nHeight + 1 >= min_activation_height) {
-                    stateNext = ThresholdState::ACTIVE;
-                }
-
-                break;
-            }
-            case ThresholdState::FAILED:
-            case ThresholdState::ACTIVE: {
-                // Nothing happens, these are terminal states.
-                break;
-            }
-        }
-        cache[pindexPrev] = state = stateNext;
-    }
-
-    return state;
-*/
 }
 
 BIP9Stats AbstractThresholdConditionChecker::GetStateStatisticsFor(const CBlockIndex* pindex, const Consensus::Params& params, ThresholdConditionCache& cache) const
