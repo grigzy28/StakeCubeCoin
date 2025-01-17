@@ -143,7 +143,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
         pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
     }
 
-	LogPrint(BCLog::BENCHMARK, "Height: \n");
+	LogPrint(BCLog::BENCHMARK, "Height: Start\n");
 //	LogPrint(BCLog::BENCHMARK, "Height: %s\n", );
 
     // At this point, cache[pindexPrev] is known
@@ -166,6 +166,8 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
 
     }
+
+	LogPrint(BCLog::BENCHMARK, "Height: End\n");
 
 	preloadedchain = true;
 
