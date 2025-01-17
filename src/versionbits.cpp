@@ -160,7 +160,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
         vToCompute.pop_back();
 		counter = counter + 1;
 
-		LogPrint(BCLog::BENCHMARK, "Second Height: %s - Counter: %s\n", pindexPrev->nHeight, counter);
+		LogPrint(BCLog::BENCHMARK, "Second Height: %s - Counter: %s - Bit: %s\n", pindexPrev->nHeight, counter, bit);
 
 		if (pindexPrev->nVersion == bitIn) cache[pindexPrev] = state = stateNext;
 
