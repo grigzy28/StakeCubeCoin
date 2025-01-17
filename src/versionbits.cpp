@@ -139,6 +139,9 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
             break;
         }
         vToCompute.push_back(pindexPrev);
+
+		LogPrint(BCLog::BENCHMARK, "First Height: %s\n", pindexPrev->nHeight);
+
         pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
     }
 
@@ -151,6 +154,8 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
         pindexPrev = vToCompute.back();
         vToCompute.pop_back();
 
+		LogPrint(BCLog::BENCHMARK, "Second Height: %s\n", pindexPrev->nHeight);
+
 //        if (pindexPrev->GetMedianTimePast() < nTimeStart) {
 //            break;
 //        }
@@ -160,8 +165,6 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 		if (pindexPrev->nHeight == 0 || pindexPrev->nHeight == 1) { break; }
 
 //		pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
-
-		LogPrint(BCLog::BENCHMARK, "Height: %s\n", pindexPrev->nHeight);
 
 //		assert(cache.count(pindexPrev));
 //		ThresholdState state = cache[pindexPrev];
