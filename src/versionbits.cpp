@@ -177,7 +177,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
 	preloadedchain = true;
 
-	return true;
+	return;
 /*
     // At this point, cache[pindexPrev] is known
     assert(cache.count(pindexPrev));
