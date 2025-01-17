@@ -162,7 +162,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
 //		LogPrint(BCLog::BENCHMARK, "Second Height: %s - Counter: %s\n", pindexPrev->nHeight, counter);
 
-		if (!Condition(pindexPrev, params)) cache[pindexPrev] = state = stateNext;
+		if (Condition(pindexPrev, params)) cache[pindexPrev] = state = stateNext;
 
 
     }
