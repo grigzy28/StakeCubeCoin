@@ -2595,7 +2595,11 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
 			LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
 
 
-            if (!preloadedchain) ThresholdState state = checker.GetStateForBuildCache(pindex, chainParams.GetConsensus(), warningcache[bit]);
+            if (!preloadedchain && preloadchaincounter < VERSIONBITS_NUM_BITS) {
+				ThresholdState state = checker.GetStateForBuildCache(pindex, chainParams.GetConsensus(), warningcache[bit]);
+				preloadchaincounter = preloadchaincounter + 1;
+				if (preloadedchain) preloadchaincounter=0;
+			}
 
 //			WarningBitsConditionChecker checker(bit);
             ThresholdState state = checker.GetStateFor(pindex, chainParams.GetConsensus(), warningcache[bit]);
