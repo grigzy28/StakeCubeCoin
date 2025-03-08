@@ -11,7 +11,6 @@
 #include "crypto/progpow.h"
 #include <serialize.h>
 #include <uint256.h>
-#include <chain.h>
 #include <chainparams.h>
 
 //extern uint32_t nPPSwitchTime;
