@@ -43,7 +43,7 @@ endef
 
 # Fix missing unary_function in clang15 on macos, can be removed after upgrading to 1.81
 define $(package)_preprocess_cmds
-  patch -p1 < $($(package)_patch_dir)/process_macos_sdk.patch \
+  patch -p1 < $($(package)_patch_dir)/process_macos_sdk.patch && \
   sed -i.old "s/unary_function/$(unary_function)/" boost/container_hash/hash.hpp && \
   echo "using $($(package)_toolset_$(host_os)) : : $($(package)_cxx) : <cflags>\"$($(package)_cflags)\" <cxxflags>\"$($(package)_cxxflags)\" <compileflags>\"$($(package)_cppflags)\" <linkflags>\"$($(package)_ldflags)\" <archiver>\"$($(package)_ar)\" <striper>\"$(host_STRIP)\"  <ranlib>\"$(host_RANLIB)\" <rc>\"$(host_WINDRES)\" : ;" > user-config.jam
 endef

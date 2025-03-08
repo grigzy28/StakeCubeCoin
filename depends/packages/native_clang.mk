@@ -1,10 +1,10 @@
 package=native_clang
-$(package)_version=10.0.1
+$(package)_version=19.1.7
 $(package)_download_path=https://github.com/llvm/llvm-project/releases/download/llvmorg-$($(package)_version)
 ifneq (,$(findstring aarch64,$(BUILD)))
 $(package)_download_file=clang+llvm-$($(package)_version)-aarch64-linux-gnu.tar.xz
 $(package)_file_name=clang+llvm-$($(package)_version)-aarch64-linux-gnu.tar.xz
-$(package)_sha256_hash=90dc69a4758ca15cd0ffa45d07fbf5bf4309d47d2c7745a9f0735ecffde9c31f
+$(package)_sha256_hash=A73D9326E5D756E3937DF6A9F621664D76403B59119F741901106B387E53A6AE
 else
 $(package)_download_file=clang+llvm-$($(package)_version)-x86_64-linux-gnu-ubuntu-16.04.tar.xz
 $(package)_file_name=clang+llvm-$($(package)_version)-x86_64-linux-gnu-ubuntu-16.04.tar.xz
