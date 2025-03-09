@@ -106,6 +106,7 @@ darwin_CXX=env -u C_INCLUDE_PATH -u CPLUS_INCLUDE_PATH \
                -isysroot$(OSX_SDK) \
                -stdlib=libc++ \
                -stdlib++-isystem$(OSX_SDK)/usr/include/c++/v1 \
+               -stdlib++-isystem$(OSX_SDK)/usr/include/ \
                -Xclang -internal-externc-isystem$(clang_resource_dir)/include \
                -Xclang -internal-externc-isystem$(OSX_SDK)/usr/include
 
