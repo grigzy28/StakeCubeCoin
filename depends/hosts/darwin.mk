@@ -90,20 +90,21 @@ $(foreach TOOL,$(cctools_TOOLS),$(eval darwin_$(TOOL) = $$(build_prefix)/bin/$$(
 #         include search paths, as that would be wrong in general but would also
 #         break #include_next's.
 #
-darwin_CC=env -u C_INCLUDE_PATH -u CPLUS_INCLUDE_PATH \
-              -u OBJC_INCLUDE_PATH -u OBJCPLUS_INCLUDE_PATH -u CPATH \
-              -u LIBRARY_PATH \
-              $(clang_prog) --target=$(host) \
+darwin_CC=env $(clang_prog) --target=$(host) \
               -isysroot$(OSX_SDK) \
               -iwithsysroot/usr/include -iframeworkwithsysroot/System/Library/Frameworks
-
-darwin_CXX=env -u C_INCLUDE_PATH -u CPLUS_INCLUDE_PATH \
-               -u OBJC_INCLUDE_PATH -u OBJCPLUS_INCLUDE_PATH -u CPATH \
-               -u LIBRARY_PATH \
-               $(clangxx_prog) --target=$(host) \
+#-u C_INCLUDE_PATH -u CPLUS_INCLUDE_PATH \
+#              -u OBJC_INCLUDE_PATH -u OBJCPLUS_INCLUDE_PATH -u CPATH \
+#              -u LIBRARY_PATH \
+              
+darwin_CXX=env $(clangxx_prog) --target=$(host) \
                -isysroot$(OSX_SDK) \
                -iwithsysroot/usr/include/c++/v1 \
                -iwithsysroot/usr/include -iframeworkwithsysroot/System/Library/Frameworks
+
+#-u C_INCLUDE_PATH -u CPLUS_INCLUDE_PATH \
+#               -u OBJC_INCLUDE_PATH -u OBJCPLUS_INCLUDE_PATH -u CPATH \
+#               -u LIBRARY_PATH \
 
 darwin_CFLAGS=-pipe -std=$(C_STANDARD) -mmacos-version-min=$(OSX_MIN_VERSION)
 darwin_CXXFLAGS=-pipe -std=$(CXX_STANDARD) -mmacos-version-min=$(OSX_MIN_VERSION)
