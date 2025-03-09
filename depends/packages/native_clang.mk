@@ -7,7 +7,7 @@ $(package)_file_name=clang+llvm-$($(package)_version)-aarch64-linux-gnu.tar.xz
 $(package)_sha256_hash=A73D9326E5D756E3937DF6A9F621664D76403B59119F741901106B387E53A6AE
 else
 $(package)_download_file=clang+llvm-$($(package)_version)-x86_64-linux-gnu-ubuntu-22.04.tar.xz
-$(package)_file_name=clang+llvm-$($(package)_version)-x86_64-linux-gnu-ubuntu-22.04.tar.xz
+$(package)_file_name=clang+llvm-$($(package)_version)-x86_64-linux-gnu-ubuntu-16.04.tar.xz
 $(package)_sha256_hash=DF297DF804766F8FB18F10A188AF78E55D82BB8881751408C2FA694CA19163A8
 endif
 
