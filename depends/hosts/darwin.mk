@@ -3,8 +3,8 @@ OSX_SDK_VERSION=10.15.6
 XCODE_VERSION=12.2
 XCODE_BUILD_ID=12B45b
 LD64_VERSION=711
-SDK_PATH=./SDKs
-OSX_SDK=$(SDK_PATH)/Xcode-$(XCODE_VERSION)-$(XCODE_BUILD_ID)-extracted-SDK-with-libcxx-headers
+
+OSX_SDK=/root/xcode122/depends/SDKs/Xcode-$(XCODE_VERSION)-$(XCODE_BUILD_ID)-extracted-SDK-with-libcxx-headers
 
 darwin_native_binutils=native_cctools
 
