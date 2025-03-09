@@ -2,7 +2,7 @@ OSX_MIN_VERSION=10.15
 OSX_SDK_VERSION=10.15.6
 XCODE_VERSION=12.2
 XCODE_BUILD_ID=12B45b
-LD64_VERSION=711
+LD64_VERSION=609
 
 OSX_SDK=$(SDK_PATH)/Xcode-$(XCODE_VERSION)-$(XCODE_BUILD_ID)-extracted-SDK-with-libcxx-headers
 
@@ -104,6 +104,27 @@ darwin_CXX=env -u C_INCLUDE_PATH -u CPLUS_INCLUDE_PATH \
                -isysroot$(OSX_SDK) -nostdlibinc \
                -iwithsysroot/usr/include/c++/v1 \
                -iwithsysroot/usr/include -iframeworkwithsysroot/System/Library/Frameworks
+
+darwin_CFLAGS=-pipe -std=$(C_STANDARD) -mmacos-version-min=$(OSX_MIN_VERSION)
+darwin_CXXFLAGS=-pipe -std=$(CXX_STANDARD) -mmacos-version-min=$(OSX_MIN_VERSION)
+darwin_LDFLAGS=-Wl,-platform_version,macos,$(OSX_MIN_VERSION),$(OSX_SDK_VERSION)
+
+ifneq ($(build_os),darwin)
+darwin_CFLAGS += -mlinker-version=$(LD64_VERSION)
+darwin_CXXFLAGS += -mlinker-version=$(LD64_VERSION)
+darwin_LDFLAGS += -Wl,-no_adhoc_codesign -fuse-ld=lld
+endif
+
+darwin_release_CFLAGS=-O2
+darwin_release_CXXFLAGS=$(darwin_release_CFLAGS)
+
+darwin_debug_CFLAGS=-O1 -g
+darwin_debug_CXXFLAGS=$(darwin_debug_CFLAGS)
+
+darwin_cmake_system=Darwin
+
+
+
 #darwin_CC=env -u C_INCLUDE_PATH -u CPLUS_INCLUDE_PATH \
 #              -u OBJC_INCLUDE_PATH -u OBJCPLUS_INCLUDE_PATH -u CPATH \
 #              -u LIBRARY_PATH \
@@ -123,11 +144,11 @@ darwin_CXX=env -u C_INCLUDE_PATH -u CPLUS_INCLUDE_PATH \
 #               -Xclang -internal-externc-isystem$(clang_resource_dir)/include \
 #               -Xclang -internal-externc-isystem$(OSX_SDK)/usr/include
 
-darwin_CFLAGS=-pipe
-darwin_CXXFLAGS=$(darwin_CFLAGS)
+#darwin_CFLAGS=-pipe
+#darwin_CXXFLAGS=$(darwin_CFLAGS)
 
-darwin_release_CFLAGS=-O2
-darwin_release_CXXFLAGS=$(darwin_release_CFLAGS)
+#darwin_release_CFLAGS=-O2
+#darwin_release_CXXFLAGS=$(darwin_release_CFLAGS)
 
-darwin_debug_CFLAGS=-O1
-darwin_debug_CXXFLAGS=$(darwin_debug_CFLAGS)
+#darwin_debug_CFLAGS=-O1
+#darwin_debug_CXXFLAGS=$(darwin_debug_CFLAGS)
