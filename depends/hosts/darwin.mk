@@ -1,8 +1,8 @@
-OSX_MIN_VERSION=10.15
-OSX_SDK_VERSION=10.15.6
-XCODE_VERSION=12.2
-XCODE_BUILD_ID=12B45b
-LD64_VERSION=609
+OSX_MIN_VERSION=11.0
+OSX_SDK_VERSION=14.0
+XCODE_VERSION=15.0
+XCODE_BUILD_ID=15A240d
+LD64_VERSION=711
 
 OSX_SDK=$(SDK_PATH)/Xcode-$(XCODE_VERSION)-$(XCODE_BUILD_ID)-extracted-SDK-with-libcxx-headers
 
@@ -94,15 +94,16 @@ darwin_CC=env -u C_INCLUDE_PATH -u CPLUS_INCLUDE_PATH \
               -u OBJC_INCLUDE_PATH -u OBJCPLUS_INCLUDE_PATH -u CPATH \
               -u LIBRARY_PATH \
               $(clang_prog) --target=$(host) \
-              -isysroot$(OSX_SDK) -nostdlibinc \
+              -isysroot$(OSX_SDK) \
               -iwithsysroot/usr/include -iframeworkwithsysroot/System/Library/Frameworks
 
 darwin_CXX=env -u C_INCLUDE_PATH -u CPLUS_INCLUDE_PATH \
                -u OBJC_INCLUDE_PATH -u OBJCPLUS_INCLUDE_PATH -u CPATH \
                -u LIBRARY_PATH \
                $(clangxx_prog) --target=$(host) \
-               -isysroot$(OSX_SDK) -nostdlibinc \
+               -isysroot$(OSX_SDK) \
                -iwithsysroot/usr/include/c++/v1 \
+			   
                -iwithsysroot/usr/include -iframeworkwithsysroot/System/Library/Frameworks
 
 darwin_CFLAGS=-pipe -std=$(C_STANDARD) -mmacos-version-min=$(OSX_MIN_VERSION)
