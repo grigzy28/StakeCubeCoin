@@ -1,7 +1,7 @@
 OSX_MIN_VERSION=10.15
 OSX_SDK_VERSION=10.15.6
 XCODE_VERSION=12.2
-XCODE_BUILD_ID=128B45b
+XCODE_BUILD_ID=12B45b
 LD64_VERSION=711
 
 OSX_SDK=$(SDK_PATH)/Xcode-$(XCODE_VERSION)-$(XCODE_BUILD_ID)-extracted-SDK-with-libcxx-headers
@@ -106,7 +106,6 @@ darwin_CXX=env -u C_INCLUDE_PATH -u CPLUS_INCLUDE_PATH \
                -isysroot$(OSX_SDK) \
                -stdlib=libc++ \
                -stdlib++-isystem$(OSX_SDK)/usr/include/c++/v1 \
-               -stdlib++-isystem$(OSX_SDK)/usr/include/ \
                -Xclang -internal-externc-isystem$(clang_resource_dir)/include \
                -Xclang -internal-externc-isystem$(OSX_SDK)/usr/include
 
