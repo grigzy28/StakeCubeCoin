@@ -1,15 +1,14 @@
 package=native_clang
-$(package)_version=17.0.2
-$(package)_major_version=17
+$(package)_version=14.0.0
 $(package)_download_path=https://github.com/llvm/llvm-project/releases/download/llvmorg-$($(package)_version)
 ifneq (,$(findstring aarch64,$(BUILD)))
 $(package)_download_file=clang+llvm-$($(package)_version)-aarch64-linux-gnu.tar.xz
 $(package)_file_name=clang+llvm-$($(package)_version)-aarch64-linux-gnu.tar.xz
-$(package)_sha256_hash=A73D9326E5D756E3937DF6A9F621664D76403B59119F741901106B387E53A6AE
+$(package)_sha256_hash=90dc69a4758ca15cd0ffa45d07fbf5bf4309d47d2c7745a9f0735ecffde9c31f
 else
-$(package)_download_file=clang+llvm-$($(package)_version)-x86_64-linux-gnu-ubuntu-22.04.tar.xz
-$(package)_file_name=clang+llvm-$($(package)_version)-x86_64-linux-gnu-ubuntu-22.04.tar.xz
-$(package)_sha256_hash=DF297DF804766F8FB18F10A188AF78E55D82BB8881751408C2FA694CA19163A8
+$(package)_download_file=clang+llvm-$($(package)_version)-x86_64-linux-gnu-ubuntu-18.04.tar.xz
+$(package)_file_name=clang+llvm-$($(package)_version)-x86_64-linux-gnu-ubuntu-18.04.tar.xz
+$(package)_sha256_hash=61582215DAFAFB7B576EA30CC136BE92C877BA1F1C31DDBBD372D6D65622FEF5
 endif
 
 define $(package)_preprocess_cmds
@@ -25,7 +24,7 @@ define $(package)_stage_cmds
   cp bin/dsymutil $($(package)_staging_prefix_dir)/bin/$(host)-dsymutil && \
   cp bin/llvm-config $($(package)_staging_prefix_dir)/bin/ && \
   cp lib/libLTO.so $($(package)_staging_prefix_dir)/lib/ && \
-  cp -rf lib/clang/$($(package)_major_version)/include/* $($(package)_staging_prefix_dir)/lib/clang/$($(package)_version)/include/
+  cp -rf lib/clang/$($(package)_version)/include/* $($(package)_staging_prefix_dir)/lib/clang/$($(package)_version)/include/
 endef
 
 define $(package)_postprocess_cmds
