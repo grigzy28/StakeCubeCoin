@@ -1,8 +1,8 @@
-OSX_MIN_VERSION=11.0
-OSX_SDK_VERSION=14.0
-XCODE_VERSION=15.0
-XCODE_BUILD_ID=15A240d
-LD64_VERSION=711
+OSX_MIN_VERSION=10.15
+OSX_SDK_VERSION=10.15.6
+XCODE_VERSION=12.1
+XCODE_BUILD_ID=12A7403
+LD64_VERSION=609
 
 OSX_SDK=$(SDK_PATH)/Xcode-$(XCODE_VERSION)-$(XCODE_BUILD_ID)-extracted-SDK-with-libcxx-headers
 
@@ -93,63 +93,27 @@ $(foreach TOOL,$(cctools_TOOLS),$(eval darwin_$(TOOL) = $$(build_prefix)/bin/$$(
 darwin_CC=env -u C_INCLUDE_PATH -u CPLUS_INCLUDE_PATH \
               -u OBJC_INCLUDE_PATH -u OBJCPLUS_INCLUDE_PATH -u CPATH \
               -u LIBRARY_PATH \
-              $(clang_prog) --target=$(host) \
+            $(clang_prog) --target=$(host) -mmacosx-version-min=$(OSX_MIN_VERSION) \
+              -B$(build_prefix)/bin -mlinker-version=$(LD64_VERSION) \
               -isysroot$(OSX_SDK) \
-              -iwithsysroot/usr/include -iframeworkwithsysroot/System/Library/Frameworks
-
+              -Xclang -internal-externc-isystem$(clang_resource_dir)/include \
+              -Xclang -internal-externc-isystem$(OSX_SDK)/usr/include
 darwin_CXX=env -u C_INCLUDE_PATH -u CPLUS_INCLUDE_PATH \
                -u OBJC_INCLUDE_PATH -u OBJCPLUS_INCLUDE_PATH -u CPATH \
                -u LIBRARY_PATH \
-               $(clangxx_prog) --target=$(host) \
+             $(clangxx_prog) --target=$(host) -mmacosx-version-min=$(OSX_MIN_VERSION) \
+               -B$(build_prefix)/bin -mlinker-version=$(LD64_VERSION) \
                -isysroot$(OSX_SDK) \
-               -iwithsysroot/usr/include/c++/v1 \
-			   
-               -iwithsysroot/usr/include -iframeworkwithsysroot/System/Library/Frameworks
+               -stdlib=libc++ \
+               -stdlib++-isystem$(OSX_SDK)/usr/include/c++/v1 \
+               -Xclang -internal-externc-isystem$(clang_resource_dir)/include \
+               -Xclang -internal-externc-isystem$(OSX_SDK)/usr/include
 
-darwin_CFLAGS=-pipe -std=$(C_STANDARD) -mmacos-version-min=$(OSX_MIN_VERSION)
-darwin_CXXFLAGS=-pipe -std=$(CXX_STANDARD) -mmacos-version-min=$(OSX_MIN_VERSION)
-darwin_LDFLAGS=-Wl,-platform_version,macos,$(OSX_MIN_VERSION),$(OSX_SDK_VERSION)
-
-ifneq ($(build_os),darwin)
-darwin_CFLAGS += -mlinker-version=$(LD64_VERSION)
-darwin_CXXFLAGS += -mlinker-version=$(LD64_VERSION)
-darwin_LDFLAGS += -Wl,-no_adhoc_codesign -fuse-ld=lld
-endif
+darwin_CFLAGS=-pipe
+darwin_CXXFLAGS=$(darwin_CFLAGS)
 
 darwin_release_CFLAGS=-O2
 darwin_release_CXXFLAGS=$(darwin_release_CFLAGS)
 
-darwin_debug_CFLAGS=-O1 -g
+darwin_debug_CFLAGS=-O1
 darwin_debug_CXXFLAGS=$(darwin_debug_CFLAGS)
-
-darwin_cmake_system=Darwin
-
-
-
-#darwin_CC=env -u C_INCLUDE_PATH -u CPLUS_INCLUDE_PATH \
-#              -u OBJC_INCLUDE_PATH -u OBJCPLUS_INCLUDE_PATH -u CPATH \
-#              -u LIBRARY_PATH \
-#            $(clang_prog) --target=$(host) -mmacosx-version-min=$(OSX_MIN_VERSION) \
-#              -B$(build_prefix)/bin -mlinker-version=$(LD64_VERSION) \
-#              -isysroot$(OSX_SDK) \
-#              -Xclang -internal-externc-isystem$(clang_resource_dir)/include \
-#              -Xclang -internal-externc-isystem$(OSX_SDK)/usr/include
-#darwin_CXX=env -u C_INCLUDE_PATH -u CPLUS_INCLUDE_PATH \
-#               -u OBJC_INCLUDE_PATH -u OBJCPLUS_INCLUDE_PATH -u CPATH \
-#               -u LIBRARY_PATH \
-#             $(clangxx_prog) --target=$(host) -mmacosx-version-min=$(OSX_MIN_VERSION) \
-#               -B$(build_prefix)/bin -mlinker-version=$(LD64_VERSION) \
-#               -isysroot$(OSX_SDK) \
-#               -stdlib=libc++ \
-#               -stdlib++-isystem$(OSX_SDK)/usr/include/c++/v1 \
-#               -Xclang -internal-externc-isystem$(clang_resource_dir)/include \
-#               -Xclang -internal-externc-isystem$(OSX_SDK)/usr/include
-
-#darwin_CFLAGS=-pipe
-#darwin_CXXFLAGS=$(darwin_CFLAGS)
-
-#darwin_release_CFLAGS=-O2
-#darwin_release_CXXFLAGS=$(darwin_release_CFLAGS)
-
-#darwin_debug_CFLAGS=-O1
-#darwin_debug_CXXFLAGS=$(darwin_debug_CFLAGS)
