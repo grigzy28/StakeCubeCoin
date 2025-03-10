@@ -1,8 +1,8 @@
 package=cmake
-$(package)_version=3.31.0
+$(package)_version=3.31.6
 $(package)_download_path=https://cmake.org/files/v3.31/
 $(package)_file_name=$(package)-$($(package)_version).tar.gz
-$(package)_sha256_hash=0FCB338B4515044F9AC77543550AC92C314C58F6F95AAFCAC5CD36AA75DB6924
+$(package)_sha256_hash=653427F0F5014750AAFFF22727FB2AA60C6C732CA91808CFB78CE22DDD9E55F0
 
 define $(package)_config_cmds
   export CC="" && \
@@ -17,4 +17,3 @@ endef
 define $(package)_stage_cmds
   $(MAKE) DESTDIR=$($(package)_staging_dir) install
 endef
-
