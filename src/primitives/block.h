@@ -7,8 +7,8 @@
 #define BITCOIN_PRIMITIVES_BLOCK_H
 
 #include <primitives/transaction.h>
-//#include <consensus/params.h>
-//#include "crypto/progpow.h"
+#include <consensus/params.h>
+#include "crypto/progpow.h"
 #include <serialize.h>
 #include <uint256.h>
 
