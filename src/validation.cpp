@@ -77,7 +77,9 @@ static const unsigned int UNDOFILE_CHUNK_SIZE = 0x100000; // 1 MiB
 /** Time to wait between writing blocks/block index to disk. */
 static constexpr std::chrono::hours DATABASE_WRITE_INTERVAL{1};
 /** Time to wait between flushing chainstate to disk. */
-static constexpr std::chrono::hours DATABASE_FLUSH_INTERVAL{24};
+static constexpr std::chrono::hours DATABASE_FLUSH_INTERVAL{2};
+/** Time to wait between flushing COINS cache to disk. */
+static constexpr std::chrono::minutes MEMORY_FLUSH_INTERVAL{5};
 /** Maximum age of our tip for us to be considered current for fee estimation */
 static constexpr std::chrono::hours MAX_FEE_ESTIMATION_TIP_AGE{3};
 
@@ -184,6 +186,20 @@ namespace {
     /** Dirty block file entries. */
     std::set<int> setDirtyFileInfo;
 } // anon namespace
+
+class CMainCleanup
+{
+public:
+    CMainCleanup() {}
+    ~CMainCleanup() {
+        // block headers
+        BlockMap::iterator it1 = g_blockman.m_block_index.begin();
+        for (; it1 != g_blockman.m_block_index.end(); it1++)
+            delete (*it1).second;
+        g_blockman.m_block_index.clear();
+    }
+};
+static CMainCleanup instance_of_cmaincleanup;
 
 CBlockIndex* LookupBlockIndex(const uint256& hash)
 {
@@ -1136,6 +1152,7 @@ bool CChainState::IsInitialBlockDownload() const
         return true;
     LogPrintf("Leaving InitialBlockDownload (latching to false)\n");
     m_cached_finished_ibd.store(true, std::memory_order_relaxed);
+	
     return false;
 }
 
@@ -2426,10 +2443,15 @@ bool CChainState::FlushStateToDisk(
         bool fPeriodicWrite = mode == FlushStateMode::PERIODIC && nNow > nLastWrite + DATABASE_WRITE_INTERVAL;
         // It's been very long since we flushed the cache. Do this infrequently, to optimize cache usage.
         bool fPeriodicFlush = mode == FlushStateMode::PERIODIC && nNow > nLastFlush + DATABASE_FLUSH_INTERVAL;
+
+        // It's been very long since we flushed the cache. Do this infrequently, to optimize cache usage.
+        bool fPeriodicMemoryFlush = ((mode == FlushStateMode::MEMORY) || (nNow > nLastFlush + MEMORY_FLUSH_INTERVAL));
+
         // Combine all conditions that result in a full cache flush.
         fDoFullFlush = (mode == FlushStateMode::ALWAYS) || fCacheLarge || fCacheCritical || fEvoDbCacheCritical || fPeriodicFlush || fFlushForPrune;
+
         // Write blocks and block index to disk.
-        if (fDoFullFlush || fPeriodicWrite) {
+        if (fDoFullFlush || fPeriodicWrite || fPeriodicMemoryFlush) {
             // Depend on nMinDiskSpace to ensure we can write block index
             if (!CheckDiskSpace(GetBlocksDir())) {
                 return AbortNode(state, "Disk space is too low!", _("Error: Disk space is too low!").translated, CClientUIInterface::MSG_NOPREFIX);
@@ -2469,12 +2491,18 @@ bool CChainState::FlushStateToDisk(
                 UnlinkPrunedFiles(setFilesToPrune);
             }
             nLastWrite = nNow;
-        }
-        // Flush best chain related state. This can only be done if the blocks / block index write was also done.
-        if (fDoFullFlush && !CoinsTip().GetBestBlock().IsNull()) {
-            LOG_TIME_SECONDS(strprintf("write coins cache to disk (%d coins, %.2fkB)",
-                coins_count, coins_mem_usage / 1000));
 
+			if (fPeriodicMemoryFlush) { nLastFlush = nNow; }
+
+        }
+
+        // Flush best chain related state. This can only be done if the blocks / block index write was also done.
+        if (fPeriodicMemoryFlush || (fDoFullFlush && !CoinsTip().GetBestBlock().IsNull())) {
+            if (fDoFullFlush) {
+					LOG_TIME_SECONDS(strprintf("write coins cache to disk (%d coins, %.2fkB)",
+						coins_count, coins_mem_usage / 1000));
+			}
+			
             // Typical Coin structures on disk are around 48 bytes in size.
             // Pushing a new one to the database can cause it to be written
             // twice (once in the log, and once in the tables). This is already
@@ -2557,7 +2585,18 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
         int nUpgraded = 0;
         const CBlockIndex* pindex = pindexNew;
         for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
-            WarningBitsConditionChecker checker(bit);
+
+			WarningBitsConditionChecker checker(bit);
+
+			LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
+
+            if (!preloadedchain && preloadchaincounter < VERSIONBITS_NUM_BITS) {
+				ThresholdState state = checker.GetStateForBuildCache(pindex, chainParams.GetConsensus(), warningcache[bit], bit);
+				preloadchaincounter = preloadchaincounter + 1;
+				if (preloadedchain) preloadchaincounter=0;
+			}
+
+//			WarningBitsConditionChecker checker(bit);
             ThresholdState state = checker.GetStateFor(pindex, chainParams.GetConsensus(), warningcache[bit]);
             if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
                 const std::string strWarning = strprintf(_("Warning: unknown new rules activated (versionbit %i)").translated, bit);
@@ -2625,7 +2664,7 @@ bool CChainState::DisconnectTip(CValidationState& state, const CChainParams& cha
     }
     LogPrint(BCLog::BENCHMARK, "- Disconnect block: %.2fms\n", (GetTimeMicros() - nStart) * MILLI);
     // Write the chain state to disk, if necessary.
-    if (!FlushStateToDisk(chainparams, state, FlushStateMode::IF_NEEDED))
+    if (!FlushStateToDisk(chainparams, state, FlushStateMode::PERIODIC))
         return false;
 
     if (disconnectpool) {
@@ -2764,7 +2803,7 @@ bool CChainState::ConnectTip(CValidationState& state, const CChainParams& chainp
     int64_t nTime4 = GetTimeMicros(); nTimeFlush += nTime4 - nTime3;
     LogPrint(BCLog::BENCHMARK, "  - Flush: %.2fms [%.2fs (%.2fms/blk)]\n", (nTime4 - nTime3) * MILLI, nTimeFlush * MICRO, nTimeFlush * MILLI / nBlocksTotal);
     // Write the chain state to disk, if necessary.
-    if (!FlushStateToDisk(chainparams, state, FlushStateMode::IF_NEEDED))
+    if (!FlushStateToDisk(chainparams, state, FlushStateMode::PERIODIC))
         return false;
     int64_t nTime5 = GetTimeMicros(); nTimeChainState += nTime5 - nTime4;
     LogPrint(BCLog::BENCHMARK, "  - Writing chainstate: %.2fms [%.2fs (%.2fms/blk)]\n", (nTime5 - nTime4) * MILLI, nTimeChainState * MICRO, nTimeChainState * MILLI / nBlocksTotal);
@@ -3522,10 +3561,7 @@ void CChainState::ReceivedBlockTransactions(const CBlock& block, CBlockIndex* pi
             CBlockIndex *pindex = queue.front();
             queue.pop_front();
             pindex->nChainTx = (pindex->pprev ? pindex->pprev->nChainTx : 0) + pindex->nTx;
-            {
-                LOCK(cs_nBlockSequenceId);
-                pindex->nSequenceId = nBlockSequenceId++;
-            }
+            pindex->nSequenceId = nBlockSequenceId++;
             if (m_chain.Tip() == nullptr || !setBlockIndexCandidates.value_comp()(pindex, m_chain.Tip())) {
                 if (!(pindex->nStatus & BLOCK_CONFLICT_CHAINLOCK)) {
                     setBlockIndexCandidates.insert(pindex);
@@ -4089,9 +4125,13 @@ bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CVali
         return AbortNode(state, std::string("System error: ") + e.what());
     }
 
-    if (g_chainstate && g_chainstate->CanFlushToDisk()) {
-        g_chainstate->FlushStateToDisk(chainparams, state, FlushStateMode::NONE);
-    }
+	bool fInitialDownload = IsInitialBlockDownload();
+
+    if (fInitialDownload) {
+		g_chainstate->FlushStateToDisk(chainparams, state, FlushStateMode::MEMORY);
+	} else {
+		g_chainstate->FlushStateToDisk(chainparams, state, FlushStateMode::PERIODIC);
+	}
 
     CheckBlockIndex(chainparams.GetConsensus());
 
@@ -5366,17 +5406,3 @@ double GuessVerificationProgress(const ChainTxData& data, const CBlockIndex *pin
 
     return std::min<double>(pindex->nChainTx / fTxTotal, 1.0);
 }
-
-class CMainCleanup
-{
-public:
-    CMainCleanup() {}
-    ~CMainCleanup() {
-        // block headers
-        BlockMap::iterator it1 = g_blockman.m_block_index.begin();
-        for (; it1 != g_blockman.m_block_index.end(); it1++)
-            delete (*it1).second;
-        g_blockman.m_block_index.clear();
-    }
-};
-static CMainCleanup instance_of_cmaincleanup;

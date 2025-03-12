@@ -17,6 +17,9 @@ static const int32_t VERSIONBITS_TOP_MASK = 0xE0000000UL;
 /** Total bits available for versionbits */
 static const int32_t VERSIONBITS_NUM_BITS = 29;
 
+static bool preloadedchain = false;
+static int preloadchaincounter = 0;
+
 /** BIP 9 defines a finite-state-machine to deploy a softfork in multiple stages.
  *  State transitions happen during retarget period if conditions are met
  *  In case of reorg, transitions can go backward. Without transition, state is
@@ -60,6 +63,8 @@ protected:
     virtual int Period(const Consensus::Params& params) const =0;
     virtual int Threshold(const Consensus::Params& params, int nAttempt) const =0;
 
+    virtual int MinActivationHeight(const Consensus::Params& params) const { return 0; }
+
 public:
     /** Returns the numerical statistics of an in-progress BIP9 softfork in the current period */
     BIP9Stats GetStateStatisticsFor(const CBlockIndex* pindex, const Consensus::Params& params, ThresholdConditionCache& cache) const;
@@ -68,6 +73,8 @@ public:
     ThresholdState GetStateFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const;
     /** Returns the height since when the ThresholdState has started for pindex A based on parent pindexPrev B, all blocks of a period share the same */
     int GetStateSinceHeightFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const;
+
+    ThresholdState GetStateForBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache, int bitIn) const;
 };
 
 /** BIP 9 allows multiple softforks to be deployed in parallel. We cache per-period state for every one of them
@@ -79,9 +86,13 @@ struct VersionBitsCache
     void Clear();
 };
 
+ThresholdState VersionBitsStateBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
+
 ThresholdState VersionBitsState(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
 BIP9Stats VersionBitsStatistics(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
 int VersionBitsStateSinceHeight(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
 uint32_t VersionBitsMask(const Consensus::Params& params, Consensus::DeploymentPos pos);
+
+void PreLoadCacheBits(const CBlockIndex* pindex, VersionBitsCache& cache);
 
 #endif // BITCOIN_VERSIONBITS_H

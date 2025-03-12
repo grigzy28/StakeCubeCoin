@@ -744,6 +744,7 @@ libscc_util_a_SOURCES = \
   util/threadnames.cpp \
   util/url.cpp \
   util/validation.cpp \
+  batchedlogger.cpp \
   $(BITCOIN_CORE_H)
 
 if GLIBC_BACK_COMPAT

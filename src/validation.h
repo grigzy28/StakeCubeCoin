@@ -388,6 +388,7 @@ enum class FlushStateMode {
     NONE,
     IF_NEEDED,
     PERIODIC,
+	MEMORY,
     ALWAYS
 };
 
