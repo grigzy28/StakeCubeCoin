@@ -55,6 +55,12 @@ AC_PROG_CXX
 
 dnl libtool overrides
 case $host in
+  *mingw*)
+     dnl By default, libtool for mingw refuses to link static libs into a dll for
+     dnl fear of mixing pic/non-pic objects, and import/export complications. Since
+     dnl we have those under control, re-enable that functionality.
+     lt_cv_deplibs_check_method="pass_all"
+  ;;
   *darwin*)
      dnl Because it prints a verbose warning, lld fails the following check
      dnl for "-Wl,-single_module" from libtool.m4:
@@ -65,10 +71,14 @@ case $host in
      dnl link-line for shared libs.
      lt_cv_apple_cc_single_mod="yes"
   ;;
+esac
+
+
+dnl By default, libtool for mingw refuses to link static libs into a dll for
+dnl fear of mixing pic/non-pic objects, and import/export complications. Since
+dnl we have those under control, re-enable that functionality.
+case $host in
   *mingw*)
-     dnl By default, libtool for mingw refuses to link static libs into a dll for
-     dnl fear of mixing pic/non-pic objects, and import/export complications. Since
-     dnl we have those under control, re-enable that functionality.
      lt_cv_deplibs_check_method="pass_all"
   ;;
 esac
