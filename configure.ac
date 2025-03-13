@@ -73,16 +73,6 @@ case $host in
   ;;
 esac
 
-
-dnl By default, libtool for mingw refuses to link static libs into a dll for
-dnl fear of mixing pic/non-pic objects, and import/export complications. Since
-dnl we have those under control, re-enable that functionality.
-case $host in
-  *mingw*)
-     lt_cv_deplibs_check_method="pass_all"
-  ;;
-esac
-
 AC_ARG_ENABLE([c++20],
   [AS_HELP_STRING([--enable-c++20],
   [enable compilation in c++20 mode (disabled by default)])],
