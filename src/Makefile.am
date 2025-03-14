@@ -164,6 +164,7 @@ BITCOIN_CORE_H = \
   compat/sanity.h \
   compressor.h \
   consensus/consensus.h \
+  consensus/params.h \
   consensus/tx_check.h \
   consensus/tx_verify.h \
   core_io.h \
@@ -766,6 +767,24 @@ libscc_cli_a_SOURCES = \
 nodist_libscc_util_a_SOURCES = $(srcdir)/obj/build.h
 #
 
+# sccconsensus library #
+if BUILD_BITCOIN_LIBS
+include_HEADERS = script/sccconsensus.h consensus/params.h
+libsccconsensus_la_SOURCES = support/cleanse.cpp $(crypto_libscc_crypto_base_a_SOURCES) $(libscc_consensus_a_SOURCES)
+
+if GLIBC_BACK_COMPAT
+  libsccconsensus_la_SOURCES += compat/glibc_compat.cpp
+endif
+
+libsccconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+libsccconsensus_la_LIBADD = $(LIBSECP256K1) $(BLS_LIBS) $(GMP_LIBS) $(BOOST_LIBS)
+libsccconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(srcdir)/secp256k1/include -DBUILD_BITCOIN_INTERNAL
+libsccconsensus_la_CPPFLAGS += -I$(srcdir)/immer
+libsccconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+
+endif
+#
+
 # sccd binary #
 sccd_SOURCES = sccd.cpp
 sccd_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
@@ -863,24 +882,6 @@ scc_wallet_LDADD = \
   $(LIBUNIVALUE)
 
 scc_wallet_LDADD += $(BACKTRACE_LIB) $(BOOST_LIBS) $(BDB_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(MINIUPNPC_LIBS) $(NATPMP_LIBS) $(ZMQ_LIBS) $(BLS_LIBS) $(GMP_LIBS)
-#
-
-# sccconsensus library #
-if BUILD_BITCOIN_LIBS
-include_HEADERS = script/sccconsensus.h
-libsccconsensus_la_SOURCES = support/cleanse.cpp $(crypto_libscc_crypto_base_a_SOURCES) $(libscc_consensus_a_SOURCES)
-
-if GLIBC_BACK_COMPAT
-  libsccconsensus_la_SOURCES += compat/glibc_compat.cpp
-endif
-
-libsccconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS) $(LIBTOOL_APP_LDFLAGS)
-libsccconsensus_la_LIBADD = $(LIBSECP256K1) $(BLS_LIBS) $(GMP_LIBS) $(BOOST_LIBS)
-libsccconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(srcdir)/secp256k1/include -DBUILD_BITCOIN_INTERNAL
-libsccconsensus_la_CPPFLAGS += -I$(srcdir)/immer
-libsccconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-
-endif
 #
 
 CTAES_DIST =  crypto/ctaes/bench.c
