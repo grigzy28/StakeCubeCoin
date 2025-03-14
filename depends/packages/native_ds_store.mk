@@ -1,8 +1,8 @@
 package=native_ds_store
-$(package)_version=738cf71c60d883e87ecaa272708672d3b5d8c8c9
+$(package)_version=1.3.0
 $(package)_download_path=https://github.com/al45tair/ds_store/archive/
 $(package)_file_name=$($(package)_version).tar.gz
-$(package)_sha256_hash=8BBCFE6209F5B225275E19439B372958EFD780822B0F13FA8463A1D72FF246FC
+$(package)_sha256_hash=76b3280cd4e19e5179defa23fb594a9dd32643b0c80d774bd3108361d94fb46d
 $(package)_install_libdir=$(build_prefix)/lib/python3/dist-packages
 
 define $(package)_build_cmds
