@@ -625,8 +625,8 @@ crypto_libscc_crypto_arm_shani_a_CPPFLAGS += -DENABLE_ARM_SHANI
 crypto_libscc_crypto_arm_shani_a_SOURCES = crypto/sha256_arm_shani.cpp
 
 # consensus: shared between all executables that validate any consensus rules.
-libscc_consensus_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(PIC_FLAGS)
-libscc_consensus_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS) $(PIC_FLAGS)
+libscc_consensus_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+libscc_consensus_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libscc_consensus_a_SOURCES = \
   amount.h \
   arith_uint256.cpp \
@@ -662,6 +662,7 @@ libscc_consensus_a_SOURCES = \
   uint256.h \
   util/strencodings.cpp \
   util/strencodings.h \
+  util/string.h \
   version.h
 
 # common: shared between sccd, and scc-qt and non-server tools
