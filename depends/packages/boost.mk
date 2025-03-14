@@ -1,8 +1,8 @@
 package=boost
-$(package)_version=1.81.0
+$(package)_version=1_81_0
 $(package)_download_path=https://archives.boost.io/release/$(subst _,.,$($(package)_version))/source/
 $(package)_file_name=boost_$($(package)_version).tar.bz2
-$(package)_sha256_hash=205666dea9f6a7cfed87c7a6dfbeb52a2c1b9de55712c9c1a87735d7181452b6
+$(package)_sha256_hash=71FEEED900FBCCCA04A3B4F2F84A7C217186F28A940ED8B7ED4725986BAF99FA
 #1.86.0 1bed88e40401b2cb7a1f76d4bab499e352fa4d0c5f31c0dbae64e24d34d7513b
 #4eb3b8d442b426dc35346235c8733b5ae35ba431690e38c6a8263dce9fcbb402
 $(package)_dependencies=native_b2
