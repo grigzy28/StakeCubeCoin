@@ -8,18 +8,18 @@ OSX_SDK=$(SDK_PATH)/Xcode-$(XCODE_VERSION)-$(XCODE_BUILD_ID)-extracted-SDK-with-
 
 darwin_native_binutils=native_cctools
 
-ifeq ($(strip $(FORCE_USE_SYSTEM_CLANG)),)
+#ifeq ($(strip $(FORCE_USE_SYSTEM_CLANG)),)
 # FORCE_USE_SYSTEM_CLANG is empty, so we use our depends-managed, pinned clang
 # from llvm.org
 
 # Clang is a dependency of native_cctools when FORCE_USE_SYSTEM_CLANG is empty
-darwin_native_toolchain=native_cctools
+#darwin_native_toolchain=native_cctools
 
-clang_prog=$(build_prefix)/bin/clang
-clangxx_prog=$(clang_prog)++
+#clang_prog=$(build_prefix)/bin/clang
+#clangxx_prog=$(clang_prog)++
 
-clang_resource_dir=$(build_prefix)/lib/clang/$(native_clang_version)
-else
+#clang_resource_dir=$(build_prefix)/lib/clang/$(native_clang_version)
+#else
 # FORCE_USE_SYSTEM_CLANG is non-empty, so we use the clang from the user's
 # system
 
@@ -36,7 +36,7 @@ clang_prog=$(shell $(SHELL) $(.SHELLFLAGS) "command -v clang")
 clangxx_prog=$(shell $(SHELL) $(.SHELLFLAGS) "command -v clang++")
 
 clang_resource_dir=$(shell clang -print-resource-dir)
-endif
+#endif
 
 cctools_TOOLS=AR RANLIB STRIP NM LIBTOOL OTOOL INSTALL_NAME_TOOL
 
