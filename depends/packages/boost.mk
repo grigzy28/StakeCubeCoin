@@ -5,6 +5,7 @@ $(package)_file_name=boost_$($(package)_version).tar.bz2
 $(package)_sha256_hash=1bed88e40401b2cb7a1f76d4bab499e352fa4d0c5f31c0dbae64e24d34d7513b
 #4eb3b8d442b426dc35346235c8733b5ae35ba431690e38c6a8263dce9fcbb402
 $(package)_dependencies=native_b2
+$(package)_patches=process_macos_sdk.patch
 
 define $(package)_set_vars
 $(package)_config_opts_release=variant=release
@@ -42,6 +43,7 @@ endef
 
 # Fix missing unary_function in clang15 on macos, can be removed after upgrading to 1.81
 define $(package)_preprocess_cmds
+  patch -p1 < $($(package)_patch_dir)/process_macos_sdk.patch && \
   sed -i.old "s/unary_function/$(unary_function)/" boost/container_hash/hash.hpp && \
   echo "using $($(package)_toolset_$(host_os)) : : $($(package)_cxx) : <cflags>\"$($(package)_cflags)\" <cxxflags>\"$($(package)_cxxflags)\" <compileflags>\"$($(package)_cppflags)\" <linkflags>\"$($(package)_ldflags)\" <archiver>\"$($(package)_ar)\" <striper>\"$(host_STRIP)\"  <ranlib>\"$(host_RANLIB)\" <rc>\"$(host_WINDRES)\" : ;" > user-config.jam
 endef
