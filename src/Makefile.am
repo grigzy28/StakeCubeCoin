@@ -876,7 +876,7 @@ scc_wallet_LDADD += $(BACKTRACE_LIB) $(BDB_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_
 # sccconsensus library #
 if BUILD_BITCOIN_LIBS
 include_HEADERS = script/sccconsensus.h
-libsccconsensus_la_SOURCES = support/cleanse.cpp $(crypto_libscc_crypto_base_a_SOURCES) $(libscc_consensus_a_SOURCES)
+libsccconsensus_la_SOURCES = support/cleanse.cpp $(crypto_libscc_crypto_base_a_SOURCES) $(libscc_consensus_a_SOURCES) $(libscc_common_a_SOURCES)
 
 if GLIBC_BACK_COMPAT
   libsccconsensus_la_SOURCES += compat/glibc_compat.cpp
