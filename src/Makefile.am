@@ -779,6 +779,7 @@ endif
 # Libraries below may be listed more than once to resolve circular dependencies (see
 # https://eli.thegreenplace.net/2013/07/09/library-order-in-static-linking#circular-dependency)
 sccd_LDADD = \
+  $(BOOST_LIBS) \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_WALLET) \
   $(LIBBITCOIN_SERVER) \
@@ -793,7 +794,7 @@ sccd_LDADD = \
   $(LIBMEMENV) \
   $(LIBSECP256K1)
 
-sccd_LDADD += $(BACKTRACE_LIB) $(BOOST_LIBS) $(BDB_LIBS) $(MINIUPNPC_LIBS) $(NATPMP_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(BLS_LIBS) $(GMP_LIBS)
+sccd_LDADD += $(BACKTRACE_LIB) $(BDB_LIBS) $(MINIUPNPC_LIBS) $(NATPMP_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(BLS_LIBS) $(GMP_LIBS)
 
 # scc-cli binary #
 scc_cli_SOURCES = scc-cli.cpp
@@ -806,11 +807,13 @@ scc_cli_SOURCES += scc-cli-res.rc
 endif
 
 scc_cli_LDADD = \
+  $(BOOST_LIBS) \
+  $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_CLI) \
   $(LIBUNIVALUE) \
   $(LIBBITCOIN_UTIL) \
   $(LIBBITCOIN_CRYPTO)
-scc_cli_LDADD += $(BACKTRACE_LIB) $(BOOST_LIBS) $(EVENT_LIBS) $(BLS_LIBS) $(GMP_LIBS)
+scc_cli_LDADD += $(BACKTRACE_LIB) $(EVENT_LIBS) $(BLS_LIBS) $(GMP_LIBS)
 #
 
 # scc-tx binary #
@@ -824,6 +827,8 @@ scc_tx_SOURCES += scc-tx-res.rc
 endif
 
 scc_tx_LDADD = \
+  $(BOOST_LIBS) \
+  $(LIBBITCOIN_SERVER) \
   $(LIBUNIVALUE) \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_UTIL) \
@@ -847,6 +852,8 @@ endif
 # Libraries below may be listed more than once to resolve circular dependencies (see
 # https://eli.thegreenplace.net/2013/07/09/library-order-in-static-linking#circular-dependency)
 scc_wallet_LDADD = \
+  $(BOOST_LIBS) \
+  $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_WALLET_TOOL) \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_WALLET) \
@@ -862,7 +869,7 @@ scc_wallet_LDADD = \
   $(LIBSECP256K1) \
   $(LIBUNIVALUE)
 
-scc_wallet_LDADD += $(BACKTRACE_LIB) $(BOOST_LIBS) $(BDB_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(MINIUPNPC_LIBS) $(NATPMP_LIBS) $(ZMQ_LIBS) $(BLS_LIBS) $(GMP_LIBS)
+scc_wallet_LDADD += $(BACKTRACE_LIB) $(BDB_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(MINIUPNPC_LIBS) $(NATPMP_LIBS) $(ZMQ_LIBS) $(BLS_LIBS) $(GMP_LIBS)
 #
 
 # sccconsensus library #
@@ -874,8 +881,9 @@ if GLIBC_BACK_COMPAT
   libsccconsensus_la_SOURCES += compat/glibc_compat.cpp
 endif
 
-libsccconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS) $(LIBTOOL_APP_LDFLAGS) -v
-libsccconsensus_la_LIBADD = $(LIBSECP256K1) $(BLS_LIBS) $(GMP_LIBS) $(BOOST_LIBS)
+libsccconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
+# $(LIBTOOL_APP_LDFLAGS)
+libsccconsensus_la_LIBADD =  $(BOOST_LIBS) $(LIBSECP256K1) $(BLS_LIBS) $(GMP_LIBS)
 libsccconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(srcdir)/secp256k1/include -DBUILD_BITCOIN_INTERNAL
 libsccconsensus_la_CPPFLAGS += -I$(srcdir)/immer
 libsccconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
