@@ -165,7 +165,7 @@ std::unique_ptr<const CChainParams> CreateChainParams(const std::string& chain);
  * Return the currently selected parameters. This won't change after app
  * startup, except for unit tests.
  */
-const CChainParams &Params();
+extern const CChainParams &Params();
 
 /**
  * Sets the params returned by Params() to those for the given BIP70 chain name.
