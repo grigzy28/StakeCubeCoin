@@ -882,7 +882,7 @@ if GLIBC_BACK_COMPAT
   libsccconsensus_la_SOURCES += compat/glibc_compat.cpp
 endif
 
-libsccconsensus_la_LDFLAGS = -v $(AM_LDFLAGS) -no-undefined $(RELDFLAGS) > ~/libconsensus.log
+libsccconsensus_la_LDFLAGS = -v $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
 # $(LIBTOOL_APP_LDFLAGS)
 libsccconsensus_la_LIBADD =  $(BOOST_LIBS) $(LIBSECP256K1) $(BLS_LIBS) $(GMP_LIBS)
 libsccconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(srcdir)/secp256k1/include -DBUILD_BITCOIN_INTERNAL
