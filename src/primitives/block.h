@@ -15,12 +15,6 @@
 
 extern uint32_t nPPSwitchTime;
 
-/**
- * Return the currently selected parameters. This won't change after app
- * startup, except for unit tests.
- */
-const CChainParams::Params &ProgPowParams();
-
 /** Nodes collect new transactions into a block, hash them into a hash tree,
  * and scan through nonce values to make the block's hash satisfy proof-of-work
  * requirements.  When they solve the proof-of-work, they broadcast the block
@@ -196,5 +190,12 @@ struct CBlockLocator
         return vHave.empty();
     }
 };
+
+/**
+ * Return the currently selected parameters. This won't change after app
+ * startup, except for unit tests.
+ */
+const CChainParams::Params &ProgPowParams();
+
 
 #endif // BITCOIN_PRIMITIVES_BLOCK_H
