@@ -43,6 +43,7 @@ endif
 BITCOIN_INCLUDES=-I$(builddir) $(BDB_CPPFLAGS) $(BOOST_CPPFLAGS) $(LEVELDB_CPPFLAGS)
 
 BITCOIN_INCLUDES += -I$(srcdir)/secp256k1/include
+BITCOIN_INCLUDES+=-isystem$(srcdir)/dashbls/include -isystem$(srcdir)/dashbls/depends/relic/include -isystem$(srcdir)/dashbls/depends/minialloc/include
 BITCOIN_INCLUDES += $(UNIVALUE_CFLAGS)
 BITCOIN_INCLUDES += -I$(srcdir)/immer
 
@@ -55,6 +56,7 @@ LIBBITCOIN_CLI=libscc_cli.a
 LIBBITCOIN_UTIL=libscc_util.a
 LIBBITCOIN_CRYPTO_BASE=crypto/libscc_crypto_base.a
 LIBBITCOINQT=qt/libsccqt.a
+LIBDASHBLS=dashbls/libdashbls.la
 LIBSECP256K1=secp256k1/libsecp256k1.la
 
 if ENABLE_ZMQ
@@ -85,6 +87,9 @@ if ENABLE_ARM_SHANI
 LIBBITCOIN_CRYPTO_ARM_SHANI = crypto/libscc_crypto_arm_shani.a
 LIBBITCOIN_CRYPTO += $(LIBBITCOIN_CRYPTO_ARM_SHANI)
 endif
+
+$(LIBDASHBLS):
+	$(AM_V_at)$(MAKE) $(AM_MAKEFLAGS) -C $(@D)
 
 $(LIBSECP256K1): $(wildcard secp256k1/src/*.h) $(wildcard secp256k1/src/*.c) $(wildcard secp256k1/include/*)
 	$(AM_V_at)$(MAKE) $(AM_MAKEFLAGS) -C $(@D) $(@F)
@@ -779,7 +784,7 @@ endif
 
 libsccconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
 # $(LIBTOOL_APP_LDFLAGS)
-libsccconsensus_la_LIBADD = $(LIBSECP256K1) $(BLS_LIBS) $(GMP_LIBS) $(BOOST_LIBS)
+libsccconsensus_la_LIBADD = $(LIBDASHBLS) $(LIBSECP256K1) $(BLS_LIBS) $(GMP_LIBS) $(BOOST_LIBS)
 libsccconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_BITCOIN_INTERNAL
 libsccconsensus_la_CPPFLAGS += -I$(srcdir)/immer
 libsccconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
@@ -809,6 +814,7 @@ sccd_LDADD = \
   $(LIBBITCOIN_ZMQ) \
   $(LIBBITCOIN_CONSENSUS) \
   $(LIBBITCOIN_CRYPTO) \
+  $(LIBDASHBLS) \
   $(LIBLEVELDB) \
   $(LIBLEVELDB_SSE42) \
   $(LIBMEMENV) \
@@ -850,6 +856,7 @@ scc_tx_LDADD = \
   $(LIBBITCOIN_UTIL) \
   $(LIBBITCOIN_CONSENSUS) \
   $(LIBBITCOIN_CRYPTO) \
+  $(LIBDASHBLS) \
   $(LIBSECP256K1)
 
 scc_tx_LDADD += $(BACKTRACE_LIB) $(BOOST_LIBS) $(BLS_LIBS) $(GMP_LIBS)

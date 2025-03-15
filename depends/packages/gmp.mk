@@ -6,10 +6,10 @@ $(package)_sha256_hash=ac28211a7cfb609bae2e2c8d6058d66c8fe96434f740cf6fe2e47b000
 $(package)_patches=include_ldflags_in_configure.patch
 
 define $(package)_set_vars
-$(package)_config_opts += --enable-shared --enable-cxx --enable-fat
+$(package)_config_opts += --disable-shared --enable-cxx --enable-fat --with-pic
 $(package)_cflags_aarch64 += -march=armv8-a
 $(package)_cflags_armv7l += -march=armv7-a
-#$(package)_cflags_x86_64 += -march=x86-64
+$(package)_cflags_x86_64 += -march=x86-64
 endef
 
 define $(package)_preprocess_cmds

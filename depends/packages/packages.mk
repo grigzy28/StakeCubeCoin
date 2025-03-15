@@ -1,4 +1,5 @@
-packages:=boost libevent gmp bls-dash backtrace cmake
+packages:=boost libevent gmp backtrace cmake
+#bls-dash
 
 qt_packages = qrencode
 
