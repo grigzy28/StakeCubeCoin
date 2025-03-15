@@ -664,7 +664,9 @@ libscc_consensus_a_SOURCES = \
   uint256.h \
   util/strencodings.cpp \
   util/strencodings.h \
-  version.h
+  version.h \
+  $(BITCOIN_CORE_H)
+
 
 # common: shared between sccd, and scc-qt and non-server tools
 libscc_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
