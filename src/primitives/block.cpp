@@ -17,7 +17,7 @@
  * Return the currently selected parameters. This won't change after app
  * startup, except for unit tests.
  */
-const CChainParams::Params &ProgPowParams();
+const CChainParams &ProgPowParams();
 
 uint256 CBlockHeader::GetHashFull(uint256& mix_hash) const {
     if (IsProgPow()) {
