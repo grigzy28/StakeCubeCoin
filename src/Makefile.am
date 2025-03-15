@@ -922,7 +922,12 @@ CLEANFILES += zmq/*.gcda zmq/*.gcno
 CLEANFILES += obj/build.h
 
 IMMER_DIST = immer/immer
-EXTRA_DIST = $(CTAES_DIST) $(IMMER_DIST)
+LIBDASHBLS_DIST = dashbls
+
+EXTRA_DIST = \
+  $(CTAES_DIST)   \
+  $(IMMER_DIST)   \
+  $(LIBDASHBLS_DIST)
 
 config/scc-config.h: config/stamp-h1
 	@$(MAKE) -C $(top_builddir) $(subdir)/$(@)
