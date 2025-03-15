@@ -13,12 +13,6 @@
 #include <streams.h>
 #include <tinyformat.h>
 
-/**
- * Return the currently selected parameters. This won't change after app
- * startup, except for unit tests.
- */
-const CChainParams &ProgPowParams();
-
 uint256 CBlockHeader::GetHashFull(uint256& mix_hash) const {
     if (IsProgPow()) {
         return GetProgPowHashFull(mix_hash);
@@ -46,11 +40,11 @@ uint256 CBlockHeader::GetPoWHash(int nHeight) const
 bool CBlockHeader::IsProgPow() const {
     // In case if nTime == SCC_GEN_TIME we're being called from CChainParams() constructor and
     // it is not possible to get Params()
-    return (nTime > SCC_GEN_TIME && nTime >= ProgPowParams().GetConsensus().nPPSwitchTime);
+    return (nTime > SCC_GEN_TIME && nTime >= Params().GetConsensus().nPPSwitchTime);
 }
 
 bool CBlockHeader::IsFirstProgPow() const {
-    return (IsProgPow() && nTime <= (ProgPowParams().GetConsensus().nPPSwitchTime + 432000)); //5 days
+    return (IsProgPow() && nTime <= (Params().GetConsensus().nPPSwitchTime + 432000)); //5 days
 }
 
 CProgPowHeader CBlockHeader::GetProgPowHeader() const {
