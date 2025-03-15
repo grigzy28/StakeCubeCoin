@@ -634,7 +634,6 @@ libscc_consensus_a_SOURCES = \
   arith_uint256.h \
   bls/bls.cpp \
   bls/bls.h \
-  chainparams.cpp \
   consensus/merkle.cpp \
   consensus/merkle.h \
   consensus/params.h \
@@ -664,8 +663,7 @@ libscc_consensus_a_SOURCES = \
   uint256.h \
   util/strencodings.cpp \
   util/strencodings.h \
-  version.h \
-  $(BITCOIN_CORE_H)
+  version.h
 
 
 # common: shared between sccd, and scc-qt and non-server tools
