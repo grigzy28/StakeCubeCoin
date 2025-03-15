@@ -48,6 +48,9 @@ DOWNLOAD_CONNECT_TIMEOUT:=30
 HOST_ID_SALT ?= salt
 BUILD_ID_SALT ?= salt
 
+C_STANDARD ?= c11
+CXX_STANDARD ?= c++20
+
 host:=$(BUILD)
 ifneq ($(HOST),)
 host:=$(HOST)
