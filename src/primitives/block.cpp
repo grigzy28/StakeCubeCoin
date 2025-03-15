@@ -13,6 +13,12 @@
 #include <streams.h>
 #include <tinyformat.h>
 
+/**
+ * Return the currently selected parameters. This won't change after app
+ * startup, except for unit tests.
+ */
+const CChainParams::Params &ProgPowParams();
+
 uint256 CBlockHeader::GetHashFull(uint256& mix_hash) const {
     if (IsProgPow()) {
         return GetProgPowHashFull(mix_hash);
