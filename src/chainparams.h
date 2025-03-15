@@ -15,6 +15,8 @@
 #include <memory>
 #include <vector>
 
+class CBlock;
+
 struct SeedSpec6 {
     uint8_t addr[16];
     uint16_t port;

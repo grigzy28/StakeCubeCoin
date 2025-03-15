@@ -11,7 +11,7 @@
 #include "crypto/progpow.h"
 #include <serialize.h>
 #include <uint256.h>
-//#include <chainparams.h>
+#include <chainparams.h>
 
 extern uint32_t nPPSwitchTime;
 
@@ -195,7 +195,7 @@ struct CBlockLocator
  * Return the currently selected parameters. This won't change after app
  * startup, except for unit tests.
  */
-const Consensus::Params &ProgPowParams();
+const CChainParams::Params &ProgPowParams();
 
 
 #endif // BITCOIN_PRIMITIVES_BLOCK_H
