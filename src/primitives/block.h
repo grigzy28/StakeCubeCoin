@@ -195,7 +195,7 @@ struct CBlockLocator
  * Return the currently selected parameters. This won't change after app
  * startup, except for unit tests.
  */
-const CChainParams::Params &ProgPowParams();
+const Consensus::Params &ProgPowParams();
 
 
 #endif // BITCOIN_PRIMITIVES_BLOCK_H
