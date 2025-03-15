@@ -14,6 +14,12 @@ AC_CONFIG_HEADERS([src/config/scc-config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([build-aux/m4])
 
+m4_ifndef([PKG_PROG_PKG_CONFIG], [m4_fatal([PKG_PROG_PKG_CONFIG macro not found. Please install pkg-config and re-run autogen.sh])])
+PKG_PROG_PKG_CONFIG
+if test "x$PKG_CONFIG" = x; then
+  AC_MSG_ERROR([pkg-config not found])
+fi
+
 BITCOIN_DAEMON_NAME=sccd
 BITCOIN_GUI_NAME=scc-qt
 BITCOIN_CLI_NAME=scc-cli
