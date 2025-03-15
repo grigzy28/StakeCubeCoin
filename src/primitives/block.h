@@ -19,7 +19,7 @@ extern uint32_t nPPSwitchTime;
  * Return the currently selected parameters. This won't change after app
  * startup, except for unit tests.
  */
-const Consensus::Params &Params();
+const Consensus::Params &ProgPowParams();
 
 /** Nodes collect new transactions into a block, hash them into a hash tree,
  * and scan through nonce values to make the block's hash satisfy proof-of-work
