@@ -102,3 +102,8 @@ std::string CBlock::ToString() const
     }
     return s.str();
 }
+
+const CChainParams2 &Params2() {
+    assert(globalChainParams);
+    return *globalChainParams;
+}
