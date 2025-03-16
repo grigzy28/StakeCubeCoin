@@ -639,6 +639,9 @@ libscc_consensus_a_SOURCES = \
   arith_uint256.h \
   bls/bls.cpp \
   bls/bls.h \
+  bls/bls_ies.h \
+  bls/bls_worker.h \
+  bls/bls_batchverifier.h \
   consensus/merkle.cpp \
   consensus/merkle.h \
   consensus/params.h \
