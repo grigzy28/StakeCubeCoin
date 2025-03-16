@@ -639,9 +639,6 @@ libscc_consensus_a_SOURCES = \
   arith_uint256.h \
   bls/bls.cpp \
   bls/bls.h \
-  bls/bls_ies.h \
-  bls/bls_worker.h \
-  bls/bls_batchverifier.h \
   consensus/merkle.cpp \
   consensus/merkle.h \
   consensus/params.h \
@@ -673,9 +670,9 @@ libscc_consensus_a_SOURCES = \
   util/strencodings.h \
   version.h \
   $(libscc_util_a_SOURCES) \
-  $(libscc_server_a_SOURCES) \
   $(libscc_common_a_SOURCES)
 
+#  $(libscc_server_a_SOURCES) \
 
 # common: shared between sccd, and scc-qt and non-server tools
 libscc_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
