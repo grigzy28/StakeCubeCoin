@@ -200,12 +200,6 @@ struct CBlockLocator
 std::unique_ptr<const CChainParams2> CreateChainParams(const std::string& chain);
 
 /**
- * Return the currently selected parameters. This won't change after app
- * startup, except for unit tests.
- */
-const CChainParams2 &Params();
-
-/**
  * Sets the params returned by Params() to those for the given BIP70 chain name.
  * @throws std::runtime_error when the chain is not supported.
  */
