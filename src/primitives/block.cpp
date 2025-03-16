@@ -5,24 +5,13 @@
 
 #include <primitives/block.h>
 #include <consensus/params.h>
-//#include <chainparams.h>
+#include <chainparams.h>
 #include "crypto/progpow.h"
 #include <util/system.h>
 
 #include <hash.h>
 #include <streams.h>
 #include <tinyformat.h>
-
-class CChainParams2
-{
-public:
-
-	const Consensus::Params& GetConsensus2() const { return consensus2; }
-	
-	Consensus::Params consensus2;
-};
-
-CChainParams2 &Params2();
 
 uint256 CBlockHeader::GetHashFull(uint256& mix_hash) const {
     if (IsProgPow()) {
