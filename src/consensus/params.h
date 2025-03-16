@@ -144,7 +144,6 @@ struct Params {
 } // namespace Consensus
 
 #define SCC_GEN_TIME 1601898626
-#endif // BITCOIN_CONSENSUS_PARAMS_H
 
 
 class CChainParm
@@ -155,3 +154,4 @@ class CChainParm
 	Consensus::Params consensus2;
 };
 
+#endif // BITCOIN_CONSENSUS_PARAMS_H
