@@ -146,12 +146,14 @@ struct Params {
 #define SCC_GEN_TIME 1601898626
 
 
-class CChainParm
+class CChainParams2
 {
 
 	const Consensus::Params& GetConsensus2() const { return consensus2; }
 	
 	Consensus::Params consensus2;
 };
+
+const CChainParams2 &Params2();
 
 #endif // BITCOIN_CONSENSUS_PARAMS_H
