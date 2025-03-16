@@ -85,5 +85,3 @@ uint256 CBlockHeader::GetHash() const {
         return HashX11((const char *)vch.data(), (const char *)vch.data() + vch.size());
     }
 }
-
-s
