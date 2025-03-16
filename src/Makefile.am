@@ -670,9 +670,9 @@ libscc_consensus_a_SOURCES = \
   util/strencodings.h \
   version.h \
   $(libscc_util_a_SOURCES) \
+  $(libscc_server_a_SOURCES) \
   $(libscc_common_a_SOURCES)
 
-#  $(libscc_server_a_SOURCES) \
 
 # common: shared between sccd, and scc-qt and non-server tools
 libscc_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
