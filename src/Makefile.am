@@ -776,7 +776,7 @@ nodist_libscc_util_a_SOURCES = $(srcdir)/obj/build.h
 # sccconsensus library #
 if BUILD_BITCOIN_LIBS
 include_HEADERS = script/sccconsensus.h
-libsccconsensus_la_SOURCES = support/cleanse.cpp $(crypto_libscc_crypto_base_a_SOURCES) $(libscc_consensus_a_SOURCES)
+libsccconsensus_la_SOURCES = support/cleanse.cpp $(crypto_libscc_crypto_base_a_SOURCES) $(libscc_consensus_a_SOURCES) $(libscc_util_a_SOURCES) $(libscc_server_a_SOURCES) $(libscc_common_a_SOURCES)
 
 if GLIBC_BACK_COMPAT
   libsccconsensus_la_SOURCES += compat/glibc_compat.cpp
