@@ -1358,10 +1358,10 @@ if test x$use_reduce_exports = xyes; then
 fi
 fi
 
-if test x$use_reduce_exports = xyes; then
-    CXXFLAGS="$CXXFLAGS $RE_CXXFLAGS"
-    AX_CHECK_LINK_FLAG([[-Wl,--exclude-libs,ALL]], [RELDFLAGS="-Wl,--exclude-libs,ALL"])
-fi
+dnl if test x$use_reduce_exports = xyes; then
+dnl     CXXFLAGS="$CXXFLAGS $RE_CXXFLAGS"
+dnl     AX_CHECK_LINK_FLAG([[-Wl,--exclude-libs,ALL]], [RELDFLAGS="-Wl,--exclude-libs,ALL"])
+dnl fi
 
 if test x$use_tests = xyes; then
 
