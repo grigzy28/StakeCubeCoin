@@ -5,7 +5,7 @@
 
 #include <primitives/block.h>
 #include <consensus/params.h>
-#include <chainparams.h>
+//#include <chainparams.h>
 #include "crypto/progpow.h"
 #include <util/system.h>
 
