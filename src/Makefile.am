@@ -3,7 +3,7 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-DIST_SUBDIRS = secp256k1 univalue
+DIST_SUBDIRS = secp256k1 univalue dashbls
 
 AM_LDFLAGS = $(PTHREAD_CFLAGS) $(LIBTOOL_LDFLAGS) $(HARDENED_LDFLAGS) $(GPROF_LDFLAGS) $(SANITIZER_LDFLAGS)
 AM_CXXFLAGS = $(DEBUG_CXXFLAGS) $(HARDENED_CXXFLAGS) $(WARN_CXXFLAGS) $(NOWARN_CXXFLAGS) $(ERROR_CXXFLAGS) $(GPROF_CXXFLAGS) $(SANITIZER_CXXFLAGS)
@@ -42,7 +42,7 @@ endif
 
 BITCOIN_INCLUDES=-I$(builddir) $(BDB_CPPFLAGS) $(BOOST_CPPFLAGS) $(LEVELDB_CPPFLAGS)
 
-BITCOIN_INCLUDES += -I$(srcdir)/secp256k1/include I$(srcdir)/univalue/include
+BITCOIN_INCLUDES += -I$(srcdir)/secp256k1/include -I$(srcdir)/univalue/include
 BITCOIN_INCLUDES += -isystem$(srcdir)/dashbls/include -isystem$(srcdir)/dashbls/depends/relic/include -isystem$(srcdir)/dashbls/depends/minialloc/include
 BITCOIN_INCLUDES += $(UNIVALUE_CFLAGS)
 BITCOIN_INCLUDES += -I$(srcdir)/immer
