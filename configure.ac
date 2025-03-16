@@ -1893,7 +1893,7 @@ dnl bind_at_load flag from libtool
 case $host in
   *darwin*)
      AC_MSG_RESULT([Removing -Wl,single_module from libtool.])
-     sed < libtool > libtool-2 '/single_moduled'
+     sed < libtool > libtool-2 '/single_module/d'
      mv libtool-2 libtool
      chmod 755 libtool
    ;;
