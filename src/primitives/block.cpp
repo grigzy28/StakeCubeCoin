@@ -22,7 +22,7 @@ public:
 	Consensus::Params consensus2;
 };
 
-const CChainParams2 &Params2();
+CChainParams2 &Params2();
 
 uint256 CBlockHeader::GetHashFull(uint256& mix_hash) const {
     if (IsProgPow()) {
