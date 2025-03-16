@@ -639,6 +639,8 @@ libscc_consensus_a_SOURCES = \
   arith_uint256.h \
   bls/bls.cpp \
   bls/bls.h \
+  chainparams.cpp \
+  chainparams.h \
   consensus/merkle.cpp \
   consensus/merkle.h \
   consensus/params.h \
@@ -668,10 +670,10 @@ libscc_consensus_a_SOURCES = \
   uint256.h \
   util/strencodings.cpp \
   util/strencodings.h \
+  $(libscc_util_a_SOURCES) \
+  $(libscc_common_a_SOURCES) \
+  $(crypto_libscc_crypto_base_a_SOURCES) \
   version.h
-#  $(libscc_util_a_SOURCES) \
-#  $(libscc_common_a_SOURCES)
-#  $(crypto_libscc_crypto_base_a_SOURCES) \
 #  $(libscc_server_a_SOURCES) \
 #  $(libscc_wallet_a_SOURCES)
 
