@@ -149,10 +149,9 @@ class CChainParams2
 {
 public:
 
-		const Consensus::Params& GetConsensus2() const { return consensus2; }
+	const Consensus::Params& GetConsensus2() const { return consensus2; }
 
 protected:
-    CChainParams2() {}
 
     Consensus::Params consensus2;
 
