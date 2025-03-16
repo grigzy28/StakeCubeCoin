@@ -26,7 +26,7 @@ define $(package)_preprocess_cmds
 endef
 
 define $(package)_config_cmds
-  $($(package)_cmake) -S .. -B .
+  $(host_prefix)/bin/cmake -S .. -B .
 endef
 
 define $(package)_build_cmds
