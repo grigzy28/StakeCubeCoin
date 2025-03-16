@@ -11,7 +11,6 @@
 #include "crypto/progpow.h"
 #include <serialize.h>
 #include <uint256.h>
-#include <primitives/progparams.h>
 #include <chainparamsbase.h>
 
 extern uint32_t nPPSwitchTime;
@@ -191,6 +190,17 @@ struct CBlockLocator
         return vHave.empty();
     }
 };
+
+class CChainParams2
+{
+public:
+
+	const Consensus::Params& GetConsensus2() const { return consensus2; }
+	
+	Consensus::Params consensus2;
+};
+
+const CChainParams2 &Params2();
 
 /**
  * Creates and returns a std::unique_ptr<CChainParams> of the chosen chain.

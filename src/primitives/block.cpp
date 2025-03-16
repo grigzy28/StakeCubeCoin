@@ -8,7 +8,6 @@
 #include <chainparams.h>
 #include "crypto/progpow.h"
 #include <util/system.h>
-#include <primitives/progparams.h>
 #include <chainparamsbase.h>
 
 #include <hash.h>
