@@ -2,7 +2,7 @@
 #include <chainparams.h>
 
 
-class CChainParams2 : public CChainParams
+class CChainParams2
 {
 public:
 
