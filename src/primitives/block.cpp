@@ -9,6 +9,7 @@
 #include "crypto/progpow.h"
 #include <util/system.h>
 #include <primitives/progparams.h>
+#include <chainparambase.h>
 
 #include <hash.h>
 #include <streams.h>
@@ -87,23 +88,29 @@ uint256 CBlockHeader::GetHash() const {
     }
 }
 
-std::string CBlock::ToString() const
-{
-    std::stringstream s;
-    s << strprintf("CBlock(hash=%s, ver=0x%08x, hashPrevBlock=%s, hashMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce=%u, nNonce64=%u, vtx=%u)\n",
-        GetHash().ToString(),
-        nVersion,
-        hashPrevBlock.ToString(),
-        hashMerkleRoot.ToString(),
-        nTime, nBits, nNonce, nNonce64,
-        vtx.size());
-    for (const auto& tx : vtx) {
-        s << "  " << tx->ToString() << "\n";
-    }
-    return s.str();
+static std::unique_ptr<const CChainParams2> globalChainParams2;
+
+const CChainParams2 &Params() {
+    assert(globalChainParams2);
+    return *globalChainParams2;
 }
 
-const CChainParams2 &Params2() {
-    assert(globalChainParams);
-    return *globalChainParams;
+std::unique_ptr<const CChainParams2> CreateChainParams2(const std::string& chain)
+{
+    if (chain == CBaseChainParams::MAIN)
+        return std::make_unique<CMainParams>();
+    else if (chain == CBaseChainParams::TESTNET)
+        return std::make_unique<CTestNetParams>();
+    else if (chain == CBaseChainParams::DEVNET) {
+        return std::make_unique<CDevNetParams>(gArgs);
+    } else if (chain == CBaseChainParams::REGTEST)
+        return std::make_unique<CRegTestParams>(gArgs);
+
+    throw std::runtime_error(strprintf("%s: Unknown chain %s.", __func__, chain));
+}
+
+void SelectParams(const std::string& network)
+{
+    SelectBaseParams(network);
+    globalChainParams = CreateChainParams2(network);
 }
