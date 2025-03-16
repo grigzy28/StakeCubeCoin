@@ -192,7 +192,7 @@ struct CBlockLocator
 };
 
 
-class CChainParams2 : CChainParams
+class CChainParams2 : public CChainParams
 {
 public:
 
