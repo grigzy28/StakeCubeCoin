@@ -196,13 +196,13 @@ struct CBlockLocator
  * @returns a CChainParams* of the chosen chain.
  * @throws a std::runtime_error if the chain is not supported.
  */
-std::unique_ptr<const CChainParams> CreateChainParams(const std::string& chain);
+std::unique_ptr<const CChainParams2> CreateChainParams(const std::string& chain);
 
 /**
  * Return the currently selected parameters. This won't change after app
  * startup, except for unit tests.
  */
-const CChainParams &Params();
+const CChainParams2 &Params();
 
 /**
  * Sets the params returned by Params() to those for the given BIP70 chain name.
