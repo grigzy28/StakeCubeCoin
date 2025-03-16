@@ -148,6 +148,7 @@ struct Params {
 
 class CChainParams2
 {
+public:
 
 	const Consensus::Params& GetConsensus2() const { return consensus2; }
 	
