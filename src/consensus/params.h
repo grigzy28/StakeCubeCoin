@@ -150,4 +150,7 @@ class CChainParams2
 public:
 
 		const Consensus::Params& GetConsensus2() const { return consensus; }
+
 }
+
+const CChainParams2 &Params2();
