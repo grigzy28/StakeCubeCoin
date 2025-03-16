@@ -95,7 +95,7 @@ const CChainParams2 &Params() {
     return *globalChainParams2;
 }
 
-std::unique_ptr<const CChainParams2> CreateChainParams2(const std::string& chain)
+std::unique_ptr<const CChainParams> CreateChainParams2(const std::string& chain)
 {
     if (chain == CBaseChainParams::MAIN)
         return std::make_unique<CMainParams>();
