@@ -139,22 +139,12 @@ struct Params {
     LLMQType llmqTypeInstantSend{LLMQType::LLMQ_NONE};
     LLMQType llmqTypePlatform{LLMQType::LLMQ_NONE};
     LLMQType llmqTypeMnhf{LLMQType::LLMQ_NONE};
+
+	const Consensus::Params& GetConsensus2() const { return consensus2; }
+
 };
 } // namespace Consensus
 
 #define SCC_GEN_TIME 1601898626
 #endif // BITCOIN_CONSENSUS_PARAMS_H
 
-class CCParams
-{
-public:
-
-	const Consensus::Params& GetConsensus2() const { return consensus2; }
-
-protected:
-
-    Consensus::Params consensus2;
-
-};
-
-const CCParams &Params2();
