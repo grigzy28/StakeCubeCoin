@@ -671,6 +671,7 @@ libscc_consensus_a_SOURCES = \
   version.h \
   $(libscc_util_a_SOURCES) \
   $(libscc_server_a_SOURCES) \
+  $(libscc_common_a_SOURCES) \
   $(libscc_common_a_SOURCES)
 
 
