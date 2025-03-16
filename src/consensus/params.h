@@ -140,6 +140,7 @@ struct Params {
     LLMQType llmqTypePlatform{LLMQType::LLMQ_NONE};
     LLMQType llmqTypeMnhf{LLMQType::LLMQ_NONE};
 
+    Consensus::Params consensus2;
 	const Consensus::Params& GetConsensus2() const { return consensus2; }
 
 };
@@ -147,4 +148,3 @@ struct Params {
 
 #define SCC_GEN_TIME 1601898626
 #endif // BITCOIN_CONSENSUS_PARAMS_H
-
