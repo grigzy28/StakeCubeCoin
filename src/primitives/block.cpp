@@ -8,7 +8,6 @@
 #include <chainparams.h>
 #include "crypto/progpow.h"
 #include <util/system.h>
-#include <chainparamsbase.h>
 
 #include <hash.h>
 #include <streams.h>
@@ -87,29 +86,4 @@ uint256 CBlockHeader::GetHash() const {
     }
 }
 
-static std::unique_ptr<const CChainParams2> globalChainParams2;
-
-const CChainParams2 &Params2() {
-    assert(globalChainParams2);
-    return *globalChainParams2;
-}
-
-std::unique_ptr<const CChainParams2> CreateChainParams2(const std::string& chain)
-{
-    if (chain == CBaseChainParams::MAIN)
-        return std::make_unique<CMainParams>();
-    else if (chain == CBaseChainParams::TESTNET)
-        return std::make_unique<CTestNetParams>();
-    else if (chain == CBaseChainParams::DEVNET) {
-        return std::make_unique<CDevNetParams>(gArgs);
-    } else if (chain == CBaseChainParams::REGTEST)
-        return std::make_unique<CRegTestParams>(gArgs);
-
-    throw std::runtime_error(strprintf("%s: Unknown chain %s.", __func__, chain));
-}
-
-void SelectParams(const std::string& network)
-{
-    SelectBaseParams(network);
-    globalChainParams2 = CreateChainParams2(network);
-}
+s

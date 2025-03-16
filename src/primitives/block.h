@@ -11,7 +11,6 @@
 #include "crypto/progpow.h"
 #include <serialize.h>
 #include <uint256.h>
-#include <chainparamsbase.h>
 
 extern uint32_t nPPSwitchTime;
 
@@ -190,29 +189,5 @@ struct CBlockLocator
         return vHave.empty();
     }
 };
-
-class CChainParams2
-{
-public:
-
-	const Consensus::Params& GetConsensus2() const { return consensus2; }
-	
-	Consensus::Params consensus2;
-};
-
-const CChainParams2 &Params2();
-
-/**
- * Creates and returns a std::unique_ptr<CChainParams> of the chosen chain.
- * @returns a CChainParams* of the chosen chain.
- * @throws a std::runtime_error if the chain is not supported.
- */
-std::unique_ptr<const CChainParams2> CreateChainParams2(const std::string& chain);
-
-/**
- * Sets the params returned by Params() to those for the given BIP70 chain name.
- * @throws std::runtime_error when the chain is not supported.
- */
-void SelectParams(const std::string& chain);
 
 #endif // BITCOIN_PRIMITIVES_BLOCK_H
