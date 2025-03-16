@@ -9,7 +9,7 @@
 #include "crypto/progpow.h"
 #include <util/system.h>
 #include <primitives/progparams.h>
-#include <chainparambase.h>
+#include <chainparamsbase.h>
 
 #include <hash.h>
 #include <streams.h>
