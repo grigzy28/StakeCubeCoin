@@ -668,9 +668,9 @@ libscc_consensus_a_SOURCES = \
   uint256.h \
   util/strencodings.cpp \
   util/strencodings.h \
-  version.h \
-  $(libscc_util_a_SOURCES) \
-  $(libscc_common_a_SOURCES)
+  version.h
+#  $(libscc_util_a_SOURCES) \
+#  $(libscc_common_a_SOURCES)
 #  $(crypto_libscc_crypto_base_a_SOURCES) \
 #  $(libscc_server_a_SOURCES) \
 #  $(libscc_wallet_a_SOURCES)
