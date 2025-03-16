@@ -155,5 +155,6 @@ public:
 	Consensus::Params consensus2;
 };
 
+const CChainParams2 &Params();
 
 #endif // BITCOIN_CONSENSUS_PARAMS_H
