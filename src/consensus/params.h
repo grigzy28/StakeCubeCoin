@@ -145,7 +145,7 @@ struct Params {
 #define SCC_GEN_TIME 1601898626
 #endif // BITCOIN_CONSENSUS_PARAMS_H
 
-Class CChainParams2
+class CChainParams2
 {
 public:
 
