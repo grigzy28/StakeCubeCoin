@@ -89,7 +89,7 @@ uint256 CBlockHeader::GetHash() const {
 
 static std::unique_ptr<const CChainParams2> globalChainParams2;
 
-const CChainParams2 &Params() {
+const CChainParams2 &Params2() {
     assert(globalChainParams2);
     return *globalChainParams2;
 }
@@ -111,5 +111,5 @@ std::unique_ptr<const CChainParams2> CreateChainParams2(const std::string& chain
 void SelectParams(const std::string& network)
 {
     SelectBaseParams(network);
-    globalChainParams = CreateChainParams2(network);
+    globalChainParams2 = CreateChainParams2(network);
 }
