@@ -192,7 +192,7 @@ struct CBlockLocator
 
 class CChainParams;
 
-extern const CChainParams &Params();
+const CChainParams &Params();
 
 
 #endif // BITCOIN_PRIMITIVES_BLOCK_H
