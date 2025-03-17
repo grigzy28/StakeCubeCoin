@@ -5,8 +5,8 @@ $(package)_file_name=$(package)-$($(package)_version).tar.gz
 $(package)_sha256_hash=92e6de1be9ec176428fd2367677e61ceffc2ee1cb119035037a27d346b0403bb
 $(package)_patches=cmake_fixups.patch
 $(package)_patches+=fix_mingw_link.patch
-#$(package)_dependencies=cmake
 $(package)_build_subdir=build
+#$(package)_dependencies=cmake
 
 # When building for Windows, we set _WIN32_WINNT to target the same Windows
 # version as we do in releases. Due to quirks in libevents build system, this
@@ -23,7 +23,8 @@ endef
 define $(package)_preprocess_cmds
   patch -p1 < $($(package)_patch_dir)/cmake_fixups.patch && \
   patch -p1 < $($(package)_patch_dir)/fix_mingw_link.patch && \
-  cp -f $(BASEDIR)/config.guess $(BASEDIR)/config.sub build-aux
+  cp -f $(BASEDIR)/config.guess $(BASEDIR)/config.sub build-aux && \
+  echo $(BASEDIR)
 endef
 
 define $(package)_config_cmds
