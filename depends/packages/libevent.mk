@@ -15,10 +15,10 @@ define $(package)_set_vars
   $(package)_config_opts=-DEVENT__DISABLE_BENCHMARK=ON -DEVENT__DISABLE_OPENSSL=ON
   $(package)_config_opts+=-DEVENT__DISABLE_SAMPLES=ON -DEVENT__DISABLE_REGRESS=ON
   $(package)_config_opts+=-DEVENT__DISABLE_TESTS=ON -DEVENT__LIBRARY_TYPE=STATIC
-#  $(package)_cflags += -fdebug-prefix-map=$($(package)_extract_dir)=/usr -fmacro-prefix-map=$($(package)_extract_dir)=/usr
   $(package)_cppflags += -D_GNU_SOURCE -D_FORTIFY_SOURCE=3
   $(package)_cppflags_mingw32=-D_WIN32_WINNT=0x0A00
 endef
+#  $(package)_cflags += -fdebug-prefix-map=$($(package)_extract_dir)=/usr -fmacro-prefix-map=$($(package)_extract_dir)=/usr
 
 define $(package)_preprocess_cmds
   patch -p1 < $($(package)_patch_dir)/cmake_fixups.patch && \
@@ -27,9 +27,9 @@ define $(package)_preprocess_cmds
 endef
 
 define $(package)_config_cmds
-#  $(host_prefix)/bin/cmake -S .. -B .
   $($(package)_autoconf)
 endef
+#  $(host_prefix)/bin/cmake -S .. -B .
 
 define $(package)_build_cmds
   $(MAKE)
