@@ -5,7 +5,7 @@ $(package)_file_name=$(package)-$($(package)_version).tar.gz
 $(package)_sha256_hash=92e6de1be9ec176428fd2367677e61ceffc2ee1cb119035037a27d346b0403bb
 $(package)_patches=cmake_fixups.patch
 $(package)_patches+=fix_mingw_link.patch
-$(package)_build_subdir=build
+#$(package)_build_subdir=build
 #$(package)_dependencies=cmake
 
 # When building for Windows, we set _WIN32_WINNT to target the same Windows
