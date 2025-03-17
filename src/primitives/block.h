@@ -3,6 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+/*
 #ifndef BITCOIN_PRIMITIVES_BLOCK_H
 #define BITCOIN_PRIMITIVES_BLOCK_H
 
@@ -21,7 +22,7 @@ extern uint32_t nPPSwitchTime;
  * in the block is a special one that creates a new coin owned by the creator
  * of the block.
  */
-class CBlockHeader
+/*class CBlockHeader
 {
 public:
     // header
@@ -163,7 +164,7 @@ public:
  * other node doesn't have the same branch, it can find a recent common trunk.
  * The further back it is, the further before the fork it may be.
  */
-struct CBlockLocator
+/*struct CBlockLocator
 {
     std::vector<uint256> vHave;
 
@@ -196,3 +197,4 @@ const CChainParams &Params();
 
 
 #endif // BITCOIN_PRIMITIVES_BLOCK_H
+*/
