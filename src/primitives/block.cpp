@@ -13,9 +13,7 @@
 #include <streams.h>
 #include <tinyformat.h>
 
-extern "C" {
-	extern const CChainParams &Params2();
-}
+const CChainParams &Params2();
 
 uint256 CBlockHeader::GetHashFull(uint256& mix_hash) const {
     if (IsProgPow()) {
