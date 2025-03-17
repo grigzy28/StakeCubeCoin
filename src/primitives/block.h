@@ -190,9 +190,7 @@ struct CBlockLocator
     }
 };
 
-class CChainParams;
-
-extern CChainParams &Params2();
+extern const CChainParams &Params();
 
 
 #endif // BITCOIN_PRIMITIVES_BLOCK_H
