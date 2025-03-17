@@ -190,6 +190,8 @@ struct CBlockLocator
     }
 };
 
+class CChainParams;
+
 extern CChainParams &Params2();
 
 
