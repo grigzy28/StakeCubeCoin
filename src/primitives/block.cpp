@@ -14,7 +14,7 @@
 #include <tinyformat.h>
 
 extern "C" {
-	extern const CChainParams &Params;
+	extern const CChainParams &Params();
 }
 
 uint256 CBlockHeader::GetHashFull(uint256& mix_hash) const {
