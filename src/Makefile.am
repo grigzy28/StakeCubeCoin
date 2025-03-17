@@ -639,8 +639,6 @@ libscc_consensus_a_SOURCES = \
   arith_uint256.h \
   bls/bls.cpp \
   bls/bls.h \
-  chainparams.cpp \
-  chainparams.h \
   consensus/merkle.cpp \
   consensus/merkle.h \
   consensus/params.h \
