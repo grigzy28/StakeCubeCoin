@@ -15,7 +15,7 @@
 
 extern uint32_t nPPSwitchTime;
 extern "C" {
-	extern const CChainParams &Params();
+	const CChainParams &Params();
 }
 
 /** Nodes collect new transactions into a block, hash them into a hash tree,
