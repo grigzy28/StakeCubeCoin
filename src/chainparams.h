@@ -165,7 +165,7 @@ std::unique_ptr<const CChainParams> CreateChainParams(const std::string& chain);
  * Return the currently selected parameters. This won't change after app
  * startup, except for unit tests.
  */
-__attribute__((visibility("default"));
+__attribute__((visibility("default")))
 const CChainParams &Params();
 
 /**
