@@ -1864,7 +1864,8 @@ if test x$need_bundled_univalue = xyes; then
   AC_CONFIG_SUBDIRS([src/univalue])
 fi
 
-ac_configure_args="${ac_configure_args} --disable-shared --with-pic --enable-benchmark=no --enable-module-recovery"
+ac_configure_args="${ac_configure_args} --with-pic --enable-benchmark=no --enable-module-recovery"
+dnl --disable-shared 
 AC_CONFIG_SUBDIRS([src/dashbls src/secp256k1])
 
 AC_OUTPUT
@@ -1874,17 +1875,6 @@ case ${OS} in
    *Windows*)
      sed  's/BUILDDIR="\/\([[a-z]]\)/BUILDDIR="\1:/'  test/config.ini > test/config-2.ini
      mv test/config-2.ini test/config.ini
-   ;;
-esac
-
-dnl An old hack similar to a98356fee to remove hard-coded
-dnl bind_at_load flag from libtool
-case $host in
-  *darwin*)
-     AC_MSG_RESULT([Removing -Wl,bind_at_load from libtool.])
-     sed < libtool > libtool-2 '/bind_at_load/d'
-     mv libtool-2 libtool
-     chmod 755 libtool
    ;;
 esac
 
