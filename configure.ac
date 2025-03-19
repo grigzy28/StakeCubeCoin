@@ -1864,8 +1864,7 @@ if test x$need_bundled_univalue = xyes; then
   AC_CONFIG_SUBDIRS([src/univalue])
 fi
 
-ac_configure_args="${ac_configure_args} --with-pic --enable-benchmark=no --enable-module-recovery"
-dnl --disable-shared 
+ac_configure_args="${ac_configure_args} --with-pic --enable-benchmark=no --enable-module-recovery --disable-shared  --disable-module-ecdh"
 AC_CONFIG_SUBDIRS([src/dashbls src/secp256k1])
 
 AC_OUTPUT
