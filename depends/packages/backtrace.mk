@@ -1,5 +1,5 @@
 package=backtrace
-$(package)_version=rust-0034e33946824057b48c5e686a3aefc761b37384
+$(package)_version=0034e33946824057b48c5e686a3aefc761b37384
 $(package)_download_path=https://github.com/ianlancetaylor/libbacktrace/archive
 $(package)_file_name=$($(package)_version).tar.gz
 $(package)_sha256_hash=8a5d15df5f4a6c20d9defd4192498615e5ca1b81b872b2433200eb8c75122dbf
