@@ -36,9 +36,9 @@ endif
 $(package)_config_libraries=filesystem,test,thread
 $(package)_cxxflags=-std=c++17
 $(package)_cxxflags_linux=-fPIC
-$(package)_cxxflags_freebsd=-fPIC
-$(package)_cxxflags_openbsd=-fPIC
-$(package)_cxxflags_android=-fPIC
+#$(package)_cxxflags_freebsd=-fPIC
+#$(package)_cxxflags_openbsd=-fPIC
+#$(package)_cxxflags_android=-fPIC
 $(package)_cxxflags_x86_64=-fcf-protection=full
 endef
 

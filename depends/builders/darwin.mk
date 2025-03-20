@@ -26,8 +26,8 @@ darwin_DSYMUTIL:=$(shell xcrun -f dsymutil)
 
 darwin_OTOOL:=$(shell xcrun -f otool)
 darwin_INSTALL_NAME_TOOL:=$(shell xcrun -f install_name_tool)
-darwin_native_binutils=
-darwin_native_toolchain=
+#darwin_native_binutils=
+#darwin_native_toolchain=
 
 x86_64_darwin_CFLAGS += -arch x86_64
 x86_64_darwin_CXXFLAGS += -arch x86_64

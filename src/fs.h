@@ -11,11 +11,14 @@
 #include <ext/stdio_filebuf.h>
 #endif
 
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
+#include <filesystem>
+
+//#include <boost/filesystem.hpp>
+//#include <boost/filesystem/fstream.hpp>
 
 /** Filesystem operations and types */
-namespace fs = boost::filesystem;
+namespace fs
+// = boost::filesystem;
 
 /** Bridge operations to C stdio */
 namespace fsbridge {
