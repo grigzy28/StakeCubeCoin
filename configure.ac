@@ -731,6 +731,13 @@ case $host in
                 fi
                 LDFLAGS="$LDFLAGS -L$libnatpmp_prefix/lib"
               fi
+
+              gmp_prefix=$($BREW --prefix gmp 2>/dev/null)
+			  if test x$gmp_prefix != x; then
+				CORE_CPPFLAGS="$CORE_CPPFLAGS -I$gmp_prefix/include"
+				CORE_LDFLAGS="$CORE_LDFLAGS -L$gmp_prefix/lib"
+			  fi
+
               ;;
           esac
        fi
