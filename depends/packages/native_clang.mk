@@ -1,15 +1,15 @@
 package=native_clang
-$(package)_version=10.0.1
-$(package)_download_path=https://github.com/llvm/llvm-project/releases/download/llvmorg-$($(package)_version)
-ifneq (,$(findstring aarch64,$(BUILD)))
-$(package)_download_file=clang+llvm-$($(package)_version)-aarch64-linux-gnu.tar.xz
-$(package)_file_name=clang+llvm-$($(package)_version)-aarch64-linux-gnu.tar.xz
-$(package)_sha256_hash=90dc69a4758ca15cd0ffa45d07fbf5bf4309d47d2c7745a9f0735ecffde9c31f
-else
-$(package)_download_file=clang+llvm-$($(package)_version)-x86_64-linux-gnu-ubuntu-16.04.tar.xz
-$(package)_file_name=clang+llvm-$($(package)_version)-x86_64-linux-gnu-ubuntu-16.04.tar.xz
-$(package)_sha256_hash=48b83ef827ac2c213d5b64f5ad7ed082c8bcb712b46644e0dc5045c6f462c231
-endif
+$(package)_version=21
+$(package)_download_path=https://github.com/grigzy28/stakecubecoin-bootstrap/releases/download/clang-llvm-$($(package)_version)-ubuntu-22.04-x86_64
+#ifneq (,$(findstring aarch64,$(BUILD)))
+#$(package)_download_file=clang+llvm-$($(package)_version)-aarch64-linux-gnu.tar.xz
+#$(package)_file_name=clang+llvm-$($(package)_version)-aarch64-linux-gnu.tar.xz
+#$(package)_sha256_hash=90dc69a4758ca15cd0ffa45d07fbf5bf4309d47d2c7745a9f0735ecffde9c31f
+#else
+$(package)_download_file=clang-llvm-$($(package)_version)-x86_64-linux-gnu-ubuntu-22.04.tar.gz
+$(package)_file_name=clang-llvm-$($(package)_version)-x86_64-linux-gnu-ubuntu-22.04.tar.gz
+$(package)_sha256_hash=e5d1a786cd7fa22a17bbbbbd4d8ee1b6a9701f6e81f313d172f901cd07f3e05d
+#endif
 
 define $(package)_preprocess_cmds
   rm -f $($(package)_extract_dir)/lib/libc++abi.so*
