@@ -1023,7 +1023,7 @@ if test "x$use_thread_local" = xyes || { test "x$use_thread_local" = xauto && te
         *darwin*)
           # TODO enable thread_local on later versions of Darwin where it is
           # supported (per https://stackoverflow.com/a/29929949)
-          AC_MSG_RESULT(no)
+          AC_MSG_RESULT(yes)
           ;;
         *freebsd*)
           # FreeBSD's implementation of thread_local is also buggy (per
