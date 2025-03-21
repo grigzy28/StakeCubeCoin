@@ -19,6 +19,9 @@
 /** Filesystem operations and types */
 namespace fs
 // = boost::filesystem;
+{
+	using namespace std::filesystem;
+}
 
 /** Bridge operations to C stdio */
 namespace fsbridge {
