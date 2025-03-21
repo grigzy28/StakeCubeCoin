@@ -9,6 +9,8 @@
 #include <fs.h>
 #include <tinyformat.h>
 #include <threadsafety.h>
+#include <util/string.h>
+
 
 #include <atomic>
 #include <cstdint>
