@@ -8,7 +8,7 @@ $(package)_download_path=https://github.com/grigzy28/stakecubecoin-bootstrap/rel
 #else
 $(package)_download_file=clang-llvm-$($(package)_version)-x86_64-linux-gnu-ubuntu-22.04.tar.gz
 $(package)_file_name=clang-llvm-$($(package)_version)-x86_64-linux-gnu-ubuntu-22.04.tar.gz
-$(package)_sha256_hash=e5d1a786cd7fa22a17bbbbbd4d8ee1b6a9701f6e81f313d172f901cd07f3e05d
+$(package)_sha256_hash=E7728E64292012CA889C00A075112E79454E24314222BC9973958E8DED87BC2E
 #endif
 
 define $(package)_preprocess_cmds
