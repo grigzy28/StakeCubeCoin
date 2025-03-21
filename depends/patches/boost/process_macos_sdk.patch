@@ -1,17 +1,11 @@
-Fix Boost Process compilation with macOS 14 SDK.
-Can be dropped with Boost 1.84.0.
-https://github.com/boostorg/process/pull/343.
-https://github.com/boostorg/process/issues/342.
+Patch
 
-index cd9e1ce5a..304e77b1c 100644
---- a/boost/process/detail/posix/handles.hpp
-+++ b/boost/process/detail/posix/handles.hpp
-@@ -273,7 +273,7 @@ inline std::vector<native_handle_type> get_handles(std::error_code & ec)
-     else
-         ec.clear();
- 
--    auto my_fd = ::dirfd(dir.get());
-+    auto my_fd = dirfd(dir.get());
- 
-     struct ::dirent * ent_p;
- 
+--- a/libs/filesystem/src/directory.cpp
++++ b/libs/filesystem/src/directory.cpp
+@@ -272,3 +272,3 @@
+-{
++{
+-    int fd = ::dirfd(static_cast< DIR* >(imp.handle));
++    int fd = dirfd(static_cast< DIR* >(imp.handle));
+    if (BOOST_UNLIKELY(fd < 0))
+
