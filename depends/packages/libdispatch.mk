@@ -4,7 +4,7 @@ $(package)_download_path=https://github.com/swiftlang/swift-corelibs-libdispatch
 $(package)_file_name=$($(package)_version).tar.gz
 $(package)_sha256_hash=0F25263ACDB746A81FDB8E7951BD1854D4BECB3F7F1119463A04DB56C7A6FDB0
 $(package)_build_subdir=build
-$(package)_dependencies=native_clang
+$(package)_dependencies=native_clang cmake
 
 # When building for Windows, we set _WIN32_WINNT to target the same Windows
 # version as we do in configure. Due to quirks in libevents build system, this
