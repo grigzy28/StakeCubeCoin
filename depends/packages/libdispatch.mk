@@ -1,7 +1,7 @@
 package=libdispatch
 $(package)_version=137b6cf3060eae87d9b367c263619c2eca5d3aac
 $(package)_download_path=https://github.com/swiftlang/swift-corelibs-libdispatch/archive
-$(package)_file_name=swift-corelibs-libdispatch-$($(package)_version).tar.gz
+$(package)_file_name=$($(package)_version).tar.gz
 $(package)_sha256_hash=0F25263ACDB746A81FDB8E7951BD1854D4BECB3F7F1119463A04DB56C7A6FDB0
 $(package)_build_subdir=build
 $(package)_dependencies=native_clang
