@@ -1,4 +1,4 @@
-packages:=boost libevent gmp backtrace cmake
+packages:=boost libevent gmp backtrace cmake bdb
 
 qt_packages = qrencode
 
@@ -7,8 +7,6 @@ qt_linux_packages:=qt expat dbus libxcb xcb_proto libXau xproto freetype fontcon
 qt_android_packages=qt
 qt_darwin_packages=qt
 qt_mingw32_packages=qt
-
-wallet_packages=bdb
 
 zmq_packages=zeromq
 

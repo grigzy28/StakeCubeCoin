@@ -16,6 +16,7 @@ define $(package)_set_vars
   $(package)_config_opts+=-DEVENT__DISABLE_TESTS=ON -DEVENT__LIBRARY_TYPE=STATIC
   $(package)_cppflags += -D_GNU_SOURCE
   $(package)_cppflags_mingw32=-D_WIN32_WINNT=0x0601
+  CMAKE=$(shell $(SHELL) $(.SHELLFLAGS) "command -v cmake")
 endef
 
 define $(package)_preprocess_cmds
@@ -24,20 +25,18 @@ define $(package)_preprocess_cmds
 endef
 
 define $(package)_config_cmds
-  cmake ..
+  $(CMAKE) -S .. -B . $($(package)_config_opts)
 endef
 
 define $(package)_build_cmds
-  $(MAKE)
-endef
-
-define $(package)_stage_cmds
-  $(MAKE) DESTDIR=$($(package)_staging_dir) install
+  $(MAKE) DESTDIR=$($(package)_staging_prefix_dir) install
 endef
 
 define $(package)_postprocess_cmds
-  rm -rf bin
+  mv usr/local/* . && \
+  ls -lsa && pwd && \
+  rm include/ev*.h && \
+  rm include/event2/*_compat.h && \
+  rm -rf bin usr
 endef
-#  rm include/ev*.h && \
-#  rm include/event2/*_compat.h
 
