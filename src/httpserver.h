@@ -1,30 +1,15 @@
-// Copyright (c) 2015-2022 The Bitcoin Core developers
+// Copyright (c) 2015 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef BITCOIN_HTTPSERVER_H
 #define BITCOIN_HTTPSERVER_H
 
-#include <functional>
-#include <optional>
-#include <span>
 #include <string>
+#include <functional>
 
-namespace util {
-class SignalInterrupt;
-} // namespace util
-
-/**
- * The default value for `-rpcthreads`. This number of threads will be created at startup.
- */
-static const int DEFAULT_HTTP_THREADS=16;
-
-/**
- * The default value for `-rpcworkqueue`. This is the maximum depth of the work queue,
- * we don't allocate this number of work queue items upfront.
- */
-static const int DEFAULT_HTTP_WORKQUEUE=64;
-
+static const int DEFAULT_HTTP_THREADS=4;
+static const int DEFAULT_HTTP_WORKQUEUE=16;
 static const int DEFAULT_HTTP_SERVER_TIMEOUT=30;
 
 struct evhttp_request;
@@ -35,7 +20,7 @@ class HTTPRequest;
 /** Initialize HTTP server.
  * Call this before RegisterHTTPHandler or EventBase().
  */
-bool InitHTTPServer(const util::SignalInterrupt& interrupt);
+bool InitHTTPServer();
 /** Start HTTP server.
  * This is separate from InitHTTPServer to give users race-condition-free time
  * to register their handlers between InitHTTPServer and StartHTTPServer.
@@ -46,8 +31,9 @@ void InterruptHTTPServer();
 /** Stop HTTP server */
 void StopHTTPServer();
 
-/** Change logging level for libevent. */
-void UpdateHTTPServerLogging(bool enable);
+/** Change logging level for libevent. Removes BCLog::LIBEVENT from log categories if
+ * libevent doesn't support debug logging.*/
+bool UpdateHTTPServerLogging(bool enable);
 
 /** Handler for requests to a certain HTTP path */
 typedef std::function<bool(HTTPRequest* req, const std::string &)> HTTPRequestHandler;
@@ -71,11 +57,10 @@ class HTTPRequest
 {
 private:
     struct evhttp_request* req;
-    const util::SignalInterrupt& m_interrupt;
     bool replySent;
 
 public:
-    explicit HTTPRequest(struct evhttp_request* req, const util::SignalInterrupt& interrupt, bool replySent = false);
+    explicit HTTPRequest(struct evhttp_request* req);
     ~HTTPRequest();
 
     enum RequestMethod {
@@ -97,17 +82,6 @@ public:
     /** Get request method.
      */
     RequestMethod GetRequestMethod() const;
-
-    /** Get the query parameter value from request uri for a specified key, or std::nullopt if the
-     * key is not found.
-     *
-     * If the query string contains duplicate keys, the first value is returned. Many web frameworks
-     * would instead parse this as an array of values, but this is not (yet) implemented as it is
-     * currently not needed in any of the endpoints.
-     *
-     * @param[in] key represents the query parameter of which the value is returned
-     */
-    std::optional<std::string> GetQueryParameter(const std::string& key) const;
 
     /**
      * Get the request header specified by hdr, or an empty string.
@@ -133,31 +107,13 @@ public:
     /**
      * Write HTTP reply.
      * nStatus is the HTTP status code to send.
-     * reply is the body of the reply. Keep it empty to send a standard message.
+     * strReply is the body of the reply. Keep it empty to send a standard message.
      *
      * @note Can be called only once. As this will give the request back to the
      * main thread, do not call any other HTTPRequest methods after calling this.
      */
-    void WriteReply(int nStatus, std::string_view reply = "")
-    {
-        WriteReply(nStatus, std::as_bytes(std::span{reply}));
-    }
-    void WriteReply(int nStatus, std::span<const std::byte> reply);
+    void WriteReply(int nStatus, const std::string& strReply = "");
 };
-
-/** Get the query parameter value from request uri for a specified key, or std::nullopt if the key
- * is not found.
- *
- * If the query string contains duplicate keys, the first value is returned. Many web frameworks
- * would instead parse this as an array of values, but this is not (yet) implemented as it is
- * currently not needed in any of the endpoints.
- *
- * Helper function for HTTPRequest::GetQueryParameter.
- *
- * @param[in] uri is the entire request uri
- * @param[in] key represents the query parameter of which the value is returned
- */
-std::optional<std::string> GetQueryParameterFromUri(const char* uri, const std::string& key);
 
 /** Event handler closure.
  */
@@ -165,7 +121,7 @@ class HTTPClosure
 {
 public:
     virtual void operator()() = 0;
-    virtual ~HTTPClosure() = default;
+    virtual ~HTTPClosure() {}
 };
 
 /** Event class. This can be used either as a cross-thread trigger or as a timer.
