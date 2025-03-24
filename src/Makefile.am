@@ -47,7 +47,7 @@ BITCOIN_INCLUDES += -isystem$(srcdir)/dashbls/include -isystem$(srcdir)/dashbls/
 BITCOIN_INCLUDES += $(UNIVALUE_CFLAGS)
 BITCOIN_INCLUDES += -I$(srcdir)/immer
 
-BLS_LIBS=-lbls-dash -lrelic_s
+BLS_LIBS=-ldashbls -lrelic_s
 
 LIBBITCOIN_SERVER=libscc_server.a
 LIBBITCOIN_COMMON=libscc_common.a
