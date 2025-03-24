@@ -50,23 +50,29 @@ darwin_STRIP=$(shell $(SHELL) $(.SHELLFLAGS) "command -v llvm-strip")
 #         Disable adhoc codesigning (for now) when using LLVM tooling, to avoid
 #         non-determinism issues with the Identifier field.
 
-darwin_CC=$(clang_prog) --target=$(host) \
-              -isysroot$(OSX_SDK) -nostdlibinc \
+darwin_CC=env -u C_INCLUDE_PATH -u CPLUS_INCLUDE_PATH \
+              -u OBJC_INCLUDE_PATH -u OBJCPLUS_INCLUDE_PATH -u CPATH \
+              -u LIBRARY_PATH \
+              $(clang_prog) --target=$(host) \
+              -isysroot$(OSX_SDK) -nostdlibinc  \
               -iwithsysroot/usr/include -iframeworkwithsysroot/System/Library/Frameworks
 
-darwin_CXX=$(clangxx_prog) --target=$(host) \
-               -isysroot$(OSX_SDK) -nostdlibinc \
+darwin_CXX=env -u C_INCLUDE_PATH -u CPLUS_INCLUDE_PATH \
+               -u OBJC_INCLUDE_PATH -u OBJCPLUS_INCLUDE_PATH -u CPATH \
+               -u LIBRARY_PATH \
+               $(clangxx_prog) --target=$(host) \
+               -isysroot$(OSX_SDK) -nostdlibinc  \
                -iwithsysroot/usr/include/c++/v1 \
                -iwithsysroot/usr/include -iframeworkwithsysroot/System/Library/Frameworks
 
-darwin_CFLAGS=-pipe -std=$(C_STANDARD) -mmacos-version-min=$(OSX_MIN_VERSION)
-darwin_CXXFLAGS=-pipe -std=$(CXX_STANDARD) -mmacos-version-min=$(OSX_MIN_VERSION)
+darwin_CFLAGS=-pipe -std=$(C_STANDARD) -mmacos-version-min=$(OSX_MIN_VERSION) -fPIC
+darwin_CXXFLAGS=-pipe -std=$(CXX_STANDARD) -mmacos-version-min=$(OSX_MIN_VERSION) -fPIC
 darwin_LDFLAGS=-Wl,-platform_version,macos,$(OSX_MIN_VERSION),$(OSX_SDK_VERSION)
 
 ifneq ($(build_os),darwin)
-darwin_CFLAGS += -mlinker-version=$(LLD_VERSION)
-darwin_CXXFLAGS += -mlinker-version=$(LLD_VERSION)
-darwin_LDFLAGS += -Wl,-no_adhoc_codesign -fuse-ld=lld
+darwin_CFLAGS += -mlinker-version=$(LLD_VERSION) -DCLANG_DEFAULT_LINKER=lld
+darwin_CXXFLAGS +=  -mlinker-version=$(LLD_VERSION) -DCLANG_DEFAULT_LINKER=lld
+darwin_LDFLAGS += -Wl,-no_adhoc_codesign
 endif
 
 darwin_release_CFLAGS=-O2
@@ -76,3 +82,4 @@ darwin_debug_CFLAGS=-O1 -g
 darwin_debug_CXXFLAGS=$(darwin_debug_CFLAGS)
 
 darwin_cmake_system=Darwin
+

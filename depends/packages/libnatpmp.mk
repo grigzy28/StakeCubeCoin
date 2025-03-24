@@ -9,14 +9,20 @@ define $(package)_set_vars
    $(package)_build_opts_mingw32=CPPFLAGS=-DNATPMP_STATICLIB
    $(package)_build_opts_darwin=LIBTOOL="$($(package)_libtool)"
    $(package)_build_env+=CFLAGS="$($(package)_cflags) $($(package)_cppflags)" AR="$($(package)_ar)"
+   CMAKE=$(shell $(SHELL) $(.SHELLFLAGS) "command -v cmake")
+endef
+
+define $(package)_config_cmds
+   $(CMAKE) -S . -B build
 endef
 
 define $(package)_build_cmds
-   $(MAKE) libnatpmp.a $($(package)_build_opts)
+   cd build && \
+  $(MAKE)
 endef
 
 define $(package)_stage_cmds
-   mkdir -p $($(package)_staging_prefix_dir)/include $($(package)_staging_prefix_dir)/lib &&\
-   install *.h $($(package)_staging_prefix_dir)/include &&\
-   install libnatpmp.a $($(package)_staging_prefix_dir)/lib
+   mkdir -p $($(package)_staging_prefix_dir)/include $($(package)_staging_prefix_dir)/lib && \
+   cp *.h $($(package)_staging_prefix_dir)/include && \
+   cp build/libnatpmp.a $($(package)_staging_prefix_dir)/lib
 endef

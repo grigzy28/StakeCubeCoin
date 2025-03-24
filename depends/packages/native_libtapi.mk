@@ -1,16 +1,15 @@
 package=native_libtapi
-$(package)_version=664b8414f89612f2dfd35a9b679c345aa5389026
+$(package)_version=54c9044082ba35bdb2b0edf282ba1a340096154c
 $(package)_download_path=https://github.com/tpoechtrager/apple-libtapi/archive
 $(package)_download_file=$($(package)_version).tar.gz
 $(package)_file_name=$($(package)_version).tar.gz
-$(package)_sha256_hash=62e419c12d1c9fad67cc1cd523132bc00db050998337c734c15bc8d73cc02b61
+$(package)_sha256_hash=E357F007FB61C1F6B0ABC8C5D6B960F9236D55A73E7018441C6C0FA6DF056F07
+#$(package)_patches = add_environment_variable_check.patch
 
-ifeq ($(strip $(FORCE_USE_SYSTEM_CLANG)),)
-$(package)_dependencies=native_clang
-endif
 
 define $(package)_build_cmds
-  CC=$(clang_prog) CXX=$(clangxx_prog) INSTALLPREFIX=$($(package)_staging_prefix_dir) ./build.sh
+  pwd && \
+  CC="$(clang_prog) -fuse-ld=ld " CXX="$(clangxx_prog) -fuse-ld=ld " INSTALLPREFIX=$($(package)_staging_prefix_dir) ./build.sh
 endef
 
 define $(package)_stage_cmds
