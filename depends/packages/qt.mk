@@ -233,20 +233,18 @@ endef
 define $(package)_preprocess_cmds
   cp $($(package)_patch_dir)/qt.pro qt.pro && \
   cp $($(package)_patch_dir)/qttools_src.pro qttools/src/src.pro && \
-  patch -p1 -i $($(package)_patch_dir)/fix-macos-linker.patch && \
   patch -p1 -i $($(package)_patch_dir)/dont_hardcode_pwd.patch && \
-  patch -p1 -i $($(package)_patch_dir)/fix_qt_pkgconfig.patch && \
-  patch -p1 -i $($(package)_patch_dir)/fix_android_jni_static.patch && \
   patch -p1 -i $($(package)_patch_dir)/no-xlib.patch && \
   patch -p1 -i $($(package)_patch_dir)/qtbase-moc-ignore-gcc-macro.patch && \
   patch -p1 -i $($(package)_patch_dir)/memory_resource.patch && \
+  patch -p1 -i $($(package)_patch_dir)/no_warnings_for_symbols.patch && \
   patch -p1 -i $($(package)_patch_dir)/clang_18_libpng.patch && \
   patch -p1 -i $($(package)_patch_dir)/rcc_hardcode_timestamp.patch && \
   patch -p1 -i $($(package)_patch_dir)/duplicate_lcqpafonts.patch && \
   patch -p1 -i $($(package)_patch_dir)/utc_from_string_no_optimize.patch && \
-  patch -p1 -i $($(package)_patch_dir)/fast_fixed_dtoa_no_optimize.patch && \
   patch -p1 -i $($(package)_patch_dir)/guix_cross_lib_path.patch && \
   patch -p1 -i $($(package)_patch_dir)/windows_lto.patch && \
+  patch -p1 -i $($(package)_patch_dir)/darwin_no_libm.patch && \
   mkdir -p qtbase/mkspecs/macx-clang-linux &&\
   cp -f qtbase/mkspecs/macx-clang/qplatformdefs.h qtbase/mkspecs/macx-clang-linux/ &&\
   cp -f $($(package)_patch_dir)/mac-qmake.conf qtbase/mkspecs/macx-clang-linux/qmake.conf && \
