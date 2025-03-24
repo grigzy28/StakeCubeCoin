@@ -5,7 +5,7 @@
 #include <httpserver.h>
 
 #include <chainparamsbase.h>
-#include <util/system.h>
+#include <common/args.h>
 #include <common/messages.h>
 #include <compat/compat.h>
 #include <logging.h>
