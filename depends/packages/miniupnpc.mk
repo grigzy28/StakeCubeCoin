@@ -12,7 +12,7 @@ define $(package)_set_vars
 $(package)_build_opts=CC="$($(package)_cc)"
 $(package)_build_opts_darwin=LIBTOOL="$($(package)_libtool)"
 $(package)_build_env+=CFLAGS="$($(package)_cflags) $($(package)_cppflags)" AR="$($(package)_ar)"
-CMAKE="$(host_prefix)/bin/cmake"
+CMAKEBIN=$(host_prefix)/bin/cmake
 endef
 
 define $(package)_preprocess_cmds
@@ -22,7 +22,7 @@ endef
 #  patch -p1 < $($(package)_patch_dir)/dont_use_wingen.patch
 
 define $(package)_config_cmds
-   $(CMAKE) -S .. -B .
+   $(CMAKEBIN) -S .. -B .
 endef
 
 define $(package)_build_cmds

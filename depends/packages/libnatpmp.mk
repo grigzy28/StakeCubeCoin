@@ -9,11 +9,11 @@ define $(package)_set_vars
    $(package)_build_opts_mingw32=CPPFLAGS=-DNATPMP_STATICLIB
    $(package)_build_opts_darwin=LIBTOOL="$($(package)_libtool)"
    $(package)_build_env+=CFLAGS="$($(package)_cflags) $($(package)_cppflags)" AR="$($(package)_ar)"
-   CMAKE=$(shell $(SHELL) $(.SHELLFLAGS) "command -v cmake")
+   CMAKEBIN=$(host_prefix)/bin/cmake
 endef
 
 define $(package)_config_cmds
-   $(CMAKE) -S . -B build
+   $(CMAKEBIN) -S . -B build
 endef
 
 define $(package)_build_cmds
