@@ -776,15 +776,14 @@ nodist_libscc_util_a_SOURCES = $(srcdir)/obj/build.h
 # sccconsensus library #
 if BUILD_BITCOIN_LIBS
 include_HEADERS = script/sccconsensus.h
-libsccconsensus_la_SOURCES = support/cleanse.cpp $(crypto_libscc_crypto_base_a_SOURCES) $(libscc_consensus_a_SOURCES)
+libsccconsensus_la_SOURCES = support/cleanse.cpp  $(libscc_consensus_a_SOURCES) $(crypto_libscc_crypto_base_a_SOURCES)
 
 if GLIBC_BACK_COMPAT
   libsccconsensus_la_SOURCES += compat/glibc_compat.cpp
 endif
 
-libsccconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
-# $(LIBTOOL_APP_LDFLAGS)
-libsccconsensus_la_LIBADD = $(LIBDASHBLS) $(LIBSECP256K1) $(GMP_LIBS) $(BOOST_LIBS)
+libsccconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+libsccconsensus_la_LIBADD = $(LIBDASHBLS) $(sccd_LDADD) $(LIBSECP256K1) $(GMP_LIBS) $(BOOST_LIBS)
 libsccconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -I$(srcdir)/univalue/include -DBUILD_BITCOIN_INTERNAL
 libsccconsensus_la_CPPFLAGS += -isystem$(srcdir)/dashbls/include -isystem$(srcdir)/dashbls/depends/relic/include -isystem$(srcdir)/dashbls/depends/minialloc/include
 libsccconsensus_la_CPPFLAGS += -I$(srcdir)/immer
