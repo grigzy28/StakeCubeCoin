@@ -47,7 +47,7 @@ BITCOIN_INCLUDES += -isystem$(srcdir)/dashbls/include -isystem$(srcdir)/dashbls/
 BITCOIN_INCLUDES += $(UNIVALUE_CFLAGS)
 BITCOIN_INCLUDES += -I$(srcdir)/immer
 
-BLS_LIBS=-ldashbls -lrelic_s
+BLS_LIBS=-ldashbls -lrelic
 
 LIBBITCOIN_SERVER=libscc_server.a
 LIBBITCOIN_COMMON=libscc_common.a
@@ -783,7 +783,7 @@ if GLIBC_BACK_COMPAT
 endif
 
 libsccconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS) $(LIBTOOL_APP_LDFLAGS)
-libsccconsensus_la_LIBADD = $(LIBDASHBLS) $(sccd_LDADD) $(LIBSECP256K1) $(GMP_LIBS) $(BOOST_LIBS)
+libsccconsensus_la_LIBADD = $(LIBDASHBLS) $(LIBSECP256K1) $(GMP_LIBS) $(BOOST_LIBS)
 libsccconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -I$(srcdir)/univalue/include -DBUILD_BITCOIN_INTERNAL
 libsccconsensus_la_CPPFLAGS += -isystem$(srcdir)/dashbls/include -isystem$(srcdir)/dashbls/depends/relic/include -isystem$(srcdir)/dashbls/depends/minialloc/include
 libsccconsensus_la_CPPFLAGS += -I$(srcdir)/immer
