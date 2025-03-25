@@ -10,7 +10,6 @@ $(package)_build_subdir=build
 define $(package)_set_vars
 $(package)_build_opts=CC="$($(package)_cc)"
 $(package)_build_opts_darwin=LIBTOOL="$($(package)_libtool)"
-$(package)_build_opts_mingw32=-f Makefile.mingw
 $(package)_build_env+=CFLAGS="$($(package)_cflags) $($(package)_cppflags)" AR="$($(package)_ar)"
 CMAKE=$(shell $(SHELL) $(.SHELLFLAGS) "command -v cmake")
 endef
@@ -22,12 +21,10 @@ endef
 #  patch -p1 < $($(package)_patch_dir)/dont_use_wingen.patch
 
 define $(package)_config_cmds
-  pwd && \
    $(CMAKE) -S .. -B .
 endef
 
 define $(package)_build_cmds
-  pwd && \
   $(MAKE) $($(package)_build_opts)
 endef
 
