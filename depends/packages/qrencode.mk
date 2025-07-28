@@ -1,3 +1,4 @@
+package=qrencode
 $(package)_version=4.1.1
 $(package)_download_path=https://fukuchi.org/works/qrencode/
 $(package)_file_name=$(package)-$($(package)_version).tar.gz
