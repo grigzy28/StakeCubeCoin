@@ -23,6 +23,8 @@
 
 #include <cxxtimer.hpp>
 
+#include <util/underlying.h>
+
 namespace llmq
 {
 
@@ -171,8 +173,7 @@ CQuorumManager::CQuorumManager(CEvoDB& _evoDb, CBLSWorker& _blsWorker, CDKGSessi
 void CQuorumManager::Start()
 {
     int workerCount = std::thread::hardware_concurrency() / 2;
-//    workerCount = std::max(std::min(1, workerCount), 4);
-    workerCount = std::max(std::min(1, workerCount), 2);
+    workerCount = std::max(std::min(1, workerCount), 1);
     workerPool.resize(workerCount);
     RenameThreadPool(workerPool, "q-mngr");
 }
@@ -193,6 +194,8 @@ void CQuorumManager::TriggerQuorumDataRecoveryThreads(const CBlockIndex* pIndex)
     const std::map<Consensus::LLMQType, QvvecSyncMode> mapQuorumVvecSync = CLLMQUtils::GetEnabledQuorumVvecSyncEntries();
 
     LogPrint(BCLog::LLMQ, "CQuorumManager::%s -- Process block %s\n", __func__, pIndex->GetBlockHash().ToString());
+
+LogPrintf("Active quorum count: %zu\n", mapQuorumsCache.size());
 
     for (auto& params : Params().GetConsensus().llmqs) {
         // Process signingActiveQuorumCount + 1 quorums for all available llmqTypes
@@ -232,8 +235,13 @@ void CQuorumManager::TriggerQuorumDataRecoveryThreads(const CBlockIndex* pIndex)
 
             // Finally start the thread which triggers the requests for this quorum
             StartQuorumDataRecoveryThread(pQuorum, pIndex, nDataMask);
+
         }
     }
+
+LogPrintf("Active quorum count: %zu\n", mapQuorumsCache.size());
+
+
 }
 
 void CQuorumManager::UpdatedBlockTip(const CBlockIndex* pindexNew, bool fInitialDownload) const
@@ -323,6 +331,19 @@ CQuorumPtr CQuorumManager::BuildQuorumFromCommitment(const Consensus::LLMQType l
         // sessions if the shares would be calculated on-demand
         StartCachePopulatorThread(quorum);
     }
+
+
+LogPrintf("map QuorumsCache size: %zu\n", mapQuorumsCache.at(llmqType).size());
+//LogPrintf("Memory Usage %s\n", GetMemoryUsage());
+
+size_t totalMem = 0;
+mapQuorumsCache[llmqType].for_each([&](const uint256& key, const std::shared_ptr<llmq::CQuorum>& quorum) {
+    if (quorum) {
+        totalMem += quorum->GetMemoryUsage();
+    }
+});
+
+LogPrintf("Quorum cache memory usage for LLMQ %d: %zu bytes\n", ToUnderlying(llmqType), totalMem);
 
     mapQuorumsCache[llmqType].insert(quorumHash, quorum);
 

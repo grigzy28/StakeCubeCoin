@@ -7,6 +7,8 @@
 
 #include <chain.h>
 #include <map>
+#include <ctpl_stl.h>
+#include <ctpl_stl.h>
 
 /** What block version to use for new blocks (pre versionbits) */
 static const int32_t VERSIONBITS_LAST_OLD_BLOCK_VERSION = 4;
@@ -17,8 +19,9 @@ static const int32_t VERSIONBITS_TOP_MASK = 0xE0000000UL;
 /** Total bits available for versionbits */
 static const int32_t VERSIONBITS_NUM_BITS = 29;
 
-//
-static bool preloadedchain = false;
+
+extern std::atomic<bool> preloadedchain;
+//static bool preloadedchain = false;
 static int preloadchaincounter = 0;
 
 /** BIP 9 defines a finite-state-machine to deploy a softfork in multiple stages.
@@ -82,9 +85,18 @@ public:
  *  keyed by the bit position used to signal support. */
 struct VersionBitsCache
 {
-    ThresholdConditionCache caches[Consensus::MAX_VERSION_BITS_DEPLOYMENTS];
+public:
+    mutable ctpl::thread_pool workerPool;
+    std::array<ThresholdConditionCache, VERSIONBITS_NUM_BITS> caches;
+    void InitializeAsync(const CBlockIndex* pindexPrev, const Consensus::Params& params);
 
     void Clear();
+
+private:
+    std::mutex mtxCaches[VERSIONBITS_NUM_BITS];
+
+//    ThresholdConditionCache caches[Consensus::MAX_VERSION_BITS_DEPLOYMENTS];
+
 };
 
 ThresholdState VersionBitsStateBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);

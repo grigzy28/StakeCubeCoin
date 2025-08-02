@@ -2147,7 +2147,7 @@ bool AppInitMain(InitInterfaces& interfaces)
             LogPrintf(" block index %15dms\n", GetTimeMillis() - load_block_index_start_time);
         } while(false);
 
-        if (!fLoaded && !ShutdownRequested()) {
+	if (!fLoaded && !ShutdownRequested()) {
             // first suggest a reindex
             if (!fReset) {
                 bool fRet = uiInterface.ThreadSafeQuestion(
@@ -2166,6 +2166,8 @@ bool AppInitMain(InitInterfaces& interfaces)
             }
         }
     }
+
+    versionbitscache.InitializeAsync(::ChainActive().Tip(), chainparams.GetConsensus());
 
     // As LoadBlockIndex can take several minutes, it's possible the user
     // requested to kill the GUI during the last operation. If so, exit.

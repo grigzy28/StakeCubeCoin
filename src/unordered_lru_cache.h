@@ -33,6 +33,19 @@ public:
 
     size_t max_size() const { return maxSize; }
 
+size_t size() const {
+    return cacheMap.size();
+}
+
+template <typename Func>
+void for_each(Func&& fn) const
+{
+    for (const auto& kv : cacheMap) {
+        fn(kv.first, kv.second.first); // key, value
+    }
+}
+
+
     template<typename Value2>
     void _emplace(const Key& key, Value2&& v)
     {

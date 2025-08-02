@@ -1861,7 +1861,6 @@ bool GetBlockHash(uint256& hashRet, int nBlockHeight)
 
 /**
  * Threshold condition checker that triggers when unknown versionbits are seen on the network.
- */
 class WarningBitsConditionChecker : public AbstractThresholdConditionChecker
 {
 private:
@@ -1885,6 +1884,7 @@ public:
 };
 
 static ThresholdConditionCache warningcache[VERSIONBITS_NUM_BITS] GUARDED_BY(cs_main);
+ */
 
 static unsigned int GetBlockScriptFlags(const CBlockIndex* pindex, const Consensus::Params& consensusparams) EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
     AssertLockHeld(cs_main);
@@ -2586,19 +2586,23 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
     std::string warningMessages;
     if (!::ChainstateActive().IsInitialBlockDownload())
     {
+
+//        versionbitscache.InitializeAsync(pindexNew, chainParams.GetConsensus());
+
         int nUpgraded = 0;
         const CBlockIndex* pindex = pindexNew;
+/*
         for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
 
 			WarningBitsConditionChecker checker(bit);
 
 			LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
 
-            if (!preloadedchain && preloadchaincounter < VERSIONBITS_NUM_BITS) {
-				ThresholdState state = checker.GetStateForBuildCache(pindex, chainParams.GetConsensus(), warningcache[bit], bit);
-				preloadchaincounter = preloadchaincounter + 1;
-				if (preloadedchain) preloadchaincounter=0;
-			}
+//            if (!preloadedchain && preloadchaincounter < VERSIONBITS_NUM_BITS) {
+//				ThresholdState state = checker.GetStateForBuildCache(pindex, chainParams.GetConsensus(), warningcache[bit], bit);
+//				preloadchaincounter = preloadchaincounter + 1;
+//				if (preloadedchain) preloadchaincounter=0;
+//			}
 
 //			WarningBitsConditionChecker checker(bit);
             ThresholdState state = checker.GetStateFor(pindex, chainParams.GetConsensus(), warningcache[bit]);
@@ -2611,7 +2615,11 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
                 }
             }
         }
+*/
         // Check the version of the last 100 blocks to see if we need to upgrade:
+if (!preloadedchain) {
+    LogPrint(BCLog::BENCHMARK, "Versionbits async preload triggered.\n");
+
         for (int i = 0; i < 100 && pindex != nullptr; i++)
         {
             int32_t nExpectedVersion = ComputeBlockVersion(pindex->pprev, chainParams.GetConsensus());
@@ -2622,6 +2630,7 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
         if (nUpgraded > 0)
             AppendWarning(warningMessages, strprintf(_("%d of last 100 blocks have unexpected version").translated, nUpgraded));
     }
+}
     LogPrintf("%s: new best=%s height=%d version=0x%08x log2_work=%.8g tx=%lu date='%s' progress=%f cache=%.1fMiB(%utxo) evodb_cache=%.1fMiB%s\n", __func__,
       pindexNew->GetBlockHash().ToString(), pindexNew->nHeight, pindexNew->nVersion,
       log(pindexNew->nChainWork.getdouble())/log(2.0), (unsigned long)pindexNew->nChainTx,
@@ -2629,7 +2638,6 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
       GuessVerificationProgress(chainParams.TxData(), pindexNew), ::ChainstateActive().CoinsTip().DynamicMemoryUsage() * (1.0 / (1<<20)), ::ChainstateActive().CoinsTip().GetCacheSize(),
       evoDb->GetMemoryUsage() * (1.0 / (1<<20)),
       !warningMessages.empty() ? strprintf(" warning='%s'", warningMessages) : "");
-	
 }
 
 /** Disconnect m_chain's tip.

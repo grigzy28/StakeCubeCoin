@@ -146,6 +146,15 @@ public:
     uint256 minedBlockHash;
     std::vector<CDeterministicMNCPtr> members;
 
+size_t GetMemoryUsage() const {
+    size_t mem = sizeof(*this);
+    mem += members.size() * sizeof(CBLSId);
+//    mem += IsvalidMember.size() * sizeof(bool);
+    mem += sizeof(skShare);
+    mem += quorumVvec ? sizeof(*quorumVvec) : 0;
+    return mem;
+}
+
 private:
     // Recovery of public key shares is very slow, so we start a background thread that pre-populates a cache so that
     // the public key shares are ready when needed later
