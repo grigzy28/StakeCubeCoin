@@ -868,9 +868,9 @@ void CQuorumManager::StartQuorumDataRecoveryThread(const CQuorumCPtr pQuorum, co
             });
             quorumThreadInterrupt.sleep_for(std::chrono::seconds(1));
         }
-        pQuorum->fQuorumDataRecoveryThreadRunning = false;
         printLog("Done");
     });
+        pQuorum->fQuorumDataRecoveryThreadRunning = false;
 }
 
 } // namespace llmq
