@@ -16,6 +16,13 @@ define $(package)_set_vars
   $(package)_config_opts+=-DEVENT__DISABLE_TESTS=ON -DEVENT__LIBRARY_TYPE=STATIC
   $(package)_cppflags += -D_GNU_SOURCE
   $(package)_cppflags_mingw32=-D_WIN32_WINNT=0x0601
+
+  $(package)_config_opts_mingw32+=-DCMAKE_SYSTEM_NAME=Windows
+  $(package)_config_opts_mingw32+=-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY
+
+  ifeq ($(NO_HARDEN),)
+  $(package)_cppflags+=-D_FORTIFY_SOURCE=3
+  endif
 endef
 
 define $(package)_preprocess_cmds
@@ -40,5 +47,3 @@ define $(package)_postprocess_cmds
   rm include/ev*.h && \
   rm include/event2/*_compat.h
 endef
-
-
