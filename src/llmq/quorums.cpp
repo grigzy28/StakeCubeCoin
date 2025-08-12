@@ -196,7 +196,7 @@ void CQuorumManager::TriggerQuorumDataRecoveryThreads(const CBlockIndex* pIndex)
 
     LogPrint(BCLog::LLMQ, "CQuorumManager::%s -- Process block %s\n", __func__, pIndex->GetBlockHash().ToString());
 
-LogPrintf("Active quorum count: %zu\n", mapQuorumsCache.size());
+//LogPrintf("Active quorum count: %zu\n", mapQuorumsCache.size());
 
     for (auto& params : Params().GetConsensus().llmqs) {
         // Process signingActiveQuorumCount + 1 quorums for all available llmqTypes
@@ -240,7 +240,7 @@ LogPrintf("Active quorum count: %zu\n", mapQuorumsCache.size());
         }
     }
 
-LogPrintf("Active quorum count: %zu\n", mapQuorumsCache.size());
+//LogPrintf("Active quorum count: %zu\n", mapQuorumsCache.size());
 
 
 }
@@ -334,7 +334,7 @@ CQuorumPtr CQuorumManager::BuildQuorumFromCommitment(const Consensus::LLMQType l
     }
 
 
-LogPrintf("map QuorumsCache size: %zu\n", mapQuorumsCache.at(llmqType).size());
+//LogPrintf("map QuorumsCache size: %zu\n", mapQuorumsCache.at(llmqType).size());
 //LogPrintf("Memory Usage %s\n", GetMemoryUsage());
 
 size_t totalMem = 0;
@@ -344,7 +344,7 @@ mapQuorumsCache[llmqType].for_each([&](const uint256& key, const std::shared_ptr
     }
 });
 
-LogPrintf("Quorum cache memory usage for LLMQ %d: %zu bytes\n", ToUnderlying(llmqType), totalMem);
+//LogPrintf("Quorum cache memory usage for LLMQ %d: %zu bytes\n", ToUnderlying(llmqType), totalMem);
 
     mapQuorumsCache[llmqType].insert(quorumHash, quorum);
 

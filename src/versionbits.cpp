@@ -146,7 +146,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
         pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
     }
 
-	LogPrint(BCLog::BENCHMARK, "Height: Start\n");
+//	LogPrint(BCLog::BENCHMARK, "Height: Start\n");
 //	LogPrint(BCLog::BENCHMARK, "Height: %s\n", );
 
     // At this point, cache[pindexPrev] is known
@@ -170,7 +170,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
     }
 
-	LogPrint(BCLog::BENCHMARK, "Height: End\n");
+//	LogPrint(BCLog::BENCHMARK, "Height: End\n");
 
 	preloadedchain = true;
 
@@ -327,14 +327,14 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
     workerPool.resize(1);
 
     workerPool.push([pindexPrev, params, this](int) {
-        LogPrintf("inside versionbits preload (last 100 blocks)\n");
+//        LogPrintf("inside versionbits preload (last 100 blocks)\n");
 
         constexpr int maxDepth = 100;
 
         for (int bit = 0; bit < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; ++bit) {
-LogPrintf("Preloading bit %d\n", bit);
+//LogPrintf("Preloading bit %d\n", bit);
 	  if (params.vDeployments[bit].bit == -1) continue;
-LogPrintf("Preloading bit %d\n", bit);
+//LogPrintf("Preloading bit %d\n", bit);
 //          if (params.vDeployments[bit].bit > 0 || params.vDeployments[bit].bit < 28)
 //             continue;
 //            WarningBitsConditionChecker checker(static_cast<Consensus::DeploymentPos>(bit));
@@ -379,72 +379,13 @@ LogPrintf("Preloading bit %d\n", bit);
 //    }
 //}
 
-/*
-                if (pindex->nVersion) {
-                    std::lock_guard<std::mutex> lock(mtxCaches[bit]);
-                    caches[bit][pindex] = state = stateNext;
-                }
-*/
             }
-        LogPrintf("bit %d cache size: %zu entries\n", bit, caches[bit].size());
+//        LogPrintf("bit %d cache size: %zu entries\n", bit, caches[bit].size());
         }
 
         preloadedchain.store(true);
     });
 }
-
-/*
-  workerPool.push([pindexPrev, params, this](int) {
-    LogPrintf("inside worker for versionbits");
-    for (int bit = 0; bit < VERSIONBITS_NUM_BITS; ++bit) {
-        for (const auto* checker : versionbitsCheckers) {
-                const CBlockIndex* pindex = pindexPrev;
-                std::vector<const CBlockIndex*> vToCompute;
-
-                int64_t nTimeStart = params.vDeployments[bit].nStartTime;
-
-                while (true) {
-                    {
-                        std::lock_guard<std::mutex> lock(mtxCaches[bit]);
-                        if (caches[bit].count(pindex)) {
-                            break;
-                        }
-                    }
-
-                    if (pindex == nullptr || pindex->GetMedianTimePast() < nTimeStart) {
-                        std::lock_guard<std::mutex> lock(mtxCaches[bit]);
-                        caches[bit][pindex] = ThresholdState::DEFINED;
-                        break;
-                    }
-
-                    vToCompute.push_back(pindex);
-                    pindex = pindex->pprev;
-//GetAncestor(pindex->nHeight - 1);
-                }
-
-                ThresholdState state;
-                {
-                    std::lock_guard<std::mutex> lock(mtxCaches[bit]);
-                    state = caches[bit][pindex];
-                }
-
-                while (!vToCompute.empty()) {
-                    ThresholdState stateNext = state;
-                    pindex = vToCompute.back();
-                    vToCompute.pop_back();
-
-                    // You can insert your condition check logic here
-                    if (pindex->nVersion) {
-                        std::lock_guard<std::mutex> lock(mtxCaches[bit]);
-                        caches[bit][pindex] = state = stateNext;
-                    }
-                }
-        }
-    }
-    preloadedchain.store(true);
- });
-}
-*/
 
 void VersionBitsCache::Clear()
 {
@@ -457,4 +398,3 @@ ThresholdState VersionBitsStateBuildCache(const CBlockIndex* pindexPrev, const C
 {
     return VersionBitsConditionChecker(pos).GetStateForBuildCache(pindexPrev, params, cache.caches[pos], pos);
 }
-
