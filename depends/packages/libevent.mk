@@ -18,9 +18,6 @@ define $(package)_set_vars
   $(package)_cflags += -fdebug-prefix-map=$($(package)_extract_dir)=/usr -fmacro-prefix-map=$($(package)_extract_dir)=/usr
   $(package)_cppflags += -D_GNU_SOURCE -D_FORTIFY_SOURCE=3
   $(package)_cppflags_mingw32=-D_WIN32_WINNT=0x0A00
-
-  $(package)_config_opts_mingw32+=-DCMAKE_SYSTEM_NAME=Windows
-  $(package)_config_opts_mingw32+=-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY
 endef
 
 define $(package)_preprocess_cmds
