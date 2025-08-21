@@ -68,6 +68,8 @@
 #define MICRO 0.000001
 #define MILLI 0.001
 
+std::atomic<uint32_t> GETBLOCKCOUNT_BUFFER{0};
+
 /** Maximum kilobytes for transactions to store for processing during reorg */
 static const unsigned int MAX_DISCONNECTED_TX_POOL_SIZE = 20000;
 /** The pre-allocation chunk size for blk?????.dat files (since 0.8) */
@@ -2638,6 +2640,10 @@ if (!preloadedchain) {
       GuessVerificationProgress(chainParams.TxData(), pindexNew), ::ChainstateActive().CoinsTip().DynamicMemoryUsage() * (1.0 / (1<<20)), ::ChainstateActive().CoinsTip().GetCacheSize(),
       evoDb->GetMemoryUsage() * (1.0 / (1<<20)),
       !warningMessages.empty() ? strprintf(" warning='%s'", warningMessages) : "");
+
+
+    GETBLOCKCOUNT_BUFFER.store(pindexNew->nHeight, std::memory_order_relaxed);
+
 }
 
 /** Disconnect m_chain's tip.

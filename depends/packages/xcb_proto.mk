@@ -4,10 +4,10 @@ $(package)_download_path=https://xcb.freedesktop.org/dist
 $(package)_file_name=xcb-proto-$($(package)_version).tar.gz
 $(package)_sha256_hash=392d3c9690f8c8202a68fdb89c16fd55159ab8d65000a6da213f4a1576e97a16
 
-#define $(package)_set_vars
-#  $(package)_config_opts=--disable-shared
-#  $(package)_config_opts_linux=--with-pic
-#endef
+define $(package)_set_vars
+  $(package)_config_opts = --disable-shared
+  $(package)_config_opts_linux = --with-pic
+endef
 
 define $(package)_config_cmds
   $($(package)_autoconf)

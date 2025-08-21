@@ -23,6 +23,7 @@ $(package)_patches += clang_18_libpng.patch
 $(package)_patches += utc_from_string_no_optimize.patch
 $(package)_patches += windows_lto.patch
 $(package)_patches += darwin_no_libm.patch
+#$(package)_patches += libxcb_libxau.patch
 
 $(package)_qttranslations_file_name=qttranslations-$($(package)_suffix)
 $(package)_qttranslations_sha256_hash=415dbbb82a75dfc9a7be969e743bee54c0e6867be37bce4cf8f03da39f20112a
@@ -235,8 +236,8 @@ define $(package)_preprocess_cmds
   patch -p1 -i $($(package)_patch_dir)/guix_cross_lib_path.patch && \
   patch -p1 -i $($(package)_patch_dir)/windows_lto.patch && \
   patch -p1 -i $($(package)_patch_dir)/darwin_no_libm.patch && \
-  mkdir -p qtbase/mkspecs/macx-clang-linux &&\
-  cp -f qtbase/mkspecs/macx-clang/qplatformdefs.h qtbase/mkspecs/macx-clang-linux/ &&\
+  mkdir -p qtbase/mkspecs/macx-clang-linux && \
+  cp -f qtbase/mkspecs/macx-clang/qplatformdefs.h qtbase/mkspecs/macx-clang-linux/ && \
   cp -f $($(package)_patch_dir)/mac-qmake.conf qtbase/mkspecs/macx-clang-linux/qmake.conf && \
   cp -r qtbase/mkspecs/linux-arm-gnueabi-g++ qtbase/mkspecs/bitcoin-linux-g++ && \
   sed -i.old "s|arm-linux-gnueabi-gcc|$($($(package)_type)_CC)|" qtbase/mkspecs/bitcoin-linux-g++/qmake.conf && \
@@ -257,7 +258,7 @@ define $(package)_config_cmds
   export PKG_CONFIG_LIBDIR=$(host_prefix)/lib/pkgconfig && \
   export QT_MAC_SDK_NO_VERSION_CHECK=1 && \
   cd qtbase && \
-  ./configure -top-level $($(package)_config_opts)
+  ./configure -top-level $($(package)_config_opts) -v
 endef
 
 define $(package)_build_cmds

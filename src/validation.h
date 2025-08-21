@@ -49,6 +49,10 @@ struct ChainTxData;
 struct DisconnectedBlockTransactions;
 struct LockPoints;
 
+
+/* Global Variable for getblockcount cache */
+extern std::atomic<uint32_t> GETBLOCKCOUNT_BUFFER;
+
 /** Default for -minrelaytxfee, minimum relay fee for transactions */
 static const unsigned int DEFAULT_MIN_RELAY_TX_FEE = 1000;
 /** Default for -limitancestorcount, max number of in-mempool ancestors */

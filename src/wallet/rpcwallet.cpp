@@ -2066,6 +2066,9 @@ static UniValue walletpassphrase(const JSONRPCRequest& request)
     // wallet before the following callback is called. If a valid shared pointer
     // is acquired in the callback then the wallet is still loaded.
     std::weak_ptr<CWallet> weak_wallet = wallet;
+	
+	LogPrintf("After Weak_Ptr setup and before RPCRunLater call");
+
     RPCRunLater(strprintf("lockwallet(%s)", pwallet->GetName()), [weak_wallet] {
         if (auto shared_wallet = weak_wallet.lock()) {
             LOCK(shared_wallet->cs_wallet);

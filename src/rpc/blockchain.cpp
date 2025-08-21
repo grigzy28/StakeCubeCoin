@@ -196,8 +196,9 @@ static UniValue getblockcount(const JSONRPCRequest& request)
                 },
             }.ToString());
 
-    LOCK(cs_main);
-    return ::ChainActive().Height();
+//    LOCK(cs_main);
+    return UniValue(static_cast<uint64_t>(GETBLOCKCOUNT_BUFFER.load()));
+//::ChainActive().Height();
 }
 
 static UniValue getbestblockhash(const JSONRPCRequest& request)

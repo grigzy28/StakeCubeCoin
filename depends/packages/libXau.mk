@@ -1,16 +1,16 @@
 package=libXau
-$(package)_version=1.0.11
+$(package)_version=1.0.12
 $(package)_download_path=https://xorg.freedesktop.org/releases/individual/lib/
-$(package)_file_name=$(package)-$($(package)_version).tar.xz
-$(package)_sha256_hash=F3FA3282F5570C3F6BD620244438DBFBDD580FC80F02F549587A0F8AB329BBEB
-$(package)_dependencies=xproto
+$(package)_file_name=$(package)-$($(package)_version).tar.gz
+$(package)_sha256_hash=2402dd938da4d0a332349ab3d3586606175e19cb32cb9fe013c19f1dc922dcee
+$(package)_dependencies=xorgproto
 
 # When updating this package, check the default value of
 # --disable-xthreads. It is currently enabled.
 define $(package)_set_vars
-  $(package)_config_opts=--disable-shared --disable-lint-library --without-lint
+  $(package)_config_opts = --enable-static --disable-shared --disable-lint-library --without-lint
   $(package)_config_opts += --disable-dependency-tracking --enable-option-checking
-  $(package)_config_opts_linux=--with-pic
+  $(package)_config_opts_linux = --with-pic
 endef
 
 define $(package)_preprocess_cmds
