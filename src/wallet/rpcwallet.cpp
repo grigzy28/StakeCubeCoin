@@ -2014,6 +2014,11 @@ static UniValue walletpassphrase(const JSONRPCRequest& request)
     CWallet* const pwallet = wallet.get();
 
     auto locked_chain = pwallet->chain().lock();
+
+int64_t relock_time;
+int64_t nSleepTime;
+LOCK(pwallet->m_unlock_mutex);
+{
     LOCK(pwallet->cs_wallet);
 
     if (!pwallet->IsCrypted()) {
@@ -2028,7 +2033,7 @@ static UniValue walletpassphrase(const JSONRPCRequest& request)
     strWalletPass = request.params[0].get_str().c_str();
 
     // Get the timeout
-    int64_t nSleepTime = request.params[1].get_int64();
+    nSleepTime = request.params[1].getInt<int64_t>();
     // Timeout cannot be negative, otherwise it will relock immediately
     if (nSleepTime < 0) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Timeout cannot be negative.");
@@ -2060,18 +2065,20 @@ static UniValue walletpassphrase(const JSONRPCRequest& request)
 
     pwallet->TopUpKeyPool();
 
-    pwallet->nRelockTime = GetTime() + nSleepTime;
-
+        pwallet->nRelockTime = GetTime() + nSleepTime;
+        relock_time = pwallet->nRelockTime;
+}
     // Keep a weak pointer to the wallet so that it is possible to unload the
     // wallet before the following callback is called. If a valid shared pointer
     // is acquired in the callback then the wallet is still loaded.
     std::weak_ptr<CWallet> weak_wallet = wallet;
-	
-	LogPrintf("After Weak_Ptr setup and before RPCRunLater call");
-
-    RPCRunLater(strprintf("lockwallet(%s)", pwallet->GetName()), [weak_wallet] {
+    RPCRunLater(strprintf("lockwallet(%s)", pwallet->GetName()), [weak_wallet, relock_time] {
         if (auto shared_wallet = weak_wallet.lock()) {
             LOCK(shared_wallet->cs_wallet);
+
+            // Skip if this is not the most recent rpcRunLater callback.
+            if (shared_wallet->nRelockTime != relock_time) return;
+
             shared_wallet->Lock();
             shared_wallet->nRelockTime = 0;
         }
