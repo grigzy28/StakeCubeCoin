@@ -2344,10 +2344,10 @@ bool AppInitMain(InitInterfaces& interfaces)
         scheduler.scheduleEvery(std::bind(&CCoinJoinServer::DoMaintenance, std::ref(coinJoinServer), std::ref(*g_connman)), 1 * 1000);
 
 
-    fCleanupOldContributions = gArgs.GetBoolArg("-disablecleanup", false);
+    auto fCleanupOldContributions = gArgs.GetBoolArg("-disablecleanup", false);
     if (!fCleanupOldContributions) {
 
-        LogPrint(BCLOG::DEBUG, "Disabled Cleanup of Old Contributions");
+        LogPrint(BCLog::DEBUG, "Disabled Cleanup of Old Contributions");
         // Convert std::chrono::hours to milliseconds
         auto hours_in_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::hours(1)).count();
 
