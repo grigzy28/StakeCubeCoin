@@ -2347,7 +2347,7 @@ bool AppInitMain(InitInterfaces& interfaces)
     auto fCleanupOldContributions = gArgs.GetBoolArg("-disablecleanup", false);
     if (!fCleanupOldContributions) {
 
-        LogPrint(BCLog::DEBUG, "Disabled Cleanup of Old Contributions");
+        LogPrint(BCLog::ALL, "Disabled Cleanup of Old Contributions");
         // Convert std::chrono::hours to milliseconds
         auto hours_in_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::hours(1)).count();
 
