@@ -3683,7 +3683,7 @@ static bool FindUndoPos(CValidationState &state, int nFile, FlatFilePos &pos, un
     return true;
 }
 
-static bool (const CBlockHeader& block, CValidationState& state, const Consensus::Params& consensusParams, bool fCheckPOW = true)
+static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state, const Consensus::Params& consensusParams, bool fCheckPOW = true)
 {
     int nHeight = GetNHeight(block);
     if (fCheckPOW) {
@@ -3943,7 +3943,7 @@ bool BlockManager::AcceptBlockHeader(const CBlockHeader& block, CValidationState
                 *ppindex = pindex;
             if (pindex->nStatus & BLOCK_FAILED_MASK) {
 
-                m_active_chainstate->ResetBlockFailureFlags(pindex);
+                ResetBlockFailureFlags(pindex)
 
                 return state.Invalid(error("%s: block %s is marked invalid", __func__, hash.ToString()), 0, "duplicate");
             }
