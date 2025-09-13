@@ -3943,7 +3943,7 @@ bool BlockManager::AcceptBlockHeader(const CBlockHeader& block, CValidationState
                 *ppindex = pindex;
             if (pindex->nStatus & BLOCK_FAILED_MASK) {
 
-                ResetBlockFailureFlags(pindex)
+                ResetBlockFailureFlags(pindex);
 
                 return state.Invalid(error("%s: block %s is marked invalid", __func__, hash.ToString()), 0, "duplicate");
             }
