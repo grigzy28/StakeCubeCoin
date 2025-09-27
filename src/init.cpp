@@ -2350,7 +2350,7 @@ bool AppInitMain(InitInterfaces& interfaces)
 
         LogPrint(BCLog::ALL, "Enabled Cleanup of Old Contributions\n");
         // Convert std::chrono::hours to milliseconds
-        auto hours_in_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::hours(1)).count();
+        auto hours_in_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::hours(12)).count();
 
         // Now pass the converted value
         scheduler.scheduleEvery(std::bind(&llmq::CDKGSessionManager::CleanupOldContributions, std::ref(*llmq::quorumDKGSessionManager)), hours_in_milliseconds);
