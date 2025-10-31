@@ -50,7 +50,7 @@ bool CBlockHeader::IsFirstProgPow() const {
 
 CProgPowHeader CBlockHeader::GetProgPowHeader() const {
 
-LogPrintf("PROGPOW_HDR: height=%d version=%d prev=%s merkle=%s time=%u bits=%08x nonce64=%llu mix=%s\n",
+LogPrint(BCLog::ALL, "PROGPOW_HDR: height=%d version=%d prev=%s merkle=%s time=%u bits=%08x nonce64=%llu mix=%s\n",
           nHeight, nVersion, hashPrevBlock.ToString(), hashMerkleRoot.ToString(),
           nTime, nBits, nNonce64, mix_hash.ToString());
 
