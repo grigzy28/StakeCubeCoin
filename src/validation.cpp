@@ -2555,7 +2555,7 @@ void CChainState::PruneAndFlush() {
     }
 }
 
-static void DoWarning(const std::string& strWarning)
+void DoWarning(const std::string& strWarning)
 {
     static bool fWarned = false;
     SetMiscWarning(strWarning);
@@ -2566,7 +2566,7 @@ static void DoWarning(const std::string& strWarning)
 }
 
 /** Private helper function that concatenates warning messages. */
-static void AppendWarning(std::string& res, const std::string& warn)
+void AppendWarning(std::string& res, const std::string& warn)
 {
     if (!res.empty()) res += ", ";
     res += warn;
@@ -2600,13 +2600,13 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
 
 			LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
 
-//            if (!preloadedchain && preloadchaincounter < VERSIONBITS_NUM_BITS) {
-//				ThresholdState state = checker.GetStateForBuildCache(pindex, chainParams.GetConsensus(), warningcache[bit], bit);
-//				preloadchaincounter = preloadchaincounter + 1;
-//				if (preloadedchain) preloadchaincounter=0;
-//			}
+            if (!preloadedchain && preloadchaincounter < VERSIONBITS_NUM_BITS) {
+				ThresholdState state = checker.GetStateForBuildCache(pindex, chainParams.GetConsensus(), warningcache[bit], bit);
+				preloadchaincounter = preloadchaincounter + 1;
+				if (preloadedchain) preloadchaincounter=0;
+			}
 
-//			WarningBitsConditionChecker checker(bit);
+			WarningBitsConditionChecker checker(bit);
             ThresholdState state = checker.GetStateFor(pindex, chainParams.GetConsensus(), warningcache[bit]);
             if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
                 const std::string strWarning = strprintf(_("Warning: unknown new rules activated (versionbit %i)").translated, bit);
@@ -2620,7 +2620,7 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
 */
         // Check the version of the last 100 blocks to see if we need to upgrade:
 if (!preloadedchain) {
-    LogPrint(BCLog::BENCHMARK, "Versionbits async preload triggered.\n");
+//    LogPrint(BCLog::BENCHMARK, "Versionbits async preload triggered.\n");
 
         for (int i = 0; i < 100 && pindex != nullptr; i++)
         {
