@@ -343,8 +343,6 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
             int depth = 0;
             std::vector<const CBlockIndex*> blocksToCompute;
 
-    for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
-
 			WarningBitsConditionChecker checker(bit);
 
 			LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
@@ -355,7 +353,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
 				        if (preloadedchain) preloadchaincounter=0;
       			}
 
-//            ThresholdState state = checker.GetStateFor(pindex, params, warningcache[bit]);
+            ThresholdState state = checker.GetStateFor(pindex, params, warningcache[bit]);
             if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
                 const std::string strWarning = strprintf(_("Warning: unknown new rules activated (versionbit %i)").translated, bit);
                 if (state == ThresholdState::ACTIVE) {
@@ -364,7 +362,6 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
                     AppendWarning(warningMessages, strWarning);
                 }
             }
-    }
 
             while (pindex && depth < maxDepth) {
                 {
