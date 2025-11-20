@@ -330,10 +330,11 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
 //        LogPrintf("inside versionbits preload (last 100 blocks)\n");
 
         constexpr int maxDepth = 100;
+        std::string warningMessages;
 
         for (int bit = 0; bit < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; ++bit) {
 //LogPrintf("Preloading bit %d\n", bit);
-	  if (params.vDeployments[bit].bit == -1) continue;
+        	  if (params.vDeployments[bit].bit == -1) continue;
 //LogPrintf("Preloading bit %d\n", bit);
 //          if (params.vDeployments[bit].bit > 0 || params.vDeployments[bit].bit < 28)
 //             continue;
@@ -374,7 +375,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
                 depth++;
             }
 
-            ThresholdState state;
+//            ThresholdState state;
 
             {
                 std::lock_guard<std::mutex> lock(mtxCaches[bit]);
