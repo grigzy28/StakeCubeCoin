@@ -320,9 +320,36 @@ const std::vector<const AbstractThresholdConditionChecker*> versionbitsCheckers 
     &checker_GOV_FEE,
 };
 
+/*
+ * Threshold condition checker that triggers when unknown versionbits are seen on the network.
+ */
+class WarningBitsConditionChecker : public AbstractThresholdConditionChecker
+{
+private:
+    int bit;
+
+public:
+    explicit WarningBitsConditionChecker(int bitIn) : bit(bitIn) {}
+
+    int64_t BeginTime(const Consensus::Params& params) const override { return 0; }
+    int64_t EndTime(const Consensus::Params& params) const override { return std::numeric_limits<int64_t>::max(); }
+    int Period(const Consensus::Params& params) const override { return params.nMinerConfirmationWindow; }
+    int Threshold(const Consensus::Params& params, int nAttempt) const override { return params.nRuleChangeActivationThreshold; }
+
+    bool Condition(const CBlockIndex* pindex, const Consensus::Params& params) const override
+    {
+        return pindex->nHeight >= params.MinBIP9WarningHeight &&
+               ((pindex->nVersion & VERSIONBITS_TOP_MASK) == VERSIONBITS_TOP_BITS) &&
+               ((pindex->nVersion >> bit) & 1) != 0 &&
+               ((ComputeBlockVersion(pindex->pprev, params) >> bit) & 1) == 0;
+    }
+};
+
+static ThresholdConditionCache warningcache[VERSIONBITS_NUM_BITS] GUARDED_BY(cs_main);
+
 void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Consensus::Params& params)
 {
-//    if (preloadedchain.load()) return;
+    if (preloadedchain.load()) return;
 
     workerPool.resize(1);
 
@@ -339,6 +366,31 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
 //             continue;
 //            WarningBitsConditionChecker checker(static_cast<Consensus::DeploymentPos>(bit));
 
+    for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
+
+			WarningBitsConditionChecker checker(bit);
+
+			LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
+
+            if (!preloadedchain && preloadchaincounter < VERSIONBITS_NUM_BITS) {
+				ThresholdState state = checker.GetStateForBuildCache(pindex, chainParams.GetConsensus(), warningcache[bit], bit);
+				preloadchaincounter = preloadchaincounter + 1;
+				if (preloadedchain) preloadchaincounter=0;
+			}
+
+			WarningBitsConditionChecker checker(bit);
+            ThresholdState state = checker.GetStateFor(pindex, chainParams.GetConsensus(), warningcache[bit]);
+            if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
+                const std::string strWarning = strprintf(_("Warning: unknown new rules activated (versionbit %i)").translated, bit);
+                if (state == ThresholdState::ACTIVE) {
+                    DoWarning(strWarning);
+                } else {
+                    AppendWarning(warningMessages, strWarning);
+                }
+            }
+    }
+
+
             const CBlockIndex* pindex = pindexPrev;
             int depth = 0;
             std::vector<const CBlockIndex*> blocksToCompute;
@@ -346,7 +398,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
             while (pindex && depth < maxDepth) {
                 {
                     std::lock_guard<std::mutex> lock(mtxCaches[bit]);
-//                    if (caches[bit].count(pindex)) break; // already cached
+                    if (caches[bit].count(pindex)) break; // already cached
                 }
 
                 blocksToCompute.push_back(pindex);
