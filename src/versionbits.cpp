@@ -9,6 +9,27 @@
 #include <util/translation.h>
 #include <util/threadnames.h>
 
+#include <thread>
+
+#ifdef _WIN32
+    #include <windows.h>
+#elif defined(__unix__) || defined(__APPLE__)
+    #include <sys/resource.h>
+#endif
+
+// Our own background–priority helper
+static void SetBackgroundThreadPriority()
+{
+#ifdef _WIN32
+    // Lower than normal to avoid starving GUI/validation threads
+    SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
+#elif defined(__unix__) || defined(__APPLE__)
+    // Increase "niceness" by 10; higher values = lower priority
+    setpriority(PRIO_PROCESS, 0, 10);
+#endif
+}
+
+
 std::atomic<bool> preloadedchain{false};
 
 
@@ -411,7 +432,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
         RenameThreadPool(vbworkerPool, "vb-prefill");
 
         // ↓ add this line ↓
-        sched_priority(-2); // cross‑platform helper already in Bitcoin Core util/
+        SetBackgroundThreadPriority(-2); // cross‑platform helper already in Bitcoin Core util/
 
         preloadedchain.store(false);
         LogPrintf("Prefilling versionbits caches...\n");
