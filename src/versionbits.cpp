@@ -440,7 +440,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
         // ↓ add this line ↓
 //        SetBackgroundThreadPriority(); // cross‑platform helper already in Bitcoin Core util/
 
-        preloadedchain.store(false);
+//        preloadedchain.store(false);
         LogPrintf("Prefilling versionbits caches...\n");
         for (int bit = 0; bit < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; ++bit) {
 
@@ -459,19 +459,17 @@ std::vector<const CBlockIndex*> blocks;
 // 2. Process vector without holding cs_main
     for (auto p : blocks) {
             WarningBitsConditionChecker checker(bit);
-//            ThresholdConditionCache temp;
+            ThresholdConditionCache temp;
 
             // Use the real slow routine once, but only for this background thread.
-            ThresholdState state = checker.GetStateFor(p, params, warningcache[bit]);
+            ThresholdState state = checker.GetStateFor(p, params, temp);
 
-/*
             // Store filled cache for runtime use.
             {
                 std::lock_guard<std::mutex> lock(mtxCaches[bit]);
                 warningcache[bit].swap(temp);
-                caches[bit].swap(temp);
+                caches[bit] = warningcache[bit]
             }
-*/
     }
 }
         LogPrintf("Versionbits cache prefill complete.\n");
