@@ -2611,7 +2611,7 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
 
                         WarningBitsConditionChecker checker(bit);
 */
-        if (!preloadedchain.load()) {
+        if (preloadedchain.load(true)) {
             ThresholdState state = checker.GetStateFor(pindex, chainParams.GetConsensus(), warningcache[bit]);
             if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
                 const std::string strWarning = strprintf(_("Warning: unknown new rules activated (versionbit %i)").translated, bit);
@@ -2626,7 +2626,7 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
 }
 
         // Check the version of the last 100 blocks to see if we need to upgrade:
-if (!preloadedchain.load()) {
+if (preloadedchain.load(false)) {
 //    LogPrint(BCLog::BENCHMARK, "Versionbits async preload triggered.\n");
 
         for (int i = 0; i < 100 && pindexNew != nullptr; i++)
