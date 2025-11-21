@@ -461,7 +461,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
             ThresholdConditionCache localCache;
 
             // just call once on tip; it will backfill all needed states
-            checker.GetStateFor(blocks.front(), params, localCache);
+            ThresholdState state = checker.GetStateFor(blocks.front(), params, localCache);
 
             {
                 std::lock_guard<std::mutex> lock(mtxCaches[bit]);
