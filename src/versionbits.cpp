@@ -451,7 +451,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
         }
 
         preloadedchain.store(true);
-        warningcache.clear();
+        caches.clear();
     });
 }
 
