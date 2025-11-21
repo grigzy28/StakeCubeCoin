@@ -439,6 +439,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
     std::thread([this, tip, params] {
 //        RenameThread("vb-prefill");
 //        SetLowThreadPriority();
+        SetBackgroundThreadPriority(); // cross‑platform helper already in Bitcoin Core util/
 
         LogPrintf("Prefilling versionbits caches…\n");
 
