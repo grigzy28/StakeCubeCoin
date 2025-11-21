@@ -78,6 +78,9 @@ public:
     int GetStateSinceHeightFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const;
 
     ThresholdState GetStateForBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache, int bitIn) const;
+
+    mutable ctpl::thread_pool vbworkerPool{2};
+
 };
 
 /** BIP 9 allows multiple softforks to be deployed in parallel. We cache per-period state for every one of them
@@ -92,7 +95,6 @@ public:
 
 private:
     std::mutex mtxCaches[VERSIONBITS_NUM_BITS];
-    mutable ctpl::thread_pool vbworkerPool;
 
 //    ThresholdConditionCache caches[Consensus::MAX_VERSION_BITS_DEPLOYMENTS];
 

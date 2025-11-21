@@ -433,7 +433,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
                                        const Consensus::Params& params)
 {
     if (preloadedchain.load()) return;
-    vbworkerPool.resize(1);
+
     vbworkerPool.stop(false);
     
     vbworkerPool.push([this, tip, params](int) {
