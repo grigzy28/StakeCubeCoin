@@ -22,10 +22,12 @@ static void SetBackgroundThreadPriority()
 {
 #ifdef _WIN32
     // Lower than normal to avoid starving GUI/validation threads
-    SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
+if (!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL))
+    LogPrintf("Prefill: SetThreadPriority failed (%lu)\n", GetLastError());
 #elif defined(__unix__) || defined(__APPLE__)
     // Increase "niceness" by 10; higher values = lower priority
-    setpriority(PRIO_PROCESS, 0, 2);
+if (setpriority(PRIO_PROCESS, 0, 10) != 0)
+    LogPrintf("Prefill: setpriority failed: %s\n", strerror(errno));
 #endif
 }
 
@@ -428,7 +430,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
     if (preloadedchain.load()) return; // only once
     vbworkerPool.resize(2);
 
-    vbworkerPool.push([this, tip, params](int){
+    std::thread([this, tip, params](int){
         RenameThreadPool(vbworkerPool, "vb-prefill");
 
         // ↓ add this line ↓
@@ -457,7 +459,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
         LogPrintf("Versionbits cache prefill complete.\n");
         
         preloadedchain.store(true);
-    });
+    }).detach();
 }
 
 /*
