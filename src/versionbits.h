@@ -93,7 +93,7 @@ public:
 
 private:
     std::mutex mtxCaches[VERSIONBITS_NUM_BITS];
-    mutable ctpl::thread_pool workerPool;
+    mutable ctpl::thread_pool vbworkerPool;
 
 //    ThresholdConditionCache caches[Consensus::MAX_VERSION_BITS_DEPLOYMENTS];
 
