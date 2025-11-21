@@ -193,7 +193,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
         pindexPrev = vToCompute.back();
         vToCompute.pop_back();
 
-		LogPrint(BCLog::BENCHMARK, "Second Height: %s - Bit: %s\n", pindexPrev->nHeight, bitIn);
+//		LogPrint(BCLog::BENCHMARK, "Second Height: %s - Bit: %s\n", pindexPrev->nHeight, bitIn);
 
     cache[pindexPrev] = state = stateNext;
 
@@ -451,19 +451,19 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
 
             }
 //        LogPrintf("bit %d cache size: %zu entries\n", bit, caches[bit].size());
-    for (unsigned int d = 0; d < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; d++) {
-        caches[d].clear();
-        warningcache[d].clear();
-    }
+//    for (unsigned int d = 0; d < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; d++) {
+//        caches[d].clear();
+//        warningcache[d].clear();
+//    }
 
         }
 
         preloadedchain.store(true);
 
-    for (unsigned int d = 0; d < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; d++) {
-        caches[d].clear();
-        warningcache[d].clear();
-    }
+//    for (unsigned int d = 0; d < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; d++) {
+//        caches[d].clear();
+//        warningcache[d].clear();
+//    }
 
     });
 }
