@@ -326,6 +326,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
     if (preloadedchain.load()) return;
 
     workerPool.resize(1);
+    workerPool.stop(false);
 
     workerPool.push([pindexPrev, params, this](int) {
 //        LogPrintf("inside versionbits preload (last 100 blocks)\n");
