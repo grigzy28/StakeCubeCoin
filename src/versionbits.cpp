@@ -345,9 +345,9 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
             int depth = 0;
             std::vector<const CBlockIndex*> blocksToCompute;
 
-			WarningBitsConditionChecker checker(bit);
+      			WarningBitsConditionChecker checker(bit);
 
-			LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
+			      LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
 
             if (!preloadedchain && preloadchaincounter < VERSIONBITS_NUM_BITS) {
 				        ThresholdState state = checker.GetStateForBuildCache(pindex, params, warningcache[bit], bit);
@@ -378,7 +378,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
                 depth++;
             }
 
-//            ThresholdState state;
+            ThresholdState state;
 
             {
                 std::lock_guard<std::mutex> lock(mtxCaches[bit]);
