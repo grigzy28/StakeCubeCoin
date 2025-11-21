@@ -437,7 +437,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
     if (preloadedchain.load()) return;
 
     std::thread([this, tip, params] {
-        RenameThread("vb-prefill");
+//        RenameThread("vb-prefill");
 //        SetLowThreadPriority();
 
         LogPrintf("Prefilling versionbits caches…\n");
