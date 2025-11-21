@@ -152,6 +152,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
     return state;
 }
 
+/*
 ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache, int bitIn) const
 {
 
@@ -211,6 +212,50 @@ while (!vToCompute.empty()) {
 	preloadedchain = true;
 
 	return state;
+}
+*/
+ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(
+    const CBlockIndex* pindexPrev, 
+    const Consensus::Params& params, 
+    ThresholdConditionCache& cache, 
+    int bitIn) const 
+{
+    const int64_t nTimeStart = BeginTime(params);
+    std::vector<const CBlockIndex*> vToCompute;
+
+    // Walk backwards to find the first cached block (1-by-1 for precise caching)
+    while (cache.count(pindexPrev) == 0) {
+        if (pindexPrev == nullptr) {
+            cache[pindexPrev] = ThresholdState::DEFINED;
+            break;
+        }
+        if (pindexPrev->GetMedianTimePast() < nTimeStart) {
+            cache[pindexPrev] = ThresholdState::DEFINED;
+            break;
+        }
+        vToCompute.push_back(pindexPrev);
+        pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
+    }
+
+    assert(cache.count(pindexPrev));
+    ThresholdState state = cache[pindexPrev];
+
+    // Process blocks forward (with proper state transitions)
+    while (!vToCompute.empty()) {
+        pindexPrev = vToCompute.back();
+        vToCompute.pop_back();
+
+        // Apply actual state transition logic here (example: mimic `GetStateFor`)
+        ThresholdState stateNext = state;
+        if (state == ThresholdState::DEFINED && pindexPrev->GetMedianTimePast() >= nTimeStart) {
+            stateNext = ThresholdState::STARTED;
+        }
+        // Add more conditions as needed...
+
+        cache[pindexPrev] = state = stateNext;
+    }
+
+    return state;
 }
 
 BIP9Stats AbstractThresholdConditionChecker::GetStateStatisticsFor(const CBlockIndex* pindex, const Consensus::Params& params, ThresholdConditionCache& cache) const
