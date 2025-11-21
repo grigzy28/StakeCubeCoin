@@ -429,6 +429,8 @@ const std::vector<const AbstractThresholdConditionChecker*> versionbitsCheckers 
     &checker_GOV_FEE,
 };
 
+ctpl::thread_pool AbstractThresholdConditionChecker::vbworkerPool{2};
+  
 void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
                                        const Consensus::Params& params)
 {
