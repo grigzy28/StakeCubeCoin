@@ -173,7 +173,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
 //	LogPrint(BCLog::BENCHMARK, "Height: End\n");
 
-	preloadedchain = true;
+//	preloadedchain = true;
 
 	return state;
 }
