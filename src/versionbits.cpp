@@ -436,7 +436,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
 {
     if (preloadedchain.load()) return;
 
-    AbstractThresholdConditionChecker::vbworkerPool([this, tip, params](int) {
+    AbstractThresholdConditionChecker::vbworkerPool.push([this, tip, params](int) {
 //        RenameThread("vb-prefill");
 //        SetLowThreadPriority();
         SetBackgroundThreadPriority(); // cross‑platform helper already in Bitcoin Core util/
