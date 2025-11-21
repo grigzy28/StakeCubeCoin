@@ -408,10 +408,10 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
     vbworkerPool.resize(2);
 
     vbworkerPool.push([this, tip, params](int){
-        RenameThreadPool(workerPool, "vb-prefill");
+        RenameThreadPool(vbworkerPool, "vb-prefill");
 
         // ↓ add this line ↓
-        setpriority(-2); // cross‑platform helper already in Bitcoin Core util/
+        sched_priority(-2); // cross‑platform helper already in Bitcoin Core util/
 
         preloadedchain.store(false);
         LogPrintf("Prefilling versionbits caches...\n");
@@ -436,7 +436,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
         LogPrintf("Versionbits cache prefill complete.\n");
         
         preloadedchain.store(true);
-    }).detach();
+    });
 }
 
 /*
