@@ -335,6 +335,15 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
         std::string warningMessages;
 
         for (int bit = 0; bit < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; ++bit) {
+      			WarningBitsConditionChecker checker(bit);
+
+			      LogPrint(BCLog::BENCHMARK, "bit: %s build cache\n", bit);
+
+//            if (!preloadedchain && (preloadchaincounter < VERSIONBITS_NUM_BITS)) {
+  	        ThresholdState state = checker.GetStateForBuildCache(pindex, params, warningcache[bit], bit);
+        }
+        
+        for (int bit = 0; bit < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; ++bit) {
 //LogPrintf("Preloading bit %d\n", bit);
         	  if (params.vDeployments[bit].bit == -1) continue;
 //LogPrintf("Preloading bit %d\n", bit);
@@ -344,8 +353,6 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
 
             const CBlockIndex* pindex = pindexPrev;
 
-  	        ThresholdState state = checker.GetStateForBuildCache(pindex, params, warningcache[bit], bit);
-
             int depth = 0;
             std::vector<const CBlockIndex*> blocksToCompute;
 
@@ -354,7 +361,8 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
 			      LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
 
 //            if (!preloadedchain && (preloadchaincounter < VERSIONBITS_NUM_BITS)) {
-//            ThresholdState state = checker.GetStateFor(pindex, params, warningcache[bit]);
+//  	        ThresholdState state = checker.GetStateForBuildCache(pindex, params, warningcache[bit], bit);
+            ThresholdState state = checker.GetStateFor(pindex, params, warningcache[bit]);
 
 			      LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
         				preloadchaincounter = preloadchaincounter + 1;
