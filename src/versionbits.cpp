@@ -401,6 +401,35 @@ const std::vector<const AbstractThresholdConditionChecker*> versionbitsCheckers 
     &checker_GOV_FEE,
 };
 
+void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::Params& params)
+{
+    if (preloadedchain.exchange(true)) return; // only once
+    vbworkerPool.resize(std::thread::hardware_concurrency());
+
+    vbworkerPool.push([this, tip, &params](int){
+        LogPrintf("Prefilling versionbits caches...\n");
+        for (int bit = 0; bit < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; ++bit) {
+
+            if (params.vDeployments[bit].bit == -1)
+                continue;               // skip undefined slots
+
+            VersionBitsConditionChecker checker(static_cast<Consensus::DeploymentPos>(bit));
+            ThresholdConditionCache temp;
+
+            // Use the real slow routine once, but only for this background thread.
+            checker.GetStateFor(tip, params, temp);
+
+            // Store filled cache for runtime use.
+            {
+                std::lock_guard<std::mutex> lock(mtxCaches[bit]);
+                caches[bit].swap(temp);
+            }
+        }
+        LogPrintf("Versionbits cache prefill complete.\n");
+    });
+}
+
+/*
 void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Consensus::Params& params)
 {
     if (preloadedchain.load()) return;
@@ -459,7 +488,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
                     AppendWarning(warningMessages, strWarning);
                 }
             }
-*/
+/
 
 //      			}
 
@@ -518,6 +547,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
 
     });
 }
+*/
 
 void VersionBitsCache::Clear()
 {
