@@ -434,7 +434,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
         RenameThreadPool(vbworkerPool, "vb-prefill");
 
         // ↓ add this line ↓
-        SetBackgroundThreadPriority(); // cross‑platform helper already in Bitcoin Core util/
+//        SetBackgroundThreadPriority(); // cross‑platform helper already in Bitcoin Core util/
 
         preloadedchain.store(false);
         LogPrintf("Prefilling versionbits caches...\n");
