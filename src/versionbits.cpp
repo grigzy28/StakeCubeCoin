@@ -7,6 +7,7 @@
 #include <consensus/params.h>
 #include <logging.h>
 #include <util/translation.h>
+#include <util/threadnames.h>
 
 std::atomic<bool> preloadedchain{false};
 
@@ -407,10 +408,10 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
     vbworkerPool.resize(2);
 
     vbworkerPool.push([this, tip, params](int){
-        ThreadSetName("vb_prefill");
+        RenameThreadPool(workerPool, "vb-prefill");
 
         // ↓ add this line ↓
-        ThreadSetPriority(-2); // cross‑platform helper already in Bitcoin Core util/
+        setpriority(-2); // cross‑platform helper already in Bitcoin Core util/
 
         preloadedchain.store(false);
         LogPrintf("Prefilling versionbits caches...\n");
