@@ -447,6 +447,8 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
             if (params.vDeployments[bit].bit == -1)
                 continue;               // skip undefined slots
 
+			      LogPrint(BCLog::BENCHMARK, "bit: %s build cache\n", bit);
+
 // 1. Copy required data from chain under a short lock
 std::vector<const CBlockIndex*> blocks;
 {
