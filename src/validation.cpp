@@ -2587,12 +2587,13 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
     }
 
     std::string warningMessages;
+    int nUpgraded = 0;
+
     if (!::ChainstateActive().IsInitialBlockDownload())
     {
 
 //        versionbitscache.InitializeAsync(pindexNew, chainParams.GetConsensus());
 
-        int nUpgraded = 0;
         const CBlockIndex* pindex = pindexNew;
 
         for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
@@ -2628,12 +2629,12 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
 if (!preloadedchain.load()) {
 //    LogPrint(BCLog::BENCHMARK, "Versionbits async preload triggered.\n");
 
-        for (int i = 0; i < 100 && pindex != nullptr; i++)
+        for (int i = 0; i < 100 && pindexNew != nullptr; i++)
         {
             int32_t nExpectedVersion = ComputeBlockVersion(pindex->pprev, chainParams.GetConsensus());
-            if (pindex->nVersion > VERSIONBITS_LAST_OLD_BLOCK_VERSION && (pindex->nVersion & ~nExpectedVersion) != 0)
+            if (pindexNew->nVersion > VERSIONBITS_LAST_OLD_BLOCK_VERSION && (pindex->nVersion & ~nExpectedVersion) != 0)
                 ++nUpgraded;
-            pindex = pindex->pprev;
+            pindexNew = pindexNew->pprev;
         }
         if (nUpgraded > 0)
             AppendWarning(warningMessages, strprintf(_("%d of last 100 blocks have unexpected version").translated, nUpgraded));
