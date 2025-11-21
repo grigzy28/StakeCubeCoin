@@ -473,7 +473,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
 
         LogPrintf("Versionbits cache prefill complete.\n");
         preloadedchain.store(true);
-    }).detach();
+    });
 }
 /*
 void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::Params& params)
