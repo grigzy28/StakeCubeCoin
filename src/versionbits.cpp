@@ -25,7 +25,7 @@ static void SetBackgroundThreadPriority()
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
 #elif defined(__unix__) || defined(__APPLE__)
     // Increase "niceness" by 10; higher values = lower priority
-    setpriority(PRIO_PROCESS, 0, 10);
+    setpriority(PRIO_PROCESS, 0, 2);
 #endif
 }
 
