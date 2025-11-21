@@ -430,7 +430,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
     if (preloadedchain.load()) return; // only once
     vbworkerPool.resize(2);
 
-    std::thread([this, tip, params](int){
+    std::thread([this, tip, params](){
         RenameThreadPool(vbworkerPool, "vb-prefill");
 
         // ↓ add this line ↓
