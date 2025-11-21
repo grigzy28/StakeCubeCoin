@@ -335,6 +335,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
         std::string warningMessages;
 
         for (int bit = 0; bit < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; ++bit) {
+            const CBlockIndex* pindex = pindexPrev;
       			WarningBitsConditionChecker checker(bit);
 
 			      LogPrint(BCLog::BENCHMARK, "bit: %s build cache\n", bit);
