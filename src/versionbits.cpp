@@ -431,6 +431,67 @@ const std::vector<const AbstractThresholdConditionChecker*> versionbitsCheckers 
 
 ctpl::thread_pool AbstractThresholdConditionChecker::vbworkerPool{2};
   
+void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, 
+                                     const Consensus::Params& params)
+{
+    if (preloadedchain.load()) return;
+
+    std::thread([this, tip, params] {
+        RenameThread("vb-prefill");
+//        SetLowThreadPriority();
+
+        LogPrintf("Prefilling versionbits caches…\n");
+
+        // 1. First take a snapshot of blocks to process
+        std::vector<const CBlockIndex*> blocks;
+        {
+            LOCK(cs_main);
+            for (auto p = tip; p && blocks.size() < 144; p = p->pprev) {
+                blocks.push_back(p);
+            }
+        }
+
+        // 2. Initialize all caches with default state
+        for (int bit = 0; bit < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; ++bit) {
+            if (params.vDeployments[bit].bit == -1) continue;
+            
+            std::lock_guard<std::mutex> lock(mtxCaches[bit]);
+            for (const auto& pindex : blocks) {
+                caches[bit].try_emplace(pindex, ThresholdState::DEFINED);
+                warningcache[bit].try_emplace(pindex, ThresholdState::DEFINED);
+            }
+        }
+
+        // 3. Now compute and cache actual states
+        for (int bit = 0; bit < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; ++bit) {
+            const auto& d = params.vDeployments[bit];
+            if (d.bit == -1) continue;
+
+            WarningBitsConditionChecker checker(bit);
+            ThresholdConditionCache temp_cache;
+
+            for (const auto& pindex : blocks) {
+                {
+                    std::lock_guard<std::mutex> lock(mtxCaches[bit]);
+                    ThresholdState state = checker.GetStateFor(pindex, params, temp_cache);
+                    caches[bit][pindex] = state;
+                    warningcache[bit][pindex] = state;
+                }
+
+                // Yield periodically for GUI responsiveness
+//                if (pindex->nHeight % 10 == 0) {
+//                    std::this_thread::yield();
+//                    QCoreApplication::processEvents();
+//                }
+            }
+        }
+
+        LogPrintf("Versionbits cache prefill complete.\n");
+        preloadedchain.store(true);
+    }).detach();
+}
+
+/*
 void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
                                        const Consensus::Params& params)
 {
@@ -440,7 +501,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
     
 //    AbstractThresholdConditionChecker::vbworkerPool.push([this, tip, params](int) {
     std::thread([this, tip, params]{
-        RenameThreadPool(AbstractThresholdConditionChecker::vbworkerPool, "vb-prefill");
+//        RenameThreadPool(AbstractThresholdConditionChecker::vbworkerPool, "vb-prefill");
         LogPrintf("Prefilling versionbits caches…\n");
 
         // Snapshot once
@@ -456,8 +517,6 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
         // Now, for each bit, process using that one snapshot
         for (int bit = 0; bit < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; ++bit) {
 
-			      if (bit == 3) bit = 7;
-			        
 			      LogPrint(BCLog::BENCHMARK, "bit: %s build cache\n", bit);
 
             const auto& d = params.vDeployments[bit];
