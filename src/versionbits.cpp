@@ -404,7 +404,7 @@ const std::vector<const AbstractThresholdConditionChecker*> versionbitsCheckers 
 void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::Params& params)
 {
     if (preloadedchain.load()) return; // only once
-    vbworkerPool.resize(1);
+    vbworkerPool.resize(2);
 
     vbworkerPool.push([this, tip, params](int){
         preloadedchain.store(false);
