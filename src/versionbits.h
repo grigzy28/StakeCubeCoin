@@ -86,7 +86,6 @@ public:
 struct VersionBitsCache
 {
 public:
-    mutable ctpl::thread_pool workerPool;
     std::array<ThresholdConditionCache, VERSIONBITS_NUM_BITS> caches;
     void InitializeAsync(const CBlockIndex* pindexPrev, const Consensus::Params& params);
 
@@ -94,6 +93,7 @@ public:
 
 private:
     std::mutex mtxCaches[VERSIONBITS_NUM_BITS];
+    mutable ctpl::thread_pool workerPool;
 
 //    ThresholdConditionCache caches[Consensus::MAX_VERSION_BITS_DEPLOYMENTS];
 
