@@ -448,25 +448,26 @@ std::vector<CBlockIndex*> blocks;
 {
     LOCK(cs_main);
     for (auto p = tip; p; p = p->pprev) {
-        blocks.pop_back(p);
+        blocks.push_back(p);
         if (p->nHeight == 0) break;
     }
 }
 // 2. Process vector without holding cs_main
-for (auto p : blocks) {
+    for (auto p : blocks) {
             WarningBitsConditionChecker checker(bit);
             ThresholdConditionCache temp;
 
             // Use the real slow routine once, but only for this background thread.
             ThresholdState state = checker.GetStateFor(p, params, temp);
-}
+
             // Store filled cache for runtime use.
             {
                 std::lock_guard<std::mutex> lock(mtxCaches[bit]);
                 warningcache[bit].swap(temp);
                 caches[bit].swap(temp);
             }
-        }
+    }
+}
         LogPrintf("Versionbits cache prefill complete.\n");
         
         preloadedchain.store(true);
