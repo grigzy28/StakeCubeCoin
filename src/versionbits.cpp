@@ -436,9 +436,10 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
 {
     if (preloadedchain.load()) return;
 
-    AbstractThresholdConditionChecker::vbworkerPool.resize(1);
+//    AbstractThresholdConditionChecker::vbworkerPool.resize(1);
     
-    AbstractThresholdConditionChecker::vbworkerPool.push([this, tip, params](int) {
+//    AbstractThresholdConditionChecker::vbworkerPool.push([this, tip, params](int) {
+    std::thread([this, tip, params]{
         RenameThreadPool(AbstractThresholdConditionChecker::vbworkerPool, "vb-prefill");
         LogPrintf("Prefilling versionbits caches…\n");
 
@@ -478,7 +479,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
 
         LogPrintf("Versionbits cache prefill complete.\n");
         preloadedchain.store(true);
-    });
+    }).detach();
 }
 /*
 void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::Params& params)
