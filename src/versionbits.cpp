@@ -208,7 +208,7 @@ while (!vToCompute.empty()) {
 
 //	LogPrint(BCLog::BENCHMARK, "Height: End\n");
 
-	preloadedchain = true;
+//	preloadedchain = true;
 
 	return state;
 }
@@ -403,10 +403,11 @@ const std::vector<const AbstractThresholdConditionChecker*> versionbitsCheckers 
 
 void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::Params& params)
 {
-    if (preloadedchain.exchange(true)) return; // only once
-    vbworkerPool.resize(std::thread::hardware_concurrency());
+    if (preloadedchain.load()) return; // only once
+    vbworkerPool.resize(1);
 
-    vbworkerPool.push([this, tip, &params](int){
+    vbworkerPool.push([this, tip, params](int){
+        preloadedchain.store(false);
         LogPrintf("Prefilling versionbits caches...\n");
         for (int bit = 0; bit < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; ++bit) {
 
@@ -427,6 +428,8 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
             }
         }
         LogPrintf("Versionbits cache prefill complete.\n");
+        
+        preloadedchain.store(true);
     });
 }
 
