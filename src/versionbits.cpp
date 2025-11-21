@@ -379,7 +379,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
                 depth++;
             }
 
-            ThresholdState state;
+//            ThresholdState state;
 
             {
                 std::lock_guard<std::mutex> lock(mtxCaches[bit]);
