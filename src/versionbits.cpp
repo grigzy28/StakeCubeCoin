@@ -152,7 +152,6 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
     return state;
 }
 
-/*
 ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache, int bitIn) const
 {
 
@@ -196,7 +195,7 @@ while (!vToCompute.empty()) {
     ThresholdState stateNext = state;
     // do actual transition logic
     if (pindexPrev->GetMedianTimePast() >= nTimeStart) {
-        if (EnoughSignaling(pindexPrev, params, bitIn)) {
+        if (Condition(pindexPrev, params)) {
             stateNext = ThresholdState::LOCKED_IN;
         } else {
             stateNext = ThresholdState::STARTED;
@@ -213,7 +212,7 @@ while (!vToCompute.empty()) {
 
 	return state;
 }
-*/
+/*
 ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(
     const CBlockIndex* pindexPrev, 
     const Consensus::Params& params, 
@@ -257,6 +256,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(
 
     return state;
 }
+*/
 
 BIP9Stats AbstractThresholdConditionChecker::GetStateStatisticsFor(const CBlockIndex* pindex, const Consensus::Params& params, ThresholdConditionCache& cache) const
 {
