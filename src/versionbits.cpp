@@ -436,8 +436,8 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
 
 //    vbworkerPool.stop(false);
     
-    AbstractThresholdConditionsChecker::vbworkerPool.push([this, tip, params](int) {
-        RenameThreadPool(vbworkerPool, "vb-prefill");
+    AbstractThresholdConditionChecker::vbworkerPool.push([this, tip, params](int) {
+        RenameThreadPool(AbstractThresholdConditionChecker::vbworkerPool, "vb-prefill");
         LogPrintf("Prefilling versionbits caches…\n");
 
         // Snapshot once
