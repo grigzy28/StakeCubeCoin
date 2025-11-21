@@ -9,6 +9,7 @@
 #include <util/translation.h>
 #include <util/threadnames.h>
 
+#include <shutdown.h>
 #include <thread>
 #include <threadinterrupt.h>
 
