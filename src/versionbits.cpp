@@ -450,7 +450,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
 			      LogPrint(BCLog::BENCHMARK, "bit: %s build cache\n", bit);
 
 // 1. Copy required data from chain under a short lock
-std::vector<const CBlockIndex*> blocks;
+const CBlockIndex* blocks;
 {
     LOCK(cs_main);
     for (auto p = tip; p; p = p->pprev) {
