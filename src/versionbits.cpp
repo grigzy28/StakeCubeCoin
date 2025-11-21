@@ -467,6 +467,8 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
             const auto& d = params.vDeployments[bit];
             if (d.bit == -1) continue;
 
+			      LogPrint(BCLog::BENCHMARK, "bit: %s build cache\n", bit);
+
             WarningBitsConditionChecker checker(bit);
             ThresholdConditionCache temp_cache;
 
