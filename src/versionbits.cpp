@@ -480,7 +480,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
             {
                 std::lock_guard<std::mutex> lock(mtxCaches[bit]);
                 if (pindex) {
-                    state = caches[bit][pindex]; // start from known state
+                    state = warningcache[bit][pindex]; // start from known state
                 } else {
                     state = ThresholdState::DEFINED; // fallback
                 }
@@ -496,7 +496,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
 //if (pindex->nVersion) {
 //    if (state != ThresholdState::DEFINED) {
         std::lock_guard<std::mutex> lock(mtxCaches[bit]);
-        caches[bit][pindex] = state = stateNext;
+        warningcache[bit][pindex] = state = stateNext;
 //    }
 //}
 
