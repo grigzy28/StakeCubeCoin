@@ -435,7 +435,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
     if (preloadedchain.load()) return;
     vbworkerPool.resize(1);
 
-    vbworkerPool([this, tip, params](int) {
+    vbworkerPool.push([this, tip, params](int) {
         RenameThreadPool(vbworkerPool, "vb-prefill");
         LogPrintf("Prefilling versionbits caches…\n");
 
