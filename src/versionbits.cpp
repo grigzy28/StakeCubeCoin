@@ -407,6 +407,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
                 }
             }
 
+/*
 //      			}
 
 
@@ -451,15 +452,14 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
         }
 
         preloadedchain.store(true);
+*/
 
     for (unsigned int d = 0; d < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; d++) {
         caches[d].clear();
         warningcache[d].clear();
-        caches[d].shrink_to_fit());
-        warningcache[d].shrink_to_fit();
     }
 
-    });
+    }});
 }
 
 void VersionBitsCache::Clear()
