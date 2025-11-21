@@ -14,6 +14,102 @@ std::atomic<bool> preloadedchain{false};
 ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const
 {
     int nPeriod = Period(params);
+    int min_activation_height = MinActivationHeight(params);
+    int64_t nTimeStart = BeginTime(params);
+    int masternodeStartHeight = SignalHeight(pindexPrev, params);
+    int64_t nTimeTimeout = EndTime(params);
+
+    // Check if this deployment is always active.
+    if (nTimeStart == Consensus::BIP9Deployment::ALWAYS_ACTIVE) {
+        return ThresholdState::ACTIVE;
+    }
+
+    // Check if this deployment is never active.
+    if (nTimeStart == Consensus::BIP9Deployment::NEVER_ACTIVE) {
+        return ThresholdState::FAILED;
+    }
+
+    // A block's state is always the same as that of the first of its period, so it is computed based on a pindexPrev whose height equals a multiple of nPeriod - 1.
+    if (pindexPrev != nullptr) {
+        pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - ((pindexPrev->nHeight + 1) % nPeriod));
+    }
+
+    // Walk backwards in steps of nPeriod to find a pindexPrev whose information is known
+    std::vector<const CBlockIndex*> vToCompute;
+    while (cache.count(pindexPrev) == 0) {
+        if (pindexPrev == nullptr) {
+            // The genesis block is by definition defined.
+            cache[pindexPrev] = ThresholdState::DEFINED;
+            break;
+        }
+        if (pindexPrev->GetMedianTimePast() < nTimeStart || pindexPrev->nHeight < masternodeStartHeight) {
+            // Optimization: don't recompute down further, as we know every earlier block will be before the start time
+            cache[pindexPrev] = ThresholdState::DEFINED;
+            break;
+        }
+        vToCompute.push_back(pindexPrev);
+        pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - nPeriod);
+    }
+
+    // At this point, cache[pindexPrev] is known
+    assert(cache.count(pindexPrev));
+    ThresholdState state = cache[pindexPrev];
+
+    int nStartHeight = calculateStartHeight(pindexPrev, state, nPeriod, cache);
+
+    // Now walk forward and compute the state of descendants of pindexPrev
+    while (!vToCompute.empty()) {
+        ThresholdState stateNext = state;
+        pindexPrev = vToCompute.back();
+        vToCompute.pop_back();
+
+        switch (state) {
+            case ThresholdState::DEFINED: {
+                if (pindexPrev->GetMedianTimePast() >= nTimeStart && pindexPrev->nHeight >= masternodeStartHeight) {
+                    stateNext = ThresholdState::STARTED;
+                    nStartHeight = pindexPrev->nHeight + 1;
+                }
+                break;
+            }
+            case ThresholdState::STARTED: {
+                // We need to count
+                const CBlockIndex* pindexCount = pindexPrev;
+                int count = 0;
+                for (int i = 0; i < nPeriod; i++) {
+                    if (Condition(pindexCount, params)) {
+                        count++;
+                    }
+                    pindexCount = pindexCount->pprev;
+                }
+                assert(nStartHeight > 0 && nStartHeight < std::numeric_limits<int>::max());
+                int nAttempt = (pindexCount->nHeight + 1 - nStartHeight) / nPeriod;
+                if (count >= Threshold(params, nAttempt)) {
+                    stateNext = ThresholdState::LOCKED_IN;
+                } else if (pindexPrev->GetMedianTimePast() >= nTimeTimeout) {
+                    stateNext = ThresholdState::FAILED;
+                }
+                break;
+            }
+            case ThresholdState::LOCKED_IN: {
+                // Progresses into ACTIVE provided activation height will have been reached.
+                if (pindexPrev->nHeight + 1 >= min_activation_height) {
+                    stateNext = ThresholdState::ACTIVE;
+                }
+                break;
+            }
+            case ThresholdState::FAILED:
+            case ThresholdState::ACTIVE: {
+                // Nothing happens, these are terminal states.
+                break;
+            }
+        }
+        cache[pindexPrev] = state = stateNext;
+    }
+
+    return state;
+    
+/*
+    int nPeriod = Period(params);
     int64_t nTimeStart = BeginTime(params);
     int64_t nTimeTimeout = EndTime(params);
     int min_activation_height = MinActivationHeight(params);
@@ -118,6 +214,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
     }
 
     return state;
+*/
 }
 
 ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache, int bitIn) const
@@ -326,7 +423,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
     if (preloadedchain.load()) return;
 
     vbworkerPool.resize(2);
-//    vbworkerPool.stop(false);
+    vbworkerPool.stop(false);
 
     vbworkerPool.push([pindexPrev, params, this](int) {
 //        LogPrintf("inside versionbits preload (last 100 blocks)\n");
