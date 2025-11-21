@@ -188,8 +188,6 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
 //	LogPrint(BCLog::BENCHMARK, "Height: %s\n", pindexPrev->nHeight);
 
-	int counter = 1;
-
 	while (!vToCompute.empty()) {
         ThresholdState stateNext = state;
         pindexPrev = vToCompute.back();
@@ -197,14 +195,14 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
 //		LogPrint(BCLog::BENCHMARK, "Second Height: %s - Counter: %s - Bit: %s\n", pindexPrev->nHeight, counter, bitIn);
 
-    cache[pindexPrev] = state = stateNext;
+    if (pindexPrev->nBits == bitIn) { cache[pindexPrev] = state = stateNext; }
 
 
   }
 
 //	LogPrint(BCLog::BENCHMARK, "Height: End\n");
 
-//	preloadedchain = true;
+	preloadedchain = true;
 
 	return state;
 }
