@@ -448,7 +448,7 @@ std::vector<const CBlockIndex*> blocks;
 std::vector<const CBlockIndex*> p;
 {
     LOCK(cs_main);
-    for (p = tip; p; p = p->pprev) {
+    for (auto p = tip; p; p = p->pprev) {
         blocks.push_back(p);
         if (p->nHeight == 0) break;
     }
