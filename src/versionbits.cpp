@@ -481,10 +481,10 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
                 }
 
                 // Yield periodically for GUI responsiveness
-//                if (pindex->nHeight % 10 == 0) {
-//                    std::this_thread::yield();
-//                    QCoreApplication::processEvents();
-//                }
+                if (pindex->nHeight % 10 == 0) {
+                    std::this_thread::yield();
+                    QCoreApplication::processEvents();
+                }
             }
         }
 
