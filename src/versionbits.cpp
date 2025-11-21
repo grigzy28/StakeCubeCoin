@@ -11,6 +11,28 @@
 std::atomic<bool> preloadedchain{false};
 
 
+static int calculateStartHeight(const CBlockIndex* pindexPrev, ThresholdState state, const int nPeriod, const ThresholdConditionCache& cache) {
+    int nStartHeight{std::numeric_limits<int>::max()};
+
+    // we are interested only in state STARTED
+    // For state DEFINED: it is not started yet, nothing to do
+    // For states LOCKED_IN, FAILED, ACTIVE: it is too late, nothing to do
+    while (state == ThresholdState::STARTED) {
+        nStartHeight = std::min(pindexPrev->nHeight + 1, nStartHeight);
+
+        // we can walk back here because the only way for STARTED state to exist
+        // in cache already is to be calculated in previous runs via "walk forward"
+        // loop below starting from DEFINED state.
+        pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - nPeriod);
+        auto cache_it = cache.find(pindexPrev);
+        assert(cache_it != cache.end());
+
+        state = cache_it->second;
+    }
+
+    return nStartHeight;
+}
+
 ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const
 {
     int nPeriod = Period(params);
@@ -25,9 +47,9 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
     }
 
     // Check if this deployment is never active.
-    if (nTimeStart == Consensus::BIP9Deployment::NEVER_ACTIVE) {
-        return ThresholdState::FAILED;
-    }
+//    if (nTimeStart == Consensus::BIP9Deployment::NEVER_ACTIVE) {
+//        return ThresholdState::FAILED;
+//    }
 
     // A block's state is always the same as that of the first of its period, so it is computed based on a pindexPrev whose height equals a multiple of nPeriod - 1.
     if (pindexPrev != nullptr) {
