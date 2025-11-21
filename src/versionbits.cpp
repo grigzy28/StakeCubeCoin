@@ -395,11 +395,11 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
 //            ThresholdState state = checker.GetStateFor(pindex, params, warningcache[bit]);
 
 			      LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
+
+//        				preloadchaincounter = preloadchaincounter + 1;
+//				        if (preloadedchain) preloadchaincounter=0;
+
 /*
-
-        				preloadchaincounter = preloadchaincounter + 1;
-				        if (preloadedchain) preloadchaincounter=0;
-
             if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
                 const std::string strWarning = strprintf(_("Warning: unknown new rules activated (versionbit %i)").translated, bit);
                 if (state == ThresholdState::ACTIVE) {
@@ -408,6 +408,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
                     AppendWarning(warningMessages, strWarning);
                 }
             }
+*/
 
 //      			}
 
@@ -449,7 +450,6 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
 //}
 
             }
-*/
 //        LogPrintf("bit %d cache size: %zu entries\n", bit, caches[bit].size());
     for (unsigned int d = 0; d < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; d++) {
         caches[d].clear();
