@@ -430,7 +430,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
     if (preloadedchain.load()) return; // only once
     vbworkerPool.resize(2);
 
-    std::thread([this, tip, params](){
+    vbworkerPool.push([this, tip, params](int){
         RenameThreadPool(vbworkerPool, "vb-prefill");
 
         // ↓ add this line ↓
@@ -443,12 +443,24 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
             if (params.vDeployments[bit].bit == -1)
                 continue;               // skip undefined slots
 
+// 1. Copy required data from chain under a short lock
+std::vector<CBlockIndex*> blocks;
+{
+    LOCK(cs_main);
+    for (auto p = tip; p; p = p->pprev) {
+        blocks.push_back(p);
+        if (p->nHeight == 0) break;
+    }
+}
+// 2. Process vector without holding cs_main
+for (auto p : blocks) {
             WarningBitsConditionChecker checker(bit);
             ThresholdConditionCache temp;
 
             // Use the real slow routine once, but only for this background thread.
-            ThresholdState state = checker.GetStateFor(tip, params, temp);
-
+            ThresholdState state = checker.GetStateFor(p, params, temp);
+    checker.GetStateFor(p, params, localCache);
+}
             // Store filled cache for runtime use.
             {
                 std::lock_guard<std::mutex> lock(mtxCaches[bit]);
@@ -459,7 +471,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
         LogPrintf("Versionbits cache prefill complete.\n");
         
         preloadedchain.store(true);
-    }).detach();
+    });
 }
 
 /*
