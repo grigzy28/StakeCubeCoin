@@ -429,6 +429,52 @@ const std::vector<const AbstractThresholdConditionChecker*> versionbitsCheckers 
     &checker_GOV_FEE,
 };
 
+void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
+                                       const Consensus::Params& params)
+{
+    if (preloadedchain.load()) return;
+    vbworkerPool.resize(2);
+
+    std::thread([this, tip, params] {
+        RenameThreadPool(vbworkerPool, "vb-prefill");
+        LogPrintf("Prefilling versionbits caches…\n");
+
+        // Snapshot once
+        std::vector<const CBlockIndex*> blocks;
+        {
+            LOCK(cs_main);
+            for (auto p = tip; p; p = p->pprev) {
+                blocks.push_back(p);
+                if (p->nHeight == 0) break;
+            }
+        }
+
+        // Now, for each bit, process using that one snapshot
+        for (int bit = 0; bit < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; ++bit) {
+
+			      LogPrint(BCLog::BENCHMARK, "bit: %s build cache\n", bit);
+
+            const auto& d = params.vDeployments[bit];
+            if (d.bit == -1) continue;
+
+            WarningBitsConditionChecker checker(bit);
+            ThresholdConditionCache localCache;
+
+            // just call once on tip; it will backfill all needed states
+            checker.GetStateFor(blocks.front(), params, localCache);
+
+            {
+                std::lock_guard<std::mutex> lock(mtxCaches[bit]);
+                warningcache[bit].swap(localCache);
+                caches[bit] = warningcache[bit];
+            }
+        }
+
+        LogPrintf("Versionbits cache prefill complete.\n");
+        preloadedchain.store(true);
+    }).detach();
+}
+/*
 void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::Params& params)
 {
     if (preloadedchain.load()) return; // only once
@@ -450,7 +496,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
 			      LogPrint(BCLog::BENCHMARK, "bit: %s build cache\n", bit);
 
 // 1. Copy required data from chain under a short lock
-const CBlockIndex* blocks;
+std::vector<const CBlockIndex*> blocks;
 {
     LOCK(cs_main);
     for (auto p = tip; p; p = p->pprev) {
@@ -459,12 +505,12 @@ const CBlockIndex* blocks;
     }
 }
 // 2. Process vector without holding cs_main
-//    for (auto p : blocks) {
+    for (auto p : blocks) {
             WarningBitsConditionChecker checker(bit);
             ThresholdConditionCache temp;
 
             // Use the real slow routine once, but only for this background thread.
-            ThresholdState state = checker.GetStateFor(blocks, params, temp);
+            ThresholdState state = checker.GetStateFor(p, params, temp);
 
             // Store filled cache for runtime use.
             {
@@ -472,7 +518,7 @@ const CBlockIndex* blocks;
                 warningcache[bit].swap(temp);
                 caches[bit] = warningcache[bit];
             }
-//    }
+    }
 }
         LogPrintf("Versionbits cache prefill complete.\n");
         
@@ -480,7 +526,6 @@ const CBlockIndex* blocks;
     }).detach();
 }
 
-/*
 void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Consensus::Params& params)
 {
     if (preloadedchain.load()) return;
