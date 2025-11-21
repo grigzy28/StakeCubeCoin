@@ -391,7 +391,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
 			      LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
 
 //            if (!preloadedchain && (preloadchaincounter < VERSIONBITS_NUM_BITS)) {
-  	        ThresholdState state = checker.GetStateForBuildCache(pindex, params, warningcache[bit], bit);
+  	        ThresholdState state = checker.GetStateForBuildCache(pindex, params, caches[bit], bit);
 //            ThresholdState state = checker.GetStateFor(pindex, params, warningcache[bit]);
 
 			      LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
