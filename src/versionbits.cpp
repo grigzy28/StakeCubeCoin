@@ -456,7 +456,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
         // Now, for each bit, process using that one snapshot
         for (int bit = 0; bit < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; ++bit) {
 
-			      if (bit == 3) bit = 4;
+			      if (bit == 3) bit = 5;
 			        
 			      LogPrint(BCLog::BENCHMARK, "bit: %s build cache\n", bit);
 
