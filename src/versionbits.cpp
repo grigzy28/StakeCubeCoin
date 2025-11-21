@@ -445,7 +445,6 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
 
 // 1. Copy required data from chain under a short lock
 std::vector<const CBlockIndex*> blocks;
-const CBlockIndex* p;
 {
     LOCK(cs_main);
     for (auto p = tip; p; p = p->pprev) {
@@ -454,7 +453,7 @@ const CBlockIndex* p;
     }
 }
 // 2. Process vector without holding cs_main
-//    for (auto p : blocks) {
+    for (auto p : blocks) {
             WarningBitsConditionChecker checker(bit);
             ThresholdConditionCache temp;
 
@@ -467,7 +466,7 @@ const CBlockIndex* p;
                 warningcache[bit].swap(temp);
                 caches[bit].swap(temp);
             }
-//    }
+    }
 }
         LogPrintf("Versionbits cache prefill complete.\n");
         
