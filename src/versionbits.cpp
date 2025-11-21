@@ -6,7 +6,7 @@
 #include <versionbits.h>
 #include <consensus/params.h>
 #include <logging.h>
-#include <util/validation.h>
+#include <util/translation.h>
 
 std::atomic<bool> preloadedchain{false};
 
