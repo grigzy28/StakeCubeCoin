@@ -448,7 +448,7 @@ std::vector<CBlockIndex*> blocks;
 {
     LOCK(cs_main);
     for (auto p = tip; p; p = p->pprev) {
-        blocks.push_back(p);
+        blocks.pop_back(p);
         if (p->nHeight == 0) break;
     }
 }
@@ -459,7 +459,6 @@ for (auto p : blocks) {
 
             // Use the real slow routine once, but only for this background thread.
             ThresholdState state = checker.GetStateFor(p, params, temp);
-    checker.GetStateFor(p, params, localCache);
 }
             // Store filled cache for runtime use.
             {
