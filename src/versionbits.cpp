@@ -447,9 +447,9 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
         caches[bit][pindex] = state = stateNext;
 //    }
 //}
-*/
 
             }
+*/
 //        LogPrintf("bit %d cache size: %zu entries\n", bit, caches[bit].size());
     for (unsigned int d = 0; d < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; d++) {
         caches[d].clear();
