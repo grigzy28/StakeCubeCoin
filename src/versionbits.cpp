@@ -445,7 +445,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
 
 // 1. Copy required data from chain under a short lock
 std::vector<const CBlockIndex*> blocks;
-std::vector<const CBlockIndex*> p;
+std::vector<CBlockIndex*> p;
 {
     LOCK(cs_main);
     for (auto p = tip; p; p = p->pprev) {
