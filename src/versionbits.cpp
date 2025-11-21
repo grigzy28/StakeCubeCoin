@@ -351,8 +351,8 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
 {
     if (preloadedchain.load()) return;
 
-    vbworkerPool.resize(2);
-    vbworkerPool.stop(false);
+    vbworkerPool.resize(1);
+//    vbworkerPool.stop(false);
 
     vbworkerPool.push([pindexPrev, params, this](int) {
 //        LogPrintf("inside versionbits preload (last 100 blocks)\n");
