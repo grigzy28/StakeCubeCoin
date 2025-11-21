@@ -2610,6 +2610,7 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
 
                         WarningBitsConditionChecker checker(bit);
 */
+if (preloadedchain.load())
             ThresholdState state = checker.GetStateFor(pindex, chainParams.GetConsensus(), warningcache[bit]);
             if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
                 const std::string strWarning = strprintf(_("Warning: unknown new rules activated (versionbit %i)").translated, bit);
@@ -2620,9 +2621,9 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
                 }
             }
         }
+}
 
         // Check the version of the last 100 blocks to see if we need to upgrade:
-/*
 if (!preloadedchain) {
 //    LogPrint(BCLog::BENCHMARK, "Versionbits async preload triggered.\n");
 
@@ -2636,7 +2637,6 @@ if (!preloadedchain) {
         if (nUpgraded > 0)
             AppendWarning(warningMessages, strprintf(_("%d of last 100 blocks have unexpected version").translated, nUpgraded));
     }
-*/
 }
 
     LogPrintf("%s: new best=%s height=%d version=0x%08x log2_work=%.8g tx=%lu date='%s' progress=%f cache=%.1fMiB(%utxo) evodb_cache=%.1fMiB%s\n", __func__,
