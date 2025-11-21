@@ -195,7 +195,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
 
 //		LogPrint(BCLog::BENCHMARK, "Second Height: %s - Counter: %s - Bit: %s\n", pindexPrev->nHeight, counter, bitIn);
 
-    if (pindexPrev->nBits == bitIn) { cache[pindexPrev] = state = stateNext; }
+    cache[pindexPrev] = state = stateNext;
 
 
   }
@@ -451,6 +451,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
         }
 
         preloadedchain.store(true);
+        warningcache.clear();
     });
 }
 
