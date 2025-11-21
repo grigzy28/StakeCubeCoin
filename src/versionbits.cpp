@@ -414,7 +414,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
             if (params.vDeployments[bit].bit == -1)
                 continue;               // skip undefined slots
 
-            VersionBitsConditionChecker checker(static_cast<Consensus::DeploymentPos>(bit));
+            WarningBitsConditionChecker checker(bit);
             ThresholdConditionCache temp;
 
             // Use the real slow routine once, but only for this background thread.
