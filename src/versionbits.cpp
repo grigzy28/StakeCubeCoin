@@ -474,9 +474,9 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
             ThresholdConditionCache temp_cache;
 
             for (const auto& pindex : blocks) {
+                    ThresholdState state = checker.GetStateFor(pindex, params, temp_cache);
                 {
                     std::lock_guard<std::mutex> lock(mtxCaches[bit]);
-                    ThresholdState state = checker.GetStateFor(pindex, params, temp_cache);
                     caches[bit][pindex] = state;
                     warningcache[bit][pindex] = state;
                 }
