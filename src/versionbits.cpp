@@ -392,7 +392,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
 
 //            if (!preloadedchain && (preloadchaincounter < VERSIONBITS_NUM_BITS)) {
 //  	        ThresholdState state = checker.GetStateForBuildCache(pindex, params, warningcache[bit], bit);
-            ThresholdState state = checker.GetStateFor(pindex, params, warningcache[bit]);
+//            ThresholdState state = checker.GetStateFor(pindex, params, warningcache[bit]);
 
 			      LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
         				preloadchaincounter = preloadchaincounter + 1;
@@ -407,7 +407,6 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
                 }
             }
 
-/*
 //      			}
 
 
@@ -449,17 +448,21 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
 
             }
 //        LogPrintf("bit %d cache size: %zu entries\n", bit, caches[bit].size());
+    for (unsigned int d = 0; d < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; d++) {
+        caches[d].clear();
+        warningcache[d].clear();
+    }
+
         }
 
         preloadedchain.store(true);
-*/
 
     for (unsigned int d = 0; d < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; d++) {
         caches[d].clear();
         warningcache[d].clear();
     }
 
-    }});
+    });
 }
 
 void VersionBitsCache::Clear()
