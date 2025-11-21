@@ -388,9 +388,6 @@ protected:
 public:
     explicit VersionBitsConditionChecker(Consensus::DeploymentPos id_) : id(id_) {}
     uint32_t Mask(const Consensus::Params& params) const { return ((uint32_t)1) << params.vDeployments[id].bit; }
-
-    static ctpl::thread_pool vbworkerPool;
-
 };
 
 } // namespace
@@ -437,10 +434,10 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
 {
     if (preloadedchain.load()) return;
 
-    VersionBitsConditionChecker::vbworkerPool.resize(1);
+    AbstractThresholdConditionChecker::vbworkerPool.resize(1);
     
-    VersionBitsConditionChecker::vbworkerPool.push([this, tip, params](int) {
-        RenameThreadPool(VersionBitsConditionChecker::vbworkerPool, "vb-prefill");
+    AbstractThresholdConditionChecker::vbworkerPool.push([this, tip, params](int) {
+        RenameThreadPool(AbstractThresholdConditionChecker::vbworkerPool, "vb-prefill");
         LogPrintf("Prefilling versionbits caches…\n");
 
         // Snapshot once
