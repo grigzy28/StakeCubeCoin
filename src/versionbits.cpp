@@ -354,7 +354,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
     vbworkerPool.resize(1);
 //    vbworkerPool.stop(false);
 
-    vbworkerPool.push([pindexPrev, params, this](int) {
+    vbworkerPool.push([pindexPrev, params, this]() {
 //        LogPrintf("inside versionbits preload (last 100 blocks)\n");
 
         constexpr int maxDepth = 100;

@@ -255,7 +255,7 @@ public:
         // Deployment of decreased proposal fee, script addresses for Governance Proposals
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].bit             = 7;
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nStartTime      = 1635724800; // Nov 1st, 2021
-        consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nTimeout        = 999999999999ULL;
+        consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nTimeout        = Consensus::BIP9Deployment::NO_TIMEOUT;
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nWindowSize     = 100;
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nThresholdStart = 80;
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nThresholdMin   = 60;
