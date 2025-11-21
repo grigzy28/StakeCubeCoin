@@ -8,7 +8,6 @@
 #include <chain.h>
 #include <map>
 #include <ctpl_stl.h>
-#include <ctpl_stl.h>
 
 /** What block version to use for new blocks (pre versionbits) */
 static const int32_t VERSIONBITS_LAST_OLD_BLOCK_VERSION = 4;
