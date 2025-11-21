@@ -422,6 +422,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
             // Store filled cache for runtime use.
             {
                 std::lock_guard<std::mutex> lock(mtxCaches[bit]);
+                warningcache[bit].swap(temp);
                 caches[bit].swap(temp);
             }
         }
