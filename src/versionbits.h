@@ -97,7 +97,7 @@ private:
 
 };
 
-mutable ctpl::thread_pool vbworkerPool{2};
+ctpl::thread_pool vbworkerPool{2};
 
 ThresholdState VersionBitsStateBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
 
