@@ -2632,7 +2632,7 @@ if (!preloadedchain.load()) {
         for (int i = 0; i < 100 && pindexNew != nullptr; i++)
         {
             int32_t nExpectedVersion = ComputeBlockVersion(pindexNew->pprev, chainParams.GetConsensus());
-            if (pindexNew->nVersion > VERSIONBITS_LAST_OLD_BLOCK_VERSION && (pindex->nVersion & ~nExpectedVersion) != 0)
+            if (pindexNew->nVersion > VERSIONBITS_LAST_OLD_BLOCK_VERSION && (pindexNew->nVersion & ~nExpectedVersion) != 0)
                 ++nUpgraded;
             pindexNew = pindexNew->pprev;
         }
