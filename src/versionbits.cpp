@@ -10,6 +10,7 @@
 #include <util/threadnames.h>
 
 #include <thread>
+#include <threadinterrupt.h>
 
 #ifdef _WIN32
     #include <windows.h>
@@ -112,7 +113,9 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
         pindexPrev = vToCompute.back();
         vToCompute.pop_back();
 
-        switch (state) {
+        if (ShutdownRequested()) break;
+          
+          switch (state) {
             case ThresholdState::DEFINED: {
                 if (pindexPrev->GetMedianTimePast() >= nTimeTimeout) {
                     stateNext = ThresholdState::FAILED;
