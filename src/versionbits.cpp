@@ -193,7 +193,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CB
         pindexPrev = vToCompute.back();
         vToCompute.pop_back();
 
-//		LogPrint(BCLog::BENCHMARK, "Second Height: %s - Counter: %s - Bit: %s\n", pindexPrev->nHeight, counter, bitIn);
+		LogPrint(BCLog::BENCHMARK, "Second Height: %s - Bit: %s\n", pindexPrev->nHeight, bitIn);
 
     cache[pindexPrev] = state = stateNext;
 
@@ -357,7 +357,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
     vbworkerPool.resize(1);
 //    vbworkerPool.stop(false);
 
-    vbworkerPool.push([pindexPrev, params](int) {
+    vbworkerPool.push([pindexPrev, params, this](int) {
 //        LogPrintf("inside versionbits preload (last 100 blocks)\n");
 
         constexpr int maxDepth = 100;
