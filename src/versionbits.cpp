@@ -468,7 +468,7 @@ std::vector<const CBlockIndex*> blocks;
             {
                 std::lock_guard<std::mutex> lock(mtxCaches[bit]);
                 warningcache[bit].swap(temp);
-                caches[bit] = warningcache[bit]
+                caches[bit] = warningcache[bit];
             }
     }
 }
