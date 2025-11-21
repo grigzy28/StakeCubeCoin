@@ -418,7 +418,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
             ThresholdConditionCache temp;
 
             // Use the real slow routine once, but only for this background thread.
-            checker.GetStateFor(tip, params, temp);
+            ThresholdState state = checker.GetStateFor(tip, params, temp);
 
             // Store filled cache for runtime use.
             {
