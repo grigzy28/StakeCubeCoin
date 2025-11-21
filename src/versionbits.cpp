@@ -444,7 +444,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, const Consensus::
                 continue;               // skip undefined slots
 
 // 1. Copy required data from chain under a short lock
-std::vector<CBlockIndex*> blocks;
+std::vector<const CBlockIndex*> blocks;
 {
     LOCK(cs_main);
     for (auto p = tip; p; p = p->pprev) {
