@@ -455,8 +455,8 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Cons
     for (unsigned int d = 0; d < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; d++) {
         caches[d].clear();
         warningcache[d].clear();
-        caches[d].resize();
-        warningcache[d].resize();
+        caches[d].shrink_to_fit();
+        warningcache[d].shrink_to_fit();
     }
 
     });
