@@ -131,11 +131,11 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
             }
             case ThresholdState::LOCKED_IN: {
                 // Always progresses into ACTIVE.
-                // stateNext = ThresholdState::ACTIVE;
+                stateNext = ThresholdState::ACTIVE;
 
-                if (pindexPrev->nHeight + 1 >= min_activation_height) {
-                    stateNext = ThresholdState::ACTIVE;
-                }
+//                if (pindexPrev->nHeight + 1 >= min_activation_height) {
+//                    stateNext = ThresholdState::ACTIVE;
+//                }
 
                 break;
             }
