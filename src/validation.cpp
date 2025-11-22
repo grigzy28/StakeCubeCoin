@@ -2609,7 +2609,6 @@ if (bit == Consensus::DEPLOYMENT_GOV_FEE) {
     bool consistent = CheckRecentVersionBitsConsistency(
                           pindex,
                           chainParams.GetConsensus(),
-                          warningcache,
                           lookback,
                           bit); // or whatever cache object your system uses
     if (!consistent) {
@@ -2633,7 +2632,6 @@ if (bit == Consensus::DEPLOYMENT_GOV_FEE) {
               }
         }
     }
-}
 
     LogPrintf("%s: new best=%s height=%d version=0x%08x log2_work=%.8g tx=%lu date='%s' progress=%f cache=%.1fMiB(%utxo) evodb_cache=%.1fMiB%s\n", __func__,
       pindexNew->GetBlockHash().ToString(), pindexNew->nHeight, pindexNew->nVersion,

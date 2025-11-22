@@ -115,8 +115,7 @@ void PreLoadCacheBits(const CBlockIndex* pindex, VersionBitsCache& cache);
 
 bool CheckRecentVersionBitsConsistency(const CBlockIndex* pindexTip,
                                        const Consensus::Params& params,
-                                       VersionBitsCache& cache,
                                        const int lookback,
-                                       int bitpos);
+                                       Consensus::DeploymentPos bitpos);
 
 #endif // BITCOIN_VERSIONBITS_H

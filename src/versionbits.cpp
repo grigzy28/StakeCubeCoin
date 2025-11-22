@@ -285,31 +285,32 @@ void VersionBitsCache::Clear()
     }
 }
 
+// Return true if all of the last `lookback` blocks have consistent signalling
+// for the given deployment bit position.  Uses only CBlockIndex fields.
 bool CheckRecentVersionBitsConsistency(const CBlockIndex* pindexTip,
                                        const Consensus::Params& params,
-                                       VersionBitsCache& cache,
                                        const int lookback,
                                        Consensus::DeploymentPos bitpos)
 {
     if (!pindexTip) return true;
 
-    // Current, "expected" state at tip
-    const ThresholdState currentState = VersionBitsState(pindexTip, params, bitpos, cache);
+    // Compute the mask for the version bit in question.
+    const uint32_t bitmask = static_cast<uint32_t>(1) << params.vDeployments[bitpos].bit;
 
-    // Use stepping backwards through the headers chain
-    const CBlockIndex* pindexWalk = pindexTip;
-    for (int i = 0; i < lookback && pindexWalk != nullptr; ++i) {
-        const ThresholdState prevState = VersionBitsState(pindexWalk, params, bitpos, cache);
+    // Inspect the tip
+    const bool tip_signal = (pindexTip->nVersion & bitmask) != 0;
 
-        if (prevState != currentState) {
-            LogPrintf("Warning: versionbits state changed %d blocks ago "
-                      "(%s -> %s)\n",
-                      i,
-                      ThresholdStateName(prevState),
-                      ThresholdStateName(currentState));
+    const CBlockIndex* walk = pindexTip;
+    for (int i = 0; i < lookback && walk; ++i) {
+        bool this_signal = (walk->nVersion & bitmask) != 0;
+
+        if (this_signal != tip_signal) {
+            LogPrintf("Warning: versionbit %d signalling changed within the last %d blocks (height %d)\n",
+                      static_cast<int>(bitpos), i, walk->nHeight);
             return false;
         }
-        pindexWalk = pindexWalk->pprev;
+        walk = walk->pprev;
     }
+
     return true;
 }
