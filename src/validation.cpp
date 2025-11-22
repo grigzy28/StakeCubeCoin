@@ -2602,16 +2602,16 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
                         LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
 
 if (bit == Consensus::DEPLOYMENT_GOV_FEE) {
-    const int activation_h = chainParams.GOV_FEEHeight; // or your GOV_FEEHeight variable
+    const int activation_h = chainParams.GOVFEEHeight;
     if ((activation_h > 0) && (pindex->nHeight >= activation_h)) {
-        ThresholdState state = ThresholdState::ACTIVE;  // short-circuit result
+        ThresholdState state = ThresholdState::ACTIVE;
     }
     bool consistent = CheckRecentVersionBitsConsistency(
                           pindex,
                           chainParams.GetConsensus(),
                           warningcache[bit],
                           lookback,
-                          bit); // or whatever cache object your system uses
+                          warningcache[bit]); // or whatever cache object your system uses
     if (!consistent) {
         LogPrintf("Warning: Detected unexpected GOV_FEE versionbits state change within last 1500 blocks.\n");
         const std::string strWarning = _("Warning: GOV_FEE versionbits inconsistency detected");
