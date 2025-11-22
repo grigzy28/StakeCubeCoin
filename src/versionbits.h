@@ -19,9 +19,20 @@ static const int32_t VERSIONBITS_TOP_MASK = 0xE0000000UL;
 static const int32_t VERSIONBITS_NUM_BITS = 29;
 
 
-extern std::atomic<bool> preloadedchain;
+//extern std::atomic<bool> preloadedchain;
 //static bool preloadedchain = false;
-static int preloadchaincounter = 0;
+//static int preloadchaincounter = 0;
+
+static const char* ThresholdStateName(ThresholdState s) {
+    switch (s) {
+        case ThresholdState::DEFINED: return "DEFINED";
+        case ThresholdState::STARTED: return "STARTED";
+        case ThresholdState::LOCKED_IN: return "LOCKED_IN";
+        case ThresholdState::ACTIVE:   return "ACTIVE";
+        case ThresholdState::FAILED:   return "FAILED";
+        default: return "UNKNOWN";
+    }
+}
 
 /** BIP 9 defines a finite-state-machine to deploy a softfork in multiple stages.
  *  State transitions happen during retarget period if conditions are met

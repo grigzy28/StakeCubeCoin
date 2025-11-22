@@ -72,8 +72,6 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
         pindexPrev = vToCompute.back();
         vToCompute.pop_back();
 
-        if (ShutdownRequested()) break;
-          
           switch (state) {
             case ThresholdState::DEFINED: {
                 if (pindexPrev->GetMedianTimePast() >= nTimeTimeout) {
@@ -291,7 +289,7 @@ bool CheckRecentVersionBitsConsistency(const CBlockIndex* pindexTip,
                                        const Consensus::Params& params,
                                        VersionBitsCache& cache,
                                        const int lookback,
-                                       const bitpos)
+                                       const int bitpos)
 {
     if (!pindexTip) return true;
 
@@ -314,15 +312,4 @@ bool CheckRecentVersionBitsConsistency(const CBlockIndex* pindexTip,
         pindexWalk = pindexWalk->pprev;
     }
     return true;
-}
-
-static const char* ThresholdStateName(ThresholdState s) {
-    switch (s) {
-        case ThresholdState::DEFINED: return "DEFINED";
-        case ThresholdState::STARTED: return "STARTED";
-        case ThresholdState::LOCKED_IN: return "LOCKED_IN";
-        case ThresholdState::ACTIVE:   return "ACTIVE";
-        case ThresholdState::FAILED:   return "FAILED";
-        default: return "UNKNOWN";
-    }
 }
