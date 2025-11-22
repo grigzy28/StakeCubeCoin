@@ -99,7 +99,7 @@ struct Params {
      * This prevents us from warning about the CSV and DIP activations. */
     int MinBIP9WarningHeight;
     /** Gov Fee Block Height Activation **/
-    int GOVFEEHeight;
+    int GOV_FEEHeight;
     /** Block height at which all inactive DIPs/BIPs have their params tweaked to fast-track activation speed */
     int SoftforkFasttrackHeight;
     /**

@@ -2602,7 +2602,7 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
 ThresholdState state = ThresholdState::DEFINED;
 
 if (bit == Consensus::DEPLOYMENT_GOV_FEE) {
-    const int activation_h = chainParams.GetConsensus().GOVFEEHeight;
+    const int activation_h = chainParams.GetConsensus().GOV_FEEHeight;
     if ((activation_h > 0) && (pindex->nHeight >= activation_h)) {
         ThresholdState state = ThresholdState::ACTIVE;
     }
