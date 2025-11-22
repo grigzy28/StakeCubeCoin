@@ -50,6 +50,9 @@ struct DisconnectedBlockTransactions;
 struct LockPoints;
 
 
+/* Variable for how many blocks to look back for versionbits */
+static const int lookback = 2500;
+
 /* Global Variable for getblockcount cache */
 extern std::atomic<uint32_t> GETBLOCKCOUNT_BUFFER;
 

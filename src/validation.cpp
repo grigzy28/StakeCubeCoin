@@ -2586,8 +2586,7 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
 
     std::string warningMessages;
     int nUpgraded = 0;
-    int lookback = 1500;  // how many blocks back from tip to check
-    
+
     if (!::ChainstateActive().IsInitialBlockDownload())
     {
 
