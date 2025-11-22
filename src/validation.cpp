@@ -2602,8 +2602,8 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
                         LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
 
 if (bit == Consensus::DEPLOYMENT_GOV_FEE) {
-    const int activation_h = params.vDeployments[bit].GOV_FEEHeight; // or your GOV_FEEHeight variable
-    if (activation_h > 0 && pindexPrev && pindexPrev->nHeight >= activation_h) {
+    const int activation_h = chainParams.GOV_FEEHeight; // or your GOV_FEEHeight variable
+    if ((activation_h > 0) && (pindex->nHeight >= activation_h)) {
         ThresholdState state = ThresholdState::ACTIVE;  // short-circuit result
     }
     bool consistent = CheckRecentVersionBitsConsistency(
