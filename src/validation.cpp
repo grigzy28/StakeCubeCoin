@@ -2616,20 +2616,21 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
             std::vector<const CBlockIndex*> blocks;
             {
                 LOCK(cs_main);
-                for (auto p = tip; p && blocks.size() < 144; p = p->pprev) {
+                for (auto p = pindex; p && blocks.size() < 144; p = p->pprev) {
                     blocks.push_back(p);
                 }
             }
 
-
-            ThresholdState state = checker.GetStateFor(blocks, chainParams.GetConsensus(), warningcache[bit]);
-            if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
+            for (const auto& p2 : blocks) {
+                ThresholdState state = checker.GetStateFor(p2, chainParams.GetConsensus(), warningcache[bit]);
+              if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
                 const std::string strWarning = strprintf(_("Warning: unknown new rules activated (versionbit %i)").translated, bit);
                 if (state == ThresholdState::ACTIVE) {
                     DoWarning(strWarning);
                 } else {
                     AppendWarning(warningMessages, strWarning);
                 }
+              }
             }
         }
     }
