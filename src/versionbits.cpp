@@ -289,7 +289,7 @@ bool CheckRecentVersionBitsConsistency(const CBlockIndex* pindexTip,
                                        const Consensus::Params& params,
                                        VersionBitsCache& cache,
                                        const int lookback,
-                                       const int bitpos)
+                                       Consensus::DeploymentPos bitpos)
 {
     if (!pindexTip) return true;
 

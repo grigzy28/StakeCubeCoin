@@ -113,8 +113,10 @@ uint32_t VersionBitsMask(const Consensus::Params& params, Consensus::DeploymentP
 
 void PreLoadCacheBits(const CBlockIndex* pindex, VersionBitsCache& cache);
 
-bool CheckRecentVersionBitsConsistency(const CBlockIndex* pindexTip, 
-                                       const Consensus::Params& params, 
-                                       VersionBitsCache& cache);
+bool CheckRecentVersionBitsConsistency(const CBlockIndex* pindexTip,
+                                       const Consensus::Params& params,
+                                       VersionBitsCache& cache,
+                                       const int lookback,
+                                       Consensus::DeploymentPos bitpos);
 
 #endif // BITCOIN_VERSIONBITS_H
