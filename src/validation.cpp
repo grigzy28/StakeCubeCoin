@@ -2609,12 +2609,12 @@ if (bit == Consensus::DEPLOYMENT_GOV_FEE) {
     bool consistent = CheckRecentVersionBitsConsistency(
                           pindex,
                           chainParams.GetConsensus(),
-                          warningcache[bit],
+                          warningcache,
                           lookback,
                           bit); // or whatever cache object your system uses
     if (!consistent) {
         LogPrintf("Warning: Detected unexpected GOV_FEE versionbits state change within last 1500 blocks.\n");
-        const std::string strWarning = strprintf(_("Warning: GOV_FEE versionbits inconsistency detected"));
+        const std::string strWarning = strprintf(_("Warning: GOV_FEE versionbits inconsistency detected").translated);
         DoWarning(strWarning);
     }
 } else 
