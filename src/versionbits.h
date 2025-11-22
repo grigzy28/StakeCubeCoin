@@ -23,17 +23,6 @@ static const int32_t VERSIONBITS_NUM_BITS = 29;
 //static bool preloadedchain = false;
 //static int preloadchaincounter = 0;
 
-static const char* ThresholdStateName(ThresholdState s) {
-    switch (s) {
-        case ThresholdState::DEFINED: return "DEFINED";
-        case ThresholdState::STARTED: return "STARTED";
-        case ThresholdState::LOCKED_IN: return "LOCKED_IN";
-        case ThresholdState::ACTIVE:   return "ACTIVE";
-        case ThresholdState::FAILED:   return "FAILED";
-        default: return "UNKNOWN";
-    }
-}
-
 /** BIP 9 defines a finite-state-machine to deploy a softfork in multiple stages.
  *  State transitions happen during retarget period if conditions are met
  *  In case of reorg, transitions can go backward. Without transition, state is
@@ -46,6 +35,17 @@ enum class ThresholdState {
     ACTIVE,    // For all blocks after the LOCKED_IN retarget period (final state)
     FAILED,    // For all blocks once the first retarget period after the timeout time is hit, if LOCKED_IN wasn't already reached (final state)
 };
+
+static const char* ThresholdStateName(ThresholdState s) {
+    switch (s) {
+        case ThresholdState::DEFINED: return "DEFINED";
+        case ThresholdState::STARTED: return "STARTED";
+        case ThresholdState::LOCKED_IN: return "LOCKED_IN";
+        case ThresholdState::ACTIVE:   return "ACTIVE";
+        case ThresholdState::FAILED:   return "FAILED";
+        default: return "UNKNOWN";
+    }
+}
 
 // A map that gives the state for blocks whose height is a multiple of Period().
 // The map is indexed by the block's parent, however, so all keys in the map
