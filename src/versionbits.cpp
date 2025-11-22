@@ -447,7 +447,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
         std::vector<const CBlockIndex*> blocks;
         {
             LOCK(cs_main);
-            for (auto p = tip; p && blocks.size() < 144; p = p->pprev) {
+            for (auto p = tip; p && blocks.size(); p = p->pprev) {
                 blocks.push_back(p);
             }
         }
