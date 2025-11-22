@@ -2601,8 +2601,10 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
 
                         LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
 
+ThresholdState state = ThresholdState::DEFINED;
+
 if (bit == Consensus::DEPLOYMENT_GOV_FEE) {
-    const int activation_h = chainParams.GOVFEEHeight;
+    const int activation_h = params.GOVFEEHeight;
     if ((activation_h > 0) && (pindex->nHeight >= activation_h)) {
         ThresholdState state = ThresholdState::ACTIVE;
     }
