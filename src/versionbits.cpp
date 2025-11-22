@@ -287,7 +287,7 @@ void VersionBitsCache::Clear()
 
 bool CheckRecentVersionBitsConsistency(const CBlockIndex* pindexTip,
                                        const Consensus::Params& params,
-                                       ThresholdConditionCache& cache,
+                                       VersionBitsCache& cache,
                                        const int lookback,
                                        Consensus::DeploymentPos bitpos)
 {
