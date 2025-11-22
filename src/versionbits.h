@@ -78,9 +78,6 @@ public:
     int GetStateSinceHeightFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const;
 
     ThresholdState GetStateForBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache, int bitIn) const;
-
-    static ctpl::thread_pool vbworkerPool;
-
 };
 
 /** BIP 9 allows multiple softforks to be deployed in parallel. We cache per-period state for every one of them
@@ -96,11 +93,7 @@ public:
 private:
     std::mutex mtxCaches[VERSIONBITS_NUM_BITS];
 
-//    ThresholdConditionCache caches[Consensus::MAX_VERSION_BITS_DEPLOYMENTS];
-
 };
-
-ThresholdState VersionBitsStateBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
 
 ThresholdState VersionBitsState(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
 BIP9Stats VersionBitsStatistics(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
@@ -108,5 +101,9 @@ int VersionBitsStateSinceHeight(const CBlockIndex* pindexPrev, const Consensus::
 uint32_t VersionBitsMask(const Consensus::Params& params, Consensus::DeploymentPos pos);
 
 void PreLoadCacheBits(const CBlockIndex* pindex, VersionBitsCache& cache);
+
+bool CheckRecentVersionBitsConsistency(const CBlockIndex* pindexTip, 
+                                       const Consensus::Params& params, 
+                                       VersionBitsCache& cache);
 
 #endif // BITCOIN_VERSIONBITS_H

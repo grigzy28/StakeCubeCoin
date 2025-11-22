@@ -2588,7 +2588,8 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
 
     std::string warningMessages;
     int nUpgraded = 0;
-
+    int lookback = 1500;  // how many blocks back from tip to check
+    
     if (!::ChainstateActive().IsInitialBlockDownload())
     {
 
@@ -2600,30 +2601,29 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
 
                         LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
 
-/*
-            if (!preloadedchain && preloadchaincounter < VERSIONBITS_NUM_BITS) {
-                                ThresholdState state = checker.GetStateForBuildCache(pindex, chainParams.GetConsensus(), warningcache[bit], bit);
-                                preloadchaincounter = preloadchaincounter + 1;
-                                if (preloadedchain) preloadchaincounter=0;
-                        }
+if (bit == Consensus::DEPLOYMENT_GOV_FEE) {
+    const int activation_h = params.vDeployments[bit].GOV_FEEHeight; // or your GOV_FEEHeight variable
+    if (activation_h > 0 && pindexPrev && pindexPrev->nHeight >= activation_h) {
+        ThresholdState state = ThresholdState::ACTIVE;  // short-circuit result
+    }
+    bool consistent = CheckRecentVersionBitsConsistency(
+                          pindex,
+                          chainParams.GetConsensus(),
+                          warningcache[bit],
+                          lookback,
+                          bit); // or whatever cache object your system uses
+    if (!consistent) {
+        LogPrintf("Warning: Detected unexpected GOV_FEE versionbits state change within last 1500 blocks.\n");
+        const std::string strWarning = _("Warning: GOV_FEE versionbits inconsistency detected");
+        DoWarning(strWarning);
+    }
+} else 
+{
+    ThresholdState state = checker.GetStateFor(pindex, chainParams.GetConsensus(), warningcache[bit]);
+}
 
-                        WarningBitsConditionChecker checker(bit);
-*/
-//        if (preloadedchain) {
 
-        {
-  
-            std::vector<const CBlockIndex*> blocks;
-            {
-                LOCK(cs_main);
-                for (auto p = pindex; p && blocks.size() < 144; p = p->pprev) {
-                    blocks.push_back(p);
-                }
-            }
-
-            for (const auto& p2 : blocks) {
-                ThresholdState state = checker.GetStateFor(p2, chainParams.GetConsensus(), warningcache[bit]);
-              if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
+              if ((state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) && ) {
                 const std::string strWarning = strprintf(_("Warning: unknown new rules activated (versionbit %i)").translated, bit);
                 if (state == ThresholdState::ACTIVE) {
                     DoWarning(strWarning);
@@ -2631,27 +2631,9 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
                     AppendWarning(warningMessages, strWarning);
                 }
               }
-            }
         }
     }
 }
-
-        // Check the version of the last 100 blocks to see if we need to upgrade:
-/*
-if (!preloadedchain) {
-//    LogPrint(BCLog::BENCHMARK, "Versionbits async preload triggered.\n");
-
-        for (int i = 0; i < 100 && pindexNew != nullptr; i++)
-        {
-            int32_t nExpectedVersion = ComputeBlockVersion(pindexNew->pprev, chainParams.GetConsensus());
-            if (pindexNew->nVersion > VERSIONBITS_LAST_OLD_BLOCK_VERSION && (pindexNew->nVersion & ~nExpectedVersion) != 0)
-                ++nUpgraded;
-            pindexNew = pindexNew->pprev;
-        }
-        if (nUpgraded > 0)
-            AppendWarning(warningMessages, strprintf(_("%d of last 100 blocks have unexpected version").translated, nUpgraded));
-    }
-*/
 
     LogPrintf("%s: new best=%s height=%d version=0x%08x log2_work=%.8g tx=%lu date='%s' progress=%f cache=%.1fMiB(%utxo) evodb_cache=%.1fMiB%s\n", __func__,
       pindexNew->GetBlockHash().ToString(), pindexNew->nHeight, pindexNew->nVersion,
