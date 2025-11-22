@@ -1864,6 +1864,7 @@ bool GetBlockHash(uint256& hashRet, int nBlockHeight)
 
 /**
  * Threshold condition checker that triggers when unknown versionbits are seen on the network.
+ */
 class WarningBitsConditionChecker : public AbstractThresholdConditionChecker
 {
 private:
@@ -1887,7 +1888,6 @@ public:
 };
 
 static ThresholdConditionCache warningcache[VERSIONBITS_NUM_BITS] GUARDED_BY(cs_main);
- */
 
 static unsigned int GetBlockScriptFlags(const CBlockIndex* pindex, const Consensus::Params& consensusparams) EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
     AssertLockHeld(cs_main);
@@ -1904,8 +1904,6 @@ static unsigned int GetBlockScriptFlags(const CBlockIndex* pindex, const Consens
 
     return flags;
 }
-
-
 
 static int64_t nTimeCheck = 0;
 static int64_t nTimeForks = 0;
@@ -2604,7 +2602,7 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
 ThresholdState state = ThresholdState::DEFINED;
 
 if (bit == Consensus::DEPLOYMENT_GOV_FEE) {
-    const int activation_h = Params.GOVFEEHeight;
+    const int activation_h = chainParams.GetConsensus().GOVFEEHeight;
     if ((activation_h > 0) && (pindex->nHeight >= activation_h)) {
         ThresholdState state = ThresholdState::ACTIVE;
     }
@@ -2616,7 +2614,7 @@ if (bit == Consensus::DEPLOYMENT_GOV_FEE) {
                           bit); // or whatever cache object your system uses
     if (!consistent) {
         LogPrintf("Warning: Detected unexpected GOV_FEE versionbits state change within last 1500 blocks.\n");
-        const std::string strWarning = _("Warning: GOV_FEE versionbits inconsistency detected");
+        const std::string strWarning = strprintf(_("Warning: GOV_FEE versionbits inconsistency detected"));
         DoWarning(strWarning);
     }
 } else 

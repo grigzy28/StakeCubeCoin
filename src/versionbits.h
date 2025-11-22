@@ -115,7 +115,7 @@ void PreLoadCacheBits(const CBlockIndex* pindex, VersionBitsCache& cache);
 
 bool CheckRecentVersionBitsConsistency(const CBlockIndex* pindexTip,
                                        const Consensus::Params& params,
-                                       VersionBitsCache& cache,
+                                       ThresholdConditionCache& cache,
                                        const int lookback,
                                        Consensus::DeploymentPos bitpos);
 
