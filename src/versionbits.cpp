@@ -434,6 +434,8 @@ ctpl::thread_pool AbstractThresholdConditionChecker::vbworkerPool{2};
 void VersionBitsCache::InitializeAsync(const CBlockIndex* tip, 
                                      const Consensus::Params& params)
 {
+    return;
+    
     if (preloadedchain.load()) return;
 
     AbstractThresholdConditionChecker::vbworkerPool.push([this, tip, params](int) {
@@ -447,7 +449,7 @@ void VersionBitsCache::InitializeAsync(const CBlockIndex* tip,
         std::vector<const CBlockIndex*> blocks;
         {
             LOCK(cs_main);
-            for (auto p = tip; p && blocks.size() < tip->nHeight; p = p->pprev) {
+            for (auto p = tip; p && blocks.size() < 144; p = p->pprev) {
                 blocks.push_back(p);
             }
         }

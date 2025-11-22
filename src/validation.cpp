@@ -2592,8 +2592,6 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
     if (!::ChainstateActive().IsInitialBlockDownload())
     {
 
-//        versionbitscache.InitializeAsync(pindexNew, chainParams.GetConsensus());
-
         const CBlockIndex* pindex = pindexNew;
 
         for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
@@ -2611,8 +2609,20 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
 
                         WarningBitsConditionChecker checker(bit);
 */
-        if (preloadedchain) {
-            ThresholdState state = checker.GetStateFor(pindex, chainParams.GetConsensus(), warningcache[bit]);
+//        if (preloadedchain) {
+
+        {
+  
+            std::vector<const CBlockIndex*> blocks;
+            {
+                LOCK(cs_main);
+                for (auto p = tip; p && blocks.size() < 144; p = p->pprev) {
+                    blocks.push_back(p);
+                }
+            }
+
+
+            ThresholdState state = checker.GetStateFor(blocks, chainParams.GetConsensus(), warningcache[bit]);
             if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
                 const std::string strWarning = strprintf(_("Warning: unknown new rules activated (versionbit %i)").translated, bit);
                 if (state == ThresholdState::ACTIVE) {
