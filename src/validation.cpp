@@ -2604,7 +2604,7 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
 ThresholdState state = ThresholdState::DEFINED;
 
 if (bit == Consensus::DEPLOYMENT_GOV_FEE) {
-    const int activation_h = params.GOVFEEHeight;
+    const int activation_h = Params.GOVFEEHeight;
     if ((activation_h > 0) && (pindex->nHeight >= activation_h)) {
         ThresholdState state = ThresholdState::ACTIVE;
     }
@@ -2613,7 +2613,7 @@ if (bit == Consensus::DEPLOYMENT_GOV_FEE) {
                           chainParams.GetConsensus(),
                           warningcache[bit],
                           lookback,
-                          warningcache[bit]); // or whatever cache object your system uses
+                          bit); // or whatever cache object your system uses
     if (!consistent) {
         LogPrintf("Warning: Detected unexpected GOV_FEE versionbits state change within last 1500 blocks.\n");
         const std::string strWarning = _("Warning: GOV_FEE versionbits inconsistency detected");
@@ -2625,7 +2625,7 @@ if (bit == Consensus::DEPLOYMENT_GOV_FEE) {
 }
 
 
-              if ((state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) && ) {
+              if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
                 const std::string strWarning = strprintf(_("Warning: unknown new rules activated (versionbit %i)").translated, bit);
                 if (state == ThresholdState::ACTIVE) {
                     DoWarning(strWarning);
