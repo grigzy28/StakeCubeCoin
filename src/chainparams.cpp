@@ -187,6 +187,7 @@ public:
         consensus.DIP0008Height = 468; // ChainLocks Enforcement (activated upon the first quorum merkle root)
         consensus.DIP0003EnforcementHeight = 2;
         consensus.DIP0003EnforcementHash   = uint256S("000003173edcde96b0fb18664bb7ca1d1232aa89ce2f5511db210d2b0560aaf2");
+        consensus.GOV_FEEHeight            = 258500;
         consensus.MinBIP9WarningHeight     = 2;
         consensus.SoftforkFasttrackHeight  = 750000;
 
@@ -255,7 +256,7 @@ public:
         // Deployment of decreased proposal fee, script addresses for Governance Proposals
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].bit             = 7;
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nStartTime      = 1635724800; // Nov 1st, 2021
-        consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nTimeout        = 999999999999ULL;
+        consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nTimeout        = Consensus::BIP9Deployment::NO_TIMEOUT;
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nWindowSize     = 100;
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nThresholdStart = 80;
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nThresholdMin   = 60;

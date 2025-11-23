@@ -2168,8 +2168,6 @@ bool AppInitMain(InitInterfaces& interfaces)
         }
     }
 
-    versionbitscache.InitializeAsync(::ChainActive().Tip(), chainparams.GetConsensus());
-
     // As LoadBlockIndex can take several minutes, it's possible the user
     // requested to kill the GUI during the last operation. If so, exit.
     // As the program has not fully started yet, Shutdown() is possibly overkill.

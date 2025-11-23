@@ -42,6 +42,7 @@
 #include <util/validation.h>
 #include <util/system.h>
 #include <validationinterface.h>
+#include <versionbits.h>
 #include <versionbitsinfo.h>
 #include <warnings.h>
 
@@ -1863,6 +1864,7 @@ bool GetBlockHash(uint256& hashRet, int nBlockHeight)
 
 /**
  * Threshold condition checker that triggers when unknown versionbits are seen on the network.
+ */
 class WarningBitsConditionChecker : public AbstractThresholdConditionChecker
 {
 private:
@@ -1886,7 +1888,6 @@ public:
 };
 
 static ThresholdConditionCache warningcache[VERSIONBITS_NUM_BITS] GUARDED_BY(cs_main);
- */
 
 static unsigned int GetBlockScriptFlags(const CBlockIndex* pindex, const Consensus::Params& consensusparams) EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
     AssertLockHeld(cs_main);
@@ -1903,8 +1904,6 @@ static unsigned int GetBlockScriptFlags(const CBlockIndex* pindex, const Consens
 
     return flags;
 }
-
-
 
 static int64_t nTimeCheck = 0;
 static int64_t nTimeForks = 0;
@@ -2555,7 +2554,7 @@ void CChainState::PruneAndFlush() {
     }
 }
 
-static void DoWarning(const std::string& strWarning)
+void DoWarning(const std::string& strWarning)
 {
     static bool fWarned = false;
     SetMiscWarning(strWarning);
@@ -2566,7 +2565,7 @@ static void DoWarning(const std::string& strWarning)
 }
 
 /** Private helper function that concatenates warning messages. */
-static void AppendWarning(std::string& res, const std::string& warn)
+void AppendWarning(std::string& res, const std::string& warn)
 {
     if (!res.empty()) res += ", ";
     res += warn;
@@ -2586,53 +2585,53 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
     }
 
     std::string warningMessages;
+    int nUpgraded = 0;
+
     if (!::ChainstateActive().IsInitialBlockDownload())
     {
 
-//        versionbitscache.InitializeAsync(pindexNew, chainParams.GetConsensus());
-
-        int nUpgraded = 0;
         const CBlockIndex* pindex = pindexNew;
-/*
+
         for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
 
-			WarningBitsConditionChecker checker(bit);
+                        WarningBitsConditionChecker checker(bit);
 
-			LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
+                        LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
 
-//            if (!preloadedchain && preloadchaincounter < VERSIONBITS_NUM_BITS) {
-//				ThresholdState state = checker.GetStateForBuildCache(pindex, chainParams.GetConsensus(), warningcache[bit], bit);
-//				preloadchaincounter = preloadchaincounter + 1;
-//				if (preloadedchain) preloadchaincounter=0;
-//			}
+ThresholdState state = ThresholdState::DEFINED;
 
-//			WarningBitsConditionChecker checker(bit);
-            ThresholdState state = checker.GetStateFor(pindex, chainParams.GetConsensus(), warningcache[bit]);
-            if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
+if (bit == Consensus::DEPLOYMENT_GOV_FEE) {
+    const int activation_h = chainParams.GetConsensus().GOV_FEEHeight;
+    if ((activation_h > 0) && (pindex->nHeight >= activation_h)) {
+        ThresholdState state = ThresholdState::ACTIVE;
+    }
+    bool consistent = CheckRecentVersionBitsConsistency(
+                          pindex,
+                          chainParams.GetConsensus(),
+                          lookback,
+                          static_cast<Consensus::DeploymentPos>(bit)); // or whatever cache object your system uses
+    if (!consistent) {
+        LogPrintf("Warning: Detected unexpected GOV_FEE versionbits state change within last 1500 blocks.\n");
+        const std::string strWarning = strprintf(_("Warning: GOV_FEE versionbits inconsistency detected").translated);
+        DoWarning(strWarning);
+    }
+} else 
+{
+    ThresholdState state = checker.GetStateFor(pindex, chainParams.GetConsensus(), warningcache[bit]);
+}
+
+
+              if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
                 const std::string strWarning = strprintf(_("Warning: unknown new rules activated (versionbit %i)").translated, bit);
                 if (state == ThresholdState::ACTIVE) {
                     DoWarning(strWarning);
                 } else {
                     AppendWarning(warningMessages, strWarning);
                 }
-            }
+              }
         }
-*/
-        // Check the version of the last 100 blocks to see if we need to upgrade:
-if (!preloadedchain) {
-    LogPrint(BCLog::BENCHMARK, "Versionbits async preload triggered.\n");
-
-        for (int i = 0; i < 100 && pindex != nullptr; i++)
-        {
-            int32_t nExpectedVersion = ComputeBlockVersion(pindex->pprev, chainParams.GetConsensus());
-            if (pindex->nVersion > VERSIONBITS_LAST_OLD_BLOCK_VERSION && (pindex->nVersion & ~nExpectedVersion) != 0)
-                ++nUpgraded;
-            pindex = pindex->pprev;
-        }
-        if (nUpgraded > 0)
-            AppendWarning(warningMessages, strprintf(_("%d of last 100 blocks have unexpected version").translated, nUpgraded));
     }
-}
+
     LogPrintf("%s: new best=%s height=%d version=0x%08x log2_work=%.8g tx=%lu date='%s' progress=%f cache=%.1fMiB(%utxo) evodb_cache=%.1fMiB%s\n", __func__,
       pindexNew->GetBlockHash().ToString(), pindexNew->nHeight, pindexNew->nVersion,
       log(pindexNew->nChainWork.getdouble())/log(2.0), (unsigned long)pindexNew->nChainTx,

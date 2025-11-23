@@ -6,9 +6,29 @@
 #include <versionbits.h>
 #include <consensus/params.h>
 #include <logging.h>
+#include <util/translation.h>
 
-std::atomic<bool> preloadedchain{false};
+static int calculateStartHeight(const CBlockIndex* pindexPrev, ThresholdState state, const int nPeriod, const ThresholdConditionCache& cache) {
+    int nStartHeight{std::numeric_limits<int>::max()};
 
+    // we are interested only in state STARTED
+    // For state DEFINED: it is not started yet, nothing to do
+    // For states LOCKED_IN, FAILED, ACTIVE: it is too late, nothing to do
+    while (state == ThresholdState::STARTED) {
+        nStartHeight = std::min(pindexPrev->nHeight + 1, nStartHeight);
+
+        // we can walk back here because the only way for STARTED state to exist
+        // in cache already is to be calculated in previous runs via "walk forward"
+        // loop below starting from DEFINED state.
+        pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - nPeriod);
+        auto cache_it = cache.find(pindexPrev);
+        assert(cache_it != cache.end());
+
+        state = cache_it->second;
+    }
+
+    return nStartHeight;
+}
 
 ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const
 {
@@ -16,9 +36,6 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
     int64_t nTimeStart = BeginTime(params);
     int64_t nTimeTimeout = EndTime(params);
     int min_activation_height = MinActivationHeight(params);
-
-
-//	LogPrint(BCLog::BENCHMARK, "period: %s\n", nPeriod);
 
     // A block's state is always the same as that of the first of its period, so it is computed based on a pindexPrev whose height equals a multiple of nPeriod - 1.
     if (pindexPrev != nullptr) {
@@ -46,14 +63,8 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
     assert(cache.count(pindexPrev));
     ThresholdState state = cache[pindexPrev];
 
-    int nStartHeight{std::numeric_limits<int>::max()};
-    for (const auto& pair : cache) {
-        if (pair.second == ThresholdState::STARTED && nStartHeight > pair.first->nHeight + 1) {
-            nStartHeight = pair.first->nHeight + 1;
-        }
-    }
-
-//	LogPrint(BCLog::BENCHMARK, "StartHeight: %s\n", nStartHeight);
+//    int nStartHeight{std::numeric_limits<int>::max()};
+    int nStartHeight = calculateStartHeight(pindexPrev, state, nPeriod, cache);
 
     // Now walk forward and compute the state of descendants of pindexPrev
     while (!vToCompute.empty()) {
@@ -61,7 +72,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
         pindexPrev = vToCompute.back();
         vToCompute.pop_back();
 
-        switch (state) {
+          switch (state) {
             case ThresholdState::DEFINED: {
                 if (pindexPrev->GetMedianTimePast() >= nTimeTimeout) {
                     stateNext = ThresholdState::FAILED;
@@ -80,16 +91,22 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
                 // We need to count
                 const CBlockIndex* pindexCount = pindexPrev;
                 int count = 0;
+
+                int nAttempt = (pindexCount->nHeight + 1 - nStartHeight) / nPeriod;
+				        int nThreshold = Threshold(params, nAttempt);
+
                 for (int i = 0; i < nPeriod; i++) {
                     if (Condition(pindexCount, params)) {
                         count++;
+                    }
+                    if (count >= nThreshold) {
+                        stateNext = ThresholdState::LOCKED_IN;
+                        break;
                     }
                     pindexCount = pindexCount->pprev;
                 }
 
                 assert(nStartHeight > 0 && nStartHeight < std::numeric_limits<int>::max());
-                int nAttempt = (pindexCount->nHeight + 1 - nStartHeight) / nPeriod;
-				int nThreshold = Threshold(params, nAttempt);
                 if (count >= nThreshold) {
                     stateNext = ThresholdState::LOCKED_IN;
                 } else if (pindexPrev->GetMedianTimePast() >= nTimeTimeout) {
@@ -99,8 +116,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
             }
             case ThresholdState::LOCKED_IN: {
                 // Always progresses into ACTIVE.
-                // stateNext = ThresholdState::ACTIVE;
-
+//                stateNext = ThresholdState::ACTIVE;
                 if (pindexPrev->nHeight + 1 >= min_activation_height) {
                     stateNext = ThresholdState::ACTIVE;
                 }
@@ -117,64 +133,6 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
     }
 
     return state;
-}
-
-ThresholdState AbstractThresholdConditionChecker::GetStateForBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache, int bitIn) const
-{
-
-    int64_t nTimeStart = BeginTime(params);
-
-    // Walk backwards in steps of nPeriod to find a pindexPrev whose information is known
-    std::vector<const CBlockIndex*> vToCompute;
-	int maxtip = pindexPrev->nHeight;
-
-    while (cache.count(pindexPrev) == 0) {
-        if (pindexPrev == nullptr) {
-            // The genesis block is by definition defined.
-            cache[pindexPrev] = ThresholdState::DEFINED;
-            break;
-        }
-        if (pindexPrev->GetMedianTimePast() < nTimeStart) {
-            // Optimization: don't recompute down further, as we know every earlier block will be before the start time
-            cache[pindexPrev] = ThresholdState::DEFINED;
-            break;
-        }
-        vToCompute.push_back(pindexPrev);
-
-//		LogPrint(BCLog::BENCHMARK, "First Height: %s\n", pindexPrev->nHeight);
-
-        pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - 1);
-    }
-
-//	LogPrint(BCLog::BENCHMARK, "Height: Start\n");
-//	LogPrint(BCLog::BENCHMARK, "Height: %s\n", );
-
-    // At this point, cache[pindexPrev] is known
-    assert(cache.count(pindexPrev));
-    ThresholdState state = cache[pindexPrev];
-
-//	LogPrint(BCLog::BENCHMARK, "Height: %s\n", pindexPrev->nHeight);
-
-	int counter = 1;
-
-	while (!vToCompute.empty()) {
-        ThresholdState stateNext = state;
-        pindexPrev = vToCompute.back();
-        vToCompute.pop_back();
-		counter = counter + 1;
-
-//		LogPrint(BCLog::BENCHMARK, "Second Height: %s - Counter: %s - Bit: %s\n", pindexPrev->nHeight, counter, bitIn);
-
-		if (pindexPrev->nVersion == bitIn) cache[pindexPrev] = state = stateNext;
-
-
-    }
-
-//	LogPrint(BCLog::BENCHMARK, "Height: End\n");
-
-	preloadedchain = true;
-
-	return state;
 }
 
 BIP9Stats AbstractThresholdConditionChecker::GetStateStatisticsFor(const CBlockIndex* pindex, const Consensus::Params& params, ThresholdConditionCache& cache) const
@@ -320,73 +278,6 @@ const std::vector<const AbstractThresholdConditionChecker*> versionbitsCheckers 
     &checker_GOV_FEE,
 };
 
-void VersionBitsCache::InitializeAsync(const CBlockIndex* pindexPrev, const Consensus::Params& params)
-{
-//    if (preloadedchain.load()) return;
-
-    workerPool.resize(1);
-
-    workerPool.push([pindexPrev, params, this](int) {
-//        LogPrintf("inside versionbits preload (last 100 blocks)\n");
-
-        constexpr int maxDepth = 100;
-
-        for (int bit = 0; bit < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; ++bit) {
-//LogPrintf("Preloading bit %d\n", bit);
-	  if (params.vDeployments[bit].bit == -1) continue;
-//LogPrintf("Preloading bit %d\n", bit);
-//          if (params.vDeployments[bit].bit > 0 || params.vDeployments[bit].bit < 28)
-//             continue;
-//            WarningBitsConditionChecker checker(static_cast<Consensus::DeploymentPos>(bit));
-
-            const CBlockIndex* pindex = pindexPrev;
-            int depth = 0;
-            std::vector<const CBlockIndex*> blocksToCompute;
-
-            while (pindex && depth < maxDepth) {
-                {
-                    std::lock_guard<std::mutex> lock(mtxCaches[bit]);
-//                    if (caches[bit].count(pindex)) break; // already cached
-                }
-
-                blocksToCompute.push_back(pindex);
-                pindex = pindex->pprev;
-                depth++;
-            }
-
-            ThresholdState state;
-
-            {
-                std::lock_guard<std::mutex> lock(mtxCaches[bit]);
-                if (pindex) {
-                    state = caches[bit][pindex]; // start from known state
-                } else {
-                    state = ThresholdState::DEFINED; // fallback
-                }
-            }
-
-            while (!blocksToCompute.empty()) {
-                pindex = blocksToCompute.back();
-                blocksToCompute.pop_back();
-
-                // compute next state (simplified — you might need real logic here)
-                ThresholdState stateNext = state;
-
-//if (pindex->nVersion) {
-//    if (state != ThresholdState::DEFINED) {
-        std::lock_guard<std::mutex> lock(mtxCaches[bit]);
-        caches[bit][pindex] = state = stateNext;
-//    }
-//}
-
-            }
-//        LogPrintf("bit %d cache size: %zu entries\n", bit, caches[bit].size());
-        }
-
-        preloadedchain.store(true);
-    });
-}
-
 void VersionBitsCache::Clear()
 {
     for (unsigned int d = 0; d < Consensus::MAX_VERSION_BITS_DEPLOYMENTS; d++) {
@@ -394,7 +285,32 @@ void VersionBitsCache::Clear()
     }
 }
 
-ThresholdState VersionBitsStateBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache)
+// Return true if all of the last `lookback` blocks have consistent signalling
+// for the given deployment bit position.  Uses only CBlockIndex fields.
+bool CheckRecentVersionBitsConsistency(const CBlockIndex* pindexTip,
+                                       const Consensus::Params& params,
+                                       const int lookback,
+                                       Consensus::DeploymentPos bitpos)
 {
-    return VersionBitsConditionChecker(pos).GetStateForBuildCache(pindexPrev, params, cache.caches[pos], pos);
+    if (!pindexTip) return true;
+
+    // Compute the mask for the version bit in question.
+    const uint32_t bitmask = static_cast<uint32_t>(1) << params.vDeployments[bitpos].bit;
+
+    // Inspect the tip
+    const bool tip_signal = (pindexTip->nVersion & bitmask) != 0;
+
+    const CBlockIndex* walk = pindexTip;
+    for (int i = 0; i < lookback && walk; ++i) {
+        bool this_signal = (walk->nVersion & bitmask) != 0;
+
+        if (this_signal != tip_signal) {
+            LogPrintf("Warning: versionbit %d signalling changed within the last %d blocks (height %d)\n",
+                      static_cast<int>(bitpos), i, walk->nHeight);
+            return false;
+        }
+        walk = walk->pprev;
+    }
+
+    return true;
 }
