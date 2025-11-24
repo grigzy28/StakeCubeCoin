@@ -7,7 +7,6 @@
 
 #include <chain.h>
 #include <map>
-#include <ctpl_stl.h>
 
 /** What block version to use for new blocks (pre versionbits) */
 static const int32_t VERSIONBITS_LAST_OLD_BLOCK_VERSION = 4;
@@ -87,8 +86,6 @@ public:
     ThresholdState GetStateFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const;
     /** Returns the height since when the ThresholdState has started for pindex A based on parent pindexPrev B, all blocks of a period share the same */
     int GetStateSinceHeightFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const;
-
-    ThresholdState GetStateForBuildCache(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache, int bitIn) const;
 };
 
 /** BIP 9 allows multiple softforks to be deployed in parallel. We cache per-period state for every one of them
@@ -97,7 +94,6 @@ struct VersionBitsCache
 {
 public:
     std::array<ThresholdConditionCache, VERSIONBITS_NUM_BITS> caches;
-    void InitializeAsync(const CBlockIndex* pindexPrev, const Consensus::Params& params);
 
     void Clear();
 
@@ -110,8 +106,6 @@ ThresholdState VersionBitsState(const CBlockIndex* pindexPrev, const Consensus::
 BIP9Stats VersionBitsStatistics(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
 int VersionBitsStateSinceHeight(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
 uint32_t VersionBitsMask(const Consensus::Params& params, Consensus::DeploymentPos pos);
-
-void PreLoadCacheBits(const CBlockIndex* pindex, VersionBitsCache& cache);
 
 bool CheckRecentVersionBitsConsistency(const CBlockIndex* pindexTip,
                                        const Consensus::Params& params,
