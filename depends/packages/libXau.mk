@@ -1,6 +1,6 @@
 package=libXau
 $(package)_version=1.0.12
-$(package)_download_path=https://xorg.freedesktop.org/releases/individual/lib/
+$(package)_download_path=https://x.org/archive/individual/lib/
 $(package)_file_name=$(package)-$($(package)_version).tar.gz
 $(package)_sha256_hash=2402dd938da4d0a332349ab3d3586606175e19cb32cb9fe013c19f1dc922dcee
 $(package)_dependencies=xorgproto

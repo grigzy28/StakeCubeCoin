@@ -1,6 +1,6 @@
 package=xorgproto
 $(package)_version=2024.1
-$(package)_download_path=https://xorg.freedesktop.org/archive/individual/proto
+$(package)_download_path=https://x.org/archive/individual/proto
 $(package)_file_name=xorgproto-$($(package)_version).tar.xz
 $(package)_sha256_hash=372225fd40815b8423547f5d890c5debc72e88b91088fbfb13158c20495ccb59
 

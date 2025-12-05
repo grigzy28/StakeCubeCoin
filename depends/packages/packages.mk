@@ -1,6 +1,6 @@
 packages:=boost libevent gmp backtrace cmake bdb
 
-qt_packages = qrencode
+qt_packages = libqrencode
 
 qt_linux_packages:=qt expat dbus libxcb xcb_proto libXau xorgproto freetype fontconfig libxkbcommon libxcb_util libxcb_util_render libxcb_util_keysyms libxcb_util_image libxcb_util_wm
 
