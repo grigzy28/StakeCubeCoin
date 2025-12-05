@@ -43,8 +43,7 @@ NO_USDT ?=
 NO_NATPMP ?=
 MULTIPROCESS ?=
 LTO ?=
-FALLBACK_DOWNLOAD_PATH ?= https://bitcoincore.org/depends-sources
-#http://dash-depends-sources.s3-website-us-west-2.amazonaws.com
+FALLBACK_DOWNLOAD_PATH ?= http://dash-depends-sources.s3-website-us-west-2.amazonaws.com
 
 C_STANDARD ?= c11
 CXX_STANDARD ?= c++20
