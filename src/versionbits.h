@@ -17,6 +17,11 @@ static const int32_t VERSIONBITS_TOP_MASK = 0xE0000000UL;
 /** Total bits available for versionbits */
 static const int32_t VERSIONBITS_NUM_BITS = 29;
 
+
+//extern std::atomic<bool> preloadedchain;
+//static bool preloadedchain = false;
+//static int preloadchaincounter = 0;
+
 /** BIP 9 defines a finite-state-machine to deploy a softfork in multiple stages.
  *  State transitions happen during retarget period if conditions are met
  *  In case of reorg, transitions can go backward. Without transition, state is
@@ -29,6 +34,17 @@ enum class ThresholdState {
     ACTIVE,    // For all blocks after the LOCKED_IN retarget period (final state)
     FAILED,    // For all blocks once the first retarget period after the timeout time is hit, if LOCKED_IN wasn't already reached (final state)
 };
+
+static const char* ThresholdStateName(ThresholdState s) {
+    switch (s) {
+        case ThresholdState::DEFINED: return "DEFINED";
+        case ThresholdState::STARTED: return "STARTED";
+        case ThresholdState::LOCKED_IN: return "LOCKED_IN";
+        case ThresholdState::ACTIVE:   return "ACTIVE";
+        case ThresholdState::FAILED:   return "FAILED";
+        default: return "UNKNOWN";
+    }
+}
 
 // A map that gives the state for blocks whose height is a multiple of Period().
 // The map is indexed by the block's parent, however, so all keys in the map
@@ -60,6 +76,8 @@ protected:
     virtual int Period(const Consensus::Params& params) const =0;
     virtual int Threshold(const Consensus::Params& params, int nAttempt) const =0;
 
+    virtual int MinActivationHeight(const Consensus::Params& params) const { return 0; }
+
 public:
     /** Returns the numerical statistics of an in-progress BIP9 softfork in the current period */
     BIP9Stats GetStateStatisticsFor(const CBlockIndex* pindex, const Consensus::Params& params, ThresholdConditionCache& cache) const;
@@ -74,14 +92,24 @@ public:
  *  keyed by the bit position used to signal support. */
 struct VersionBitsCache
 {
-    ThresholdConditionCache caches[Consensus::MAX_VERSION_BITS_DEPLOYMENTS];
+public:
+    std::array<ThresholdConditionCache, VERSIONBITS_NUM_BITS> caches;
 
     void Clear();
+
+private:
+    std::mutex mtxCaches[VERSIONBITS_NUM_BITS];
+
 };
 
 ThresholdState VersionBitsState(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
 BIP9Stats VersionBitsStatistics(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
 int VersionBitsStateSinceHeight(const CBlockIndex* pindexPrev, const Consensus::Params& params, Consensus::DeploymentPos pos, VersionBitsCache& cache);
 uint32_t VersionBitsMask(const Consensus::Params& params, Consensus::DeploymentPos pos);
+
+bool CheckRecentVersionBitsConsistency(const CBlockIndex* pindexTip,
+                                       const Consensus::Params& params,
+                                       const int lookback,
+                                       Consensus::DeploymentPos bitpos);
 
 #endif // BITCOIN_VERSIONBITS_H

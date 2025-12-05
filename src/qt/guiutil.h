@@ -475,6 +475,15 @@ namespace GUIUtil
      * In Qt 5.11 the QFontMetrics::horizontalAdvance() was introduced.
      */
     int TextWidth(const QFontMetrics& fm, const QString& text);
+	
+    /**
+     * Returns the start-moment of the day in local time.
+     *
+     * QDateTime::QDateTime(const QDate& date) is deprecated since Qt 5.15.
+     * QDate::startOfDay() was introduced in Qt 5.14.
+     */
+    QDateTime StartOfDay(const QDate& date);
+
 } // namespace GUIUtil
 
 #endif // BITCOIN_QT_GUIUTIL_H

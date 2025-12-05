@@ -187,6 +187,7 @@ public:
         consensus.DIP0008Height = 468; // ChainLocks Enforcement (activated upon the first quorum merkle root)
         consensus.DIP0003EnforcementHeight = 2;
         consensus.DIP0003EnforcementHash   = uint256S("000003173edcde96b0fb18664bb7ca1d1232aa89ce2f5511db210d2b0560aaf2");
+        consensus.GOV_FEEHeight            = 258500;
         consensus.MinBIP9WarningHeight     = 2;
         consensus.SoftforkFasttrackHeight  = 750000;
 
@@ -255,7 +256,7 @@ public:
         // Deployment of decreased proposal fee, script addresses for Governance Proposals
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].bit             = 7;
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nStartTime      = 1635724800; // Nov 1st, 2021
-        consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nTimeout        = 999999999999ULL;
+        consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nTimeout        = Consensus::BIP9Deployment::NO_TIMEOUT;
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nWindowSize     = 100;
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nThresholdStart = 80;
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nThresholdMin   = 60;
@@ -427,7 +428,13 @@ public:
                 {703363, uint256S("00000000013b1c713a1ae71e6328f0f21efa08c7b8432d40bce681e4588645c4")},
                 // 2023/10
                 {750001, uint256S("00000000006ed565d981c2ba21d19fd1b655847fa156e8a1da4647a33bbb5b74")},
-                {750222, uint256S("000000000106b46906143c81532016eb1dcccf9859f3e1fc4f249c797f0c36ac")}
+                {750222, uint256S("000000000106b46906143c81532016eb1dcccf9859f3e1fc4f249c797f0c36ac")},
+                //2025/11 - major work done with wallet
+                {850000, uint256S("0000000003887e373f5e32b2ebb44ea045d8e284564c7761c657db375e23444f")},
+                {900000, uint256S("000000000145bcc52e72e7f250de2031593a3313c2cd0407cb5c22ab6e9115a4")},
+                {1000000, uint256S("0000000003cc907794c6473558172b4b628397fef217443cf9094b3c5d314df9")},
+                {1100000, uint256S("0000000006fb54f04ee8d5335deaf9b50aef662f2d43fbf5a262ca0694c1c5de")},
+                {1200000, uint256S("0000000003fd4a327c105d685286b9ea7776432aaa076b217ec95f98474c9d51")}
             }
         };
 

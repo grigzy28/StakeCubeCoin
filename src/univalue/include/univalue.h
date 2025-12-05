@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <charconv>
 
 #include <string>
 #include <vector>
@@ -170,6 +171,22 @@ public:
     // value is of unexpected type
     const std::vector<std::string>& getKeys() const;
     const std::vector<UniValue>& getValues() const;
+
+    template <typename Int>
+    auto getInt() const
+    {
+        static_assert(std::is_integral<Int>::value);
+        if (typ != VNUM) {
+            throw std::runtime_error("JSON value is not an integer as expected");
+        }
+        Int result;
+        const auto [first_nonmatching, error_condition] = std::from_chars(val.data(), val.data() + val.size(), result);
+        if (first_nonmatching != val.data() + val.size() || error_condition != std::errc{}) {
+            throw std::runtime_error("JSON integer out of range");
+        }
+        return result;
+    }
+
     bool get_bool() const;
     const std::string& get_str() const;
     int get_int() const;

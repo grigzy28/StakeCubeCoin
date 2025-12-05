@@ -1,0 +1,12 @@
+--- fontconfig.pc.in	2016-12-02 03:22:19.000000000 +0000
++++ fontconfig.pc.in	2025-08-21 00:53:45.523419741 +0000
+@@ -13,6 +13,6 @@
+ Version: @VERSION@
+ Requires: @PKGCONFIG_REQUIRES@
+ Requires.private: @PKGCONFIG_REQUIRES_PRIVATELY@
+-Libs: -L${libdir} -lfontconfig
+-Libs.private: @EXPAT_LIBS@ @FREETYPE_LIBS@ @ICONV_LIBS@ @LIBXML2_LIBS@
++Libs: -L${libdir} -lfontconfig @EXPAT_LIBS@
++Libs.private: @FREETYPE_LIBS@ @ICONV_LIBS@ @LIBXML2_LIBS@
+ Cflags: -I${includedir} @EXPAT_CFLAGS@ @FREETYPE_CFLAGS@ @ICONV_CFLAGS@ @LIBXML2_CFLAGS@
+

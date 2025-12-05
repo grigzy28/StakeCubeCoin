@@ -1,38 +1,34 @@
 package=libxcb
-$(package)_version=1.10
+$(package)_version=1.17.0
 $(package)_download_path=https://xcb.freedesktop.org/dist
-$(package)_file_name=$(package)-$($(package)_version).tar.bz2
-$(package)_sha256_hash=98d9ab05b636dd088603b64229dd1ab2d2cc02ab807892e107d674f9c3f2d5b5
+$(package)_file_name=$(package)-$($(package)_version).tar.xz
+$(package)_sha256_hash=599EBF9996710FEA71622E6E184F3A8AD5B43D0E5FA8C4E407123C88A59A6D55
 $(package)_dependencies=xcb_proto libXau
+$(package)_patches = remove_pthread_stubs.patch
+$(package)_patches += change_linked_libraries.patch
+$(package)_patches += libxcb_libxau.patch
 
 define $(package)_set_vars
-$(package)_config_opts=--disable-static --disable-build-docs --without-doxygen --without-launchd
-# Because we pass -qt-xcb to Qt, it will compile in a set of xcb helper libraries and extensions,
-# so we skip building all of the extensions here.
-# More info is available from: https://doc.qt.io/qt-5.9/linux-requirements.html
+$(package)_config_opts = --enable-static --disable-shared --disable-devel-docs --without-doxygen --without-launchd
+$(package)_config_opts += --disable-dependency-tracking --enable-option-checking
+# Disable unneeded extensions.
+# More info is available from: https://doc.qt.io/qt-5.15/linux-requirements.html
 $(package)_config_opts += --disable-composite --disable-damage --disable-dpms
 $(package)_config_opts += --disable-dri2 --disable-dri3 --disable-glx
-$(package)_config_opts += --disable-present --disable-randr --disable-record
-$(package)_config_opts += --disable-render --disable-resource --disable-screensaver
-$(package)_config_opts += --disable-shape --disable-shm --disable-sync
-$(package)_config_opts += --disable-xevie --disable-xfixes --disable-xfree86-dri
-$(package)_config_opts += --disable-xinerama --disable-xinput --disable-xkb
-$(package)_config_opts += --disable-xprint --disable-selinux --disable-xtest
-$(package)_config_opts += --disable-xv --disable-xvmc
+$(package)_config_opts += --disable-present --disable-record --disable-resource
+$(package)_config_opts += --disable-screensaver --disable-xevie --disable-xfree86-dri
+$(package)_config_opts += --disable-xinput --disable-xprint --disable-selinux
+$(package)_config_opts += --disable-xtest --disable-xv --disable-xvmc
 endef
 
 define $(package)_preprocess_cmds
-  cp -f $(BASEDIR)/config.guess $(BASEDIR)/config.sub build-aux &&\
-  sed "s/pthread-stubs//" -i configure
+  cp -f $(BASEDIR)/config.guess $(BASEDIR)/config.sub build-aux && \
+  patch -p1 -i $($(package)_patch_dir)/remove_pthread_stubs.patch && \
+  patch -p0 -i $($(package)_patch_dir)/change_linked_libraries.patch
 endef
 
-# Don't install xcb headers to the default path in order to work around a qt
-# build issue: https://bugreports.qt.io/browse/QTBUG-34748
-# When using qt's internal libxcb, it may end up finding the real headers in
-# depends staging. Use a non-default path to avoid that.
-
 define $(package)_config_cmds
-  $($(package)_autoconf) --includedir=$(host_prefix)/include/xcb-shared
+  $($(package)_autoconf)
 endef
 
 define $(package)_build_cmds
@@ -40,9 +36,11 @@ define $(package)_build_cmds
 endef
 
 define $(package)_stage_cmds
-  $(MAKE) DESTDIR=$($(package)_staging_dir) install
+  $(MAKE) && \
+  ${MAKE} DESTDIR=$($(package)_staging_dir) install
 endef
+#  patch -p0 -f -i $($(package)_patch_dir)/libxcb_libxau.patch && \
 
 define $(package)_postprocess_cmds
-  rm -rf share/man share/doc
+  rm -rf share lib/*.la
 endef

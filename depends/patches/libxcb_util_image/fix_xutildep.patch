@@ -1,0 +1,10 @@
+--- image/xcb-image.pc.in	2022-10-18 19:50:31.000000000 +0000
++++ image/xcb-image.pc.in	2025-08-21 01:12:30.135785454 +0000
+@@ -6,6 +6,6 @@
+ Description: XCB image convenience library
+ Version: @PACKAGE_VERSION@
+-Requires: xcb xcb-shm
++Requires: xcb xcb-shm xcb-util
+ Libs: -L${libdir} -lxcb-image @LIBS@
+ Cflags: -I${includedir}
+

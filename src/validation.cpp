@@ -42,6 +42,7 @@
 #include <util/validation.h>
 #include <util/system.h>
 #include <validationinterface.h>
+#include <versionbits.h>
 #include <versionbitsinfo.h>
 #include <warnings.h>
 
@@ -68,6 +69,8 @@
 #define MICRO 0.000001
 #define MILLI 0.001
 
+std::atomic<uint32_t> GETBLOCKCOUNT_BUFFER{0};
+
 /** Maximum kilobytes for transactions to store for processing during reorg */
 static const unsigned int MAX_DISCONNECTED_TX_POOL_SIZE = 20000;
 /** The pre-allocation chunk size for blk?????.dat files (since 0.8) */
@@ -77,7 +80,9 @@ static const unsigned int UNDOFILE_CHUNK_SIZE = 0x100000; // 1 MiB
 /** Time to wait between writing blocks/block index to disk. */
 static constexpr std::chrono::hours DATABASE_WRITE_INTERVAL{1};
 /** Time to wait between flushing chainstate to disk. */
-static constexpr std::chrono::hours DATABASE_FLUSH_INTERVAL{24};
+static constexpr std::chrono::hours DATABASE_FLUSH_INTERVAL{2};
+/** Time to wait between flushing COINS cache to disk. */
+static constexpr std::chrono::minutes MEMORY_FLUSH_INTERVAL{5};
 /** Maximum age of our tip for us to be considered current for fee estimation */
 static constexpr std::chrono::hours MAX_FEE_ESTIMATION_TIP_AGE{3};
 
@@ -184,6 +189,24 @@ namespace {
     /** Dirty block file entries. */
     std::set<int> setDirtyFileInfo;
 } // anon namespace
+
+
+class CMainCleanup
+{
+public:
+    CMainCleanup() {}
+    ~CMainCleanup() {
+        // block headers
+        BlockMap::iterator it1 = g_blockman.m_block_index.begin();
+        for (; it1 != g_blockman.m_block_index.end(); it1++)
+            delete (*it1).second;
+        g_blockman.m_block_index.clear();
+    }
+};
+static CMainCleanup instance_of_cmaincleanup;
+
+
+
 
 CBlockIndex* LookupBlockIndex(const uint256& hash)
 {
@@ -1136,6 +1159,7 @@ bool CChainState::IsInitialBlockDownload() const
         return true;
     LogPrintf("Leaving InitialBlockDownload (latching to false)\n");
     m_cached_finished_ibd.store(true, std::memory_order_relaxed);
+	
     return false;
 }
 
@@ -1881,8 +1905,6 @@ static unsigned int GetBlockScriptFlags(const CBlockIndex* pindex, const Consens
     return flags;
 }
 
-
-
 static int64_t nTimeCheck = 0;
 static int64_t nTimeForks = 0;
 static int64_t nTimeVerify = 0;
@@ -2426,10 +2448,15 @@ bool CChainState::FlushStateToDisk(
         bool fPeriodicWrite = mode == FlushStateMode::PERIODIC && nNow > nLastWrite + DATABASE_WRITE_INTERVAL;
         // It's been very long since we flushed the cache. Do this infrequently, to optimize cache usage.
         bool fPeriodicFlush = mode == FlushStateMode::PERIODIC && nNow > nLastFlush + DATABASE_FLUSH_INTERVAL;
+
+        // It's been very long since we flushed the cache. Do this infrequently, to optimize cache usage.
+        bool fPeriodicMemoryFlush = ((mode == FlushStateMode::MEMORY) || (nNow > nLastFlush + MEMORY_FLUSH_INTERVAL));
+
         // Combine all conditions that result in a full cache flush.
         fDoFullFlush = (mode == FlushStateMode::ALWAYS) || fCacheLarge || fCacheCritical || fEvoDbCacheCritical || fPeriodicFlush || fFlushForPrune;
+
         // Write blocks and block index to disk.
-        if (fDoFullFlush || fPeriodicWrite) {
+        if (fDoFullFlush || fPeriodicWrite || fPeriodicMemoryFlush) {
             // Depend on nMinDiskSpace to ensure we can write block index
             if (!CheckDiskSpace(GetBlocksDir())) {
                 return AbortNode(state, "Disk space is too low!", _("Error: Disk space is too low!").translated, CClientUIInterface::MSG_NOPREFIX);
@@ -2469,12 +2496,18 @@ bool CChainState::FlushStateToDisk(
                 UnlinkPrunedFiles(setFilesToPrune);
             }
             nLastWrite = nNow;
-        }
-        // Flush best chain related state. This can only be done if the blocks / block index write was also done.
-        if (fDoFullFlush && !CoinsTip().GetBestBlock().IsNull()) {
-            LOG_TIME_SECONDS(strprintf("write coins cache to disk (%d coins, %.2fkB)",
-                coins_count, coins_mem_usage / 1000));
 
+			if (fPeriodicMemoryFlush) { nLastFlush = nNow; }
+
+        }
+
+        // Flush best chain related state. This can only be done if the blocks / block index write was also done.
+        if (fPeriodicMemoryFlush || (fDoFullFlush && !CoinsTip().GetBestBlock().IsNull())) {
+            if (fDoFullFlush) {
+					LOG_TIME_SECONDS(strprintf("write coins cache to disk (%d coins, %.2fkB)",
+						coins_count, coins_mem_usage / 1000));
+			}
+			
             // Typical Coin structures on disk are around 48 bytes in size.
             // Pushing a new one to the database can cause it to be written
             // twice (once in the log, and once in the tables). This is already
@@ -2521,7 +2554,7 @@ void CChainState::PruneAndFlush() {
     }
 }
 
-static void DoWarning(const std::string& strWarning)
+void DoWarning(const std::string& strWarning)
 {
     static bool fWarned = false;
     SetMiscWarning(strWarning);
@@ -2532,7 +2565,7 @@ static void DoWarning(const std::string& strWarning)
 }
 
 /** Private helper function that concatenates warning messages. */
-static void AppendWarning(std::string& res, const std::string& warn)
+void AppendWarning(std::string& res, const std::string& warn)
 {
     if (!res.empty()) res += ", ";
     res += warn;
@@ -2552,33 +2585,53 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
     }
 
     std::string warningMessages;
+    int nUpgraded = 0;
+
     if (!::ChainstateActive().IsInitialBlockDownload())
     {
-        int nUpgraded = 0;
+
         const CBlockIndex* pindex = pindexNew;
+
         for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
-            WarningBitsConditionChecker checker(bit);
-            ThresholdState state = checker.GetStateFor(pindex, chainParams.GetConsensus(), warningcache[bit]);
-            if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
+
+                        WarningBitsConditionChecker checker(bit);
+
+                        LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
+
+ThresholdState state = ThresholdState::DEFINED;
+
+if (bit == Consensus::DEPLOYMENT_GOV_FEE) {
+    const int activation_h = chainParams.GetConsensus().GOV_FEEHeight;
+    if ((activation_h > 0) && (pindex->nHeight >= activation_h)) {
+        ThresholdState state = ThresholdState::ACTIVE;
+    }
+    bool consistent = CheckRecentVersionBitsConsistency(
+                          pindex,
+                          chainParams.GetConsensus(),
+                          lookback,
+                          static_cast<Consensus::DeploymentPos>(bit)); // or whatever cache object your system uses
+    if (!consistent) {
+        LogPrintf("Warning: Detected unexpected GOV_FEE versionbits state change within last 1500 blocks.\n");
+        const std::string strWarning = strprintf(_("Warning: GOV_FEE versionbits inconsistency detected").translated);
+        DoWarning(strWarning);
+    }
+} else 
+{
+    ThresholdState state = checker.GetStateFor(pindex, chainParams.GetConsensus(), warningcache[bit]);
+}
+
+
+              if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
                 const std::string strWarning = strprintf(_("Warning: unknown new rules activated (versionbit %i)").translated, bit);
                 if (state == ThresholdState::ACTIVE) {
                     DoWarning(strWarning);
                 } else {
                     AppendWarning(warningMessages, strWarning);
                 }
-            }
+              }
         }
-        // Check the version of the last 100 blocks to see if we need to upgrade:
-        for (int i = 0; i < 100 && pindex != nullptr; i++)
-        {
-            int32_t nExpectedVersion = ComputeBlockVersion(pindex->pprev, chainParams.GetConsensus());
-            if (pindex->nVersion > VERSIONBITS_LAST_OLD_BLOCK_VERSION && (pindex->nVersion & ~nExpectedVersion) != 0)
-                ++nUpgraded;
-            pindex = pindex->pprev;
-        }
-        if (nUpgraded > 0)
-            AppendWarning(warningMessages, strprintf(_("%d of last 100 blocks have unexpected version").translated, nUpgraded));
     }
+
     LogPrintf("%s: new best=%s height=%d version=0x%08x log2_work=%.8g tx=%lu date='%s' progress=%f cache=%.1fMiB(%utxo) evodb_cache=%.1fMiB%s\n", __func__,
       pindexNew->GetBlockHash().ToString(), pindexNew->nHeight, pindexNew->nVersion,
       log(pindexNew->nChainWork.getdouble())/log(2.0), (unsigned long)pindexNew->nChainTx,
@@ -2586,6 +2639,9 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
       GuessVerificationProgress(chainParams.TxData(), pindexNew), ::ChainstateActive().CoinsTip().DynamicMemoryUsage() * (1.0 / (1<<20)), ::ChainstateActive().CoinsTip().GetCacheSize(),
       evoDb->GetMemoryUsage() * (1.0 / (1<<20)),
       !warningMessages.empty() ? strprintf(" warning='%s'", warningMessages) : "");
+
+
+    GETBLOCKCOUNT_BUFFER.store(pindexNew->nHeight, std::memory_order_relaxed);
 
 }
 
@@ -2625,7 +2681,7 @@ bool CChainState::DisconnectTip(CValidationState& state, const CChainParams& cha
     }
     LogPrint(BCLog::BENCHMARK, "- Disconnect block: %.2fms\n", (GetTimeMicros() - nStart) * MILLI);
     // Write the chain state to disk, if necessary.
-    if (!FlushStateToDisk(chainparams, state, FlushStateMode::IF_NEEDED))
+    if (!FlushStateToDisk(chainparams, state, FlushStateMode::PERIODIC))
         return false;
 
     if (disconnectpool) {
@@ -2764,7 +2820,7 @@ bool CChainState::ConnectTip(CValidationState& state, const CChainParams& chainp
     int64_t nTime4 = GetTimeMicros(); nTimeFlush += nTime4 - nTime3;
     LogPrint(BCLog::BENCHMARK, "  - Flush: %.2fms [%.2fs (%.2fms/blk)]\n", (nTime4 - nTime3) * MILLI, nTimeFlush * MICRO, nTimeFlush * MILLI / nBlocksTotal);
     // Write the chain state to disk, if necessary.
-    if (!FlushStateToDisk(chainparams, state, FlushStateMode::IF_NEEDED))
+    if (!FlushStateToDisk(chainparams, state, FlushStateMode::PERIODIC))
         return false;
     int64_t nTime5 = GetTimeMicros(); nTimeChainState += nTime5 - nTime4;
     LogPrint(BCLog::BENCHMARK, "  - Writing chainstate: %.2fms [%.2fs (%.2fms/blk)]\n", (nTime5 - nTime4) * MILLI, nTimeChainState * MICRO, nTimeChainState * MILLI / nBlocksTotal);
@@ -3522,10 +3578,13 @@ void CChainState::ReceivedBlockTransactions(const CBlock& block, CBlockIndex* pi
             CBlockIndex *pindex = queue.front();
             queue.pop_front();
             pindex->nChainTx = (pindex->pprev ? pindex->pprev->nChainTx : 0) + pindex->nTx;
+            pindex->nSequenceId = nBlockSequenceId++;
+/*
             {
                 LOCK(cs_nBlockSequenceId);
                 pindex->nSequenceId = nBlockSequenceId++;
             }
+*/
             if (m_chain.Tip() == nullptr || !setBlockIndexCandidates.value_comp()(pindex, m_chain.Tip())) {
                 if (!(pindex->nStatus & BLOCK_CONFLICT_CHAINLOCK)) {
                     setBlockIndexCandidates.insert(pindex);
@@ -3539,6 +3598,7 @@ void CChainState::ReceivedBlockTransactions(const CBlock& block, CBlockIndex* pi
                 m_blockman.m_blocks_unlinked.erase(it);
             }
         }
+
     } else {
         if (pindexNew->pprev && pindexNew->pprev->IsValid(BLOCK_VALID_TREE)) {
             m_blockman.m_blocks_unlinked.insert(std::make_pair(pindexNew->pprev, pindexNew));
@@ -3880,8 +3940,12 @@ bool BlockManager::AcceptBlockHeader(const CBlockHeader& block, CValidationState
             pindex = miSelf->second;
             if (ppindex)
                 *ppindex = pindex;
-            if (pindex->nStatus & BLOCK_FAILED_MASK)
+            if (pindex->nStatus & BLOCK_FAILED_MASK) {
+
+                ResetBlockFailureFlags(pindex);
+
                 return state.Invalid(error("%s: block %s is marked invalid", __func__, hash.ToString()), 0, "duplicate");
+            }
             if (pindex->nStatus & BLOCK_CONFLICT_CHAINLOCK)
                 return state.Invalid(error("%s: block %s is marked conflicting", __func__, hash.ToString()), 0, "duplicate");
             return true;
@@ -4089,9 +4153,20 @@ bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CVali
         return AbortNode(state, std::string("System error: ") + e.what());
     }
 
-    if (g_chainstate && g_chainstate->CanFlushToDisk()) {
-        g_chainstate->FlushStateToDisk(chainparams, state, FlushStateMode::NONE);
+	bool fInitialDownload = IsInitialBlockDownload();
+
+    if (fInitialDownload) {
+		g_chainstate->FlushStateToDisk(chainparams, state, FlushStateMode::MEMORY);
+	} else {
+		g_chainstate->FlushStateToDisk(chainparams, state, FlushStateMode::PERIODIC);
+	}
+		
+
+/*
+	if (g_chainstate && g_chainstate->CanFlushToDisk()) {
+        g_chainstate->FlushStateToDisk(chainparams, state, FlushStateMode::PERIODIC);
     }
+*/
 
     CheckBlockIndex(chainparams.GetConsensus());
 
@@ -5366,17 +5441,3 @@ double GuessVerificationProgress(const ChainTxData& data, const CBlockIndex *pin
 
     return std::min<double>(pindex->nChainTx / fTxTotal, 1.0);
 }
-
-class CMainCleanup
-{
-public:
-    CMainCleanup() {}
-    ~CMainCleanup() {
-        // block headers
-        BlockMap::iterator it1 = g_blockman.m_block_index.begin();
-        for (; it1 != g_blockman.m_block_index.end(); it1++)
-            delete (*it1).second;
-        g_blockman.m_block_index.clear();
-    }
-};
-static CMainCleanup instance_of_cmaincleanup;

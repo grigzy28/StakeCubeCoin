@@ -49,6 +49,13 @@ struct ChainTxData;
 struct DisconnectedBlockTransactions;
 struct LockPoints;
 
+
+/* Variable for how many blocks to look back for versionbits */
+static const int lookback = 2500;
+
+/* Global Variable for getblockcount cache */
+extern std::atomic<uint32_t> GETBLOCKCOUNT_BUFFER;
+
 /** Default for -minrelaytxfee, minimum relay fee for transactions */
 static const unsigned int DEFAULT_MIN_RELAY_TX_FEE = 1000;
 /** Default for -limitancestorcount, max number of in-mempool ancestors */
@@ -388,6 +395,7 @@ enum class FlushStateMode {
     NONE,
     IF_NEEDED,
     PERIODIC,
+	MEMORY,
     ALWAYS
 };
 
@@ -776,12 +784,12 @@ extern std::unique_ptr<CBlockTreeDB> pblocktree;
  */
 int GetSpendHeight(const CCoinsViewCache& inputs);
 
-extern VersionBitsCache versionbitscache;
-
 /**
  * Determine what nVersion a new block should use.
  */
 int32_t ComputeBlockVersion(const CBlockIndex* pindexPrev, const Consensus::Params& params, bool fCheckMasternodesUpgraded = false);
+
+extern VersionBitsCache versionbitscache;
 
 /**
  * Return true if hash can be found in ::ChainActive() at nBlockHeight height.
@@ -811,5 +819,8 @@ inline bool IsBlockPruned(const CBlockIndex* pblockindex)
 {
     return (fHavePruned && !(pblockindex->nStatus & BLOCK_HAVE_DATA) && pblockindex->nTx > 0);
 }
+
+void DoWarning(const std::string& strWarning);
+void AppendWarning(std::string& res, const std::string& warn);
 
 #endif // BITCOIN_VALIDATION_H

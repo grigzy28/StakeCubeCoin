@@ -483,6 +483,7 @@ void SetupServerArgs()
     gArgs.AddArg("-dbbatchsize", strprintf("Maximum database write batch size in bytes (default: %u)", nDefaultDbBatchSize), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::OPTIONS);
     gArgs.AddArg("-dbcache=<n>", strprintf("Maximum database cache size <n> MiB (%d to %d, default: %d). In addition, unused mempool memory is shared for this cache (see -maxmempool).", nMinDbCache, nMaxDbCache, nDefaultDbCache), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg("-debuglogfile=<file>", strprintf("Specify location of debug log file. Relative paths will be prefixed by a net-specific datadir location. (-nodebuglogfile to disable; default: %s)", DEFAULT_DEBUGLOGFILE), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+    gArgs.AddArg("-disablecleanup", "Disable cleanup of old contributions from database", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg("-includeconf=<file>", "Specify additional configuration file, relative to the -datadir path (only useable from configuration file, not command line)", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg("-loadblock=<file>", "Imports blocks from external blk000??.dat file on startup", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg("-maxmempool=<n>", strprintf("Keep the transaction memory pool below <n> megabytes (default: %u)", DEFAULT_MAX_MEMPOOL_SIZE), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
@@ -1941,7 +1942,7 @@ bool AppInitMain(InitInterfaces& interfaces)
     nTotalCache -= nCoinDBCache;
     nCoinCacheUsage = nTotalCache; // the rest goes to in-memory cache
     int64_t nMempoolSizeMax = gArgs.GetArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE) * 1000000;
-    int64_t nEvoDbCache = 1024 * 1024 * 64; // TODO
+    int64_t nEvoDbCache = 1024 * 1024 * 32; // TODO
     LogPrintf("Cache configuration:\n");
     LogPrintf("* Using %.1f MiB for block index database\n", nBlockTreeDBCache * (1.0 / 1024 / 1024));
     if (gArgs.GetBoolArg("-txindex", DEFAULT_TXINDEX)) {
@@ -2147,7 +2148,7 @@ bool AppInitMain(InitInterfaces& interfaces)
             LogPrintf(" block index %15dms\n", GetTimeMillis() - load_block_index_start_time);
         } while(false);
 
-        if (!fLoaded && !ShutdownRequested()) {
+	if (!fLoaded && !ShutdownRequested()) {
             // first suggest a reindex
             if (!fReset) {
                 bool fRet = uiInterface.ThreadSafeQuestion(
@@ -2341,12 +2342,18 @@ bool AppInitMain(InitInterfaces& interfaces)
     if (fMasternodeMode) {
         scheduler.scheduleEvery(std::bind(&CCoinJoinServer::DoMaintenance, std::ref(coinJoinServer), std::ref(*g_connman)), 1 * 1000);
 
-    // Convert std::chrono::hours to milliseconds
-    auto hours_in_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::hours(1)).count();
 
-    // Now pass the converted value
-    scheduler.scheduleEvery(std::bind(&llmq::CDKGSessionManager::CleanupOldContributions, std::ref(*llmq::quorumDKGSessionManager)), hours_in_milliseconds);
+    auto fCleanupOldContributions = gArgs.GetBoolArg("-disablecleanup", false);
+    if (!fCleanupOldContributions && fMasternodeMode) {
 
+        LogPrint(BCLog::ALL, "Enabled Cleanup of Old Contributions\n");
+        // Convert std::chrono::hours to milliseconds
+        auto hours_in_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::hours(12)).count();
+
+        // Now pass the converted value
+        scheduler.scheduleEvery(std::bind(&llmq::CDKGSessionManager::CleanupOldContributions, std::ref(*llmq::quorumDKGSessionManager)), hours_in_milliseconds);
+    }
+    
     }
 
     if (gArgs.GetBoolArg("-statsenabled", DEFAULT_STATSD_ENABLE)) {

@@ -1,11 +1,11 @@
 AC_PREREQ([2.69])
 define(_CLIENT_VERSION_MAJOR, 3)
-define(_CLIENT_VERSION_MINOR, 4)
-define(_CLIENT_VERSION_REVISION, 7)
-define(_CLIENT_VERSION_BUILD, 2)
+define(_CLIENT_VERSION_MINOR, 5)
+define(_CLIENT_VERSION_REVISION, 1)
+define(_CLIENT_VERSION_BUILD, 0)
 define(_CLIENT_VERSION_RC, 0)
 define(_CLIENT_VERSION_IS_RELEASE, true)
-define(_COPYRIGHT_YEAR, 2023)
+define(_COPYRIGHT_YEAR, 2025)
 define(_COPYRIGHT_HOLDERS,[The %s developers])
 define(_COPYRIGHT_HOLDERS_SUBSTITUTION,[[SCC Core]])
 AC_INIT([SCC Core],m4_join([.], _CLIENT_VERSION_MAJOR, _CLIENT_VERSION_MINOR, _CLIENT_VERSION_REVISION, m4_if(_CLIENT_VERSION_BUILD, [0], [], _CLIENT_VERSION_BUILD))m4_if(_CLIENT_VERSION_RC, [0], [], [rc]_CLIENT_VERSION_RC),[https://github.com/stakecube/StakeCubeCoin/issues],[stakecube],[https://stakecube.net/])
@@ -13,6 +13,12 @@ AC_CONFIG_SRCDIR([src/validation.cpp])
 AC_CONFIG_HEADERS([src/config/scc-config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([build-aux/m4])
+
+m4_ifndef([PKG_PROG_PKG_CONFIG], [m4_fatal([PKG_PROG_PKG_CONFIG macro not found. Please install pkg-config and re-run autogen.sh])])
+PKG_PROG_PKG_CONFIG
+if test "x$PKG_CONFIG" = x; then
+  AC_MSG_ERROR([pkg-config not found])
+fi
 
 BITCOIN_DAEMON_NAME=sccd
 BITCOIN_GUI_NAME=scc-qt
@@ -53,12 +59,23 @@ else
 fi
 AC_PROG_CXX
 
-dnl By default, libtool for mingw refuses to link static libs into a dll for
-dnl fear of mixing pic/non-pic objects, and import/export complications. Since
-dnl we have those under control, re-enable that functionality.
+dnl libtool overrides
 case $host in
   *mingw*)
+     dnl By default, libtool for mingw refuses to link static libs into a dll for
+     dnl fear of mixing pic/non-pic objects, and import/export complications. Since
+     dnl we have those under control, re-enable that functionality.
      lt_cv_deplibs_check_method="pass_all"
+  ;;
+  *darwin*)
+     dnl Because it prints a verbose warning, lld fails the following check
+     dnl for "-Wl,-single_module" from libtool.m4:
+     dnl   # If there is a non-empty error log, and "single_module"
+     dnl   # appears in it, assume the flag caused a linker warning
+     dnl "-single_module" works fine on ld64 and lld, so just bypass the test.
+     dnl Failure to set this to "yes" causes libtool to use a very broken
+     dnl link-line for shared libs.
+     lt_cv_apple_cc_single_mod="yes"
   ;;
 esac
 
@@ -714,6 +731,13 @@ case $host in
                 fi
                 LDFLAGS="$LDFLAGS -L$libnatpmp_prefix/lib"
               fi
+
+              gmp_prefix=$($BREW --prefix gmp 2>/dev/null)
+			  if test x$gmp_prefix != x; then
+				CORE_CPPFLAGS="$CORE_CPPFLAGS -I$gmp_prefix/include"
+				CORE_LDFLAGS="$CORE_LDFLAGS -L$gmp_prefix/lib"
+			  fi
+
               ;;
           esac
        fi
@@ -1023,7 +1047,7 @@ if test "x$use_thread_local" = xyes || { test "x$use_thread_local" = xauto && te
         *darwin*)
           # TODO enable thread_local on later versions of Darwin where it is
           # supported (per https://stackoverflow.com/a/29929949)
-          AC_MSG_RESULT(no)
+          AC_MSG_RESULT(yes)
           ;;
         *freebsd*)
           # FreeBSD's implementation of thread_local is also buggy (per
@@ -1847,8 +1871,8 @@ if test x$need_bundled_univalue = xyes; then
   AC_CONFIG_SUBDIRS([src/univalue])
 fi
 
-ac_configure_args="${ac_configure_args} --disable-shared --with-pic --enable-benchmark=no --enable-module-recovery"
-AC_CONFIG_SUBDIRS([src/secp256k1])
+ac_configure_args="${ac_configure_args} --with-pic --enable-benchmark=no --enable-module-recovery --disable-shared  --disable-module-ecdh"
+AC_CONFIG_SUBDIRS([src/dashbls src/secp256k1])
 
 AC_OUTPUT
 

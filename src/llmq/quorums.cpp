@@ -23,6 +23,8 @@
 
 #include <cxxtimer.hpp>
 
+#include <util/underlying.h>
+
 namespace llmq
 {
 
@@ -231,6 +233,7 @@ void CQuorumManager::TriggerQuorumDataRecoveryThreads(const CBlockIndex* pIndex)
 
             // Finally start the thread which triggers the requests for this quorum
             StartQuorumDataRecoveryThread(pQuorum, pIndex, nDataMask);
+
         }
     }
 }
@@ -322,6 +325,20 @@ CQuorumPtr CQuorumManager::BuildQuorumFromCommitment(const Consensus::LLMQType l
         // sessions if the shares would be calculated on-demand
         StartCachePopulatorThread(quorum);
     }
+
+/*
+//LogPrintf("map QuorumsCache size: %zu\n", mapQuorumsCache.at(llmqType).size());
+//LogPrintf("Memory Usage %s\n", GetMemoryUsage());
+
+size_t totalMem = 0;
+mapQuorumsCache[llmqType].for_each([&](const uint256& key, const std::shared_ptr<llmq::CQuorum>& quorum) {
+    if (quorum) {
+        totalMem += quorum->GetMemoryUsage();
+    }
+});
+
+//LogPrintf("Quorum cache memory usage for LLMQ %d: %zu bytes\n", ToUnderlying(llmqType), totalMem);
+*/
 
     mapQuorumsCache[llmqType].insert(quorumHash, quorum);
 
@@ -845,9 +862,9 @@ void CQuorumManager::StartQuorumDataRecoveryThread(const CQuorumCPtr pQuorum, co
             });
             quorumThreadInterrupt.sleep_for(std::chrono::seconds(1));
         }
-        pQuorum->fQuorumDataRecoveryThreadRunning = false;
         printLog("Done");
     });
+        pQuorum->fQuorumDataRecoveryThreadRunning = false;
 }
 
 } // namespace llmq

@@ -3,12 +3,12 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-DIST_SUBDIRS = secp256k1 univalue
+DIST_SUBDIRS = secp256k1 univalue dashbls
 
 AM_LDFLAGS = $(PTHREAD_CFLAGS) $(LIBTOOL_LDFLAGS) $(HARDENED_LDFLAGS) $(GPROF_LDFLAGS) $(SANITIZER_LDFLAGS)
 AM_CXXFLAGS = $(DEBUG_CXXFLAGS) $(HARDENED_CXXFLAGS) $(WARN_CXXFLAGS) $(NOWARN_CXXFLAGS) $(ERROR_CXXFLAGS) $(GPROF_CXXFLAGS) $(SANITIZER_CXXFLAGS)
 AM_CPPFLAGS = $(DEBUG_CPPFLAGS) $(HARDENED_CPPFLAGS)
-AM_LIBTOOLFLAGS = --preserve-dup-deps
+AM_LIBTOOLFLAGS = --preserve-dup-deps --verbose
 EXTRA_LIBRARIES =
 
 if ENABLE_STACKTRACES
@@ -42,11 +42,12 @@ endif
 
 BITCOIN_INCLUDES=-I$(builddir) $(BDB_CPPFLAGS) $(BOOST_CPPFLAGS) $(LEVELDB_CPPFLAGS)
 
-BITCOIN_INCLUDES += -I$(srcdir)/secp256k1/include
+BITCOIN_INCLUDES += -I$(srcdir)/secp256k1/include -I$(srcdir)/univalue/include
+BITCOIN_INCLUDES += -isystem$(srcdir)/dashbls/include -isystem$(srcdir)/dashbls/depends/relic/include -isystem$(srcdir)/dashbls/depends/minialloc/include
 BITCOIN_INCLUDES += $(UNIVALUE_CFLAGS)
 BITCOIN_INCLUDES += -I$(srcdir)/immer
 
-BLS_LIBS=-lbls-dash -lrelic_s
+BLS_LIBS=-ldashbls -lrelic
 
 LIBBITCOIN_SERVER=libscc_server.a
 LIBBITCOIN_COMMON=libscc_common.a
@@ -55,6 +56,7 @@ LIBBITCOIN_CLI=libscc_cli.a
 LIBBITCOIN_UTIL=libscc_util.a
 LIBBITCOIN_CRYPTO_BASE=crypto/libscc_crypto_base.a
 LIBBITCOINQT=qt/libsccqt.a
+LIBDASHBLS=dashbls/libdashbls.la
 LIBSECP256K1=secp256k1/libsecp256k1.la
 
 if ENABLE_ZMQ
@@ -85,6 +87,9 @@ if ENABLE_ARM_SHANI
 LIBBITCOIN_CRYPTO_ARM_SHANI = crypto/libscc_crypto_arm_shani.a
 LIBBITCOIN_CRYPTO += $(LIBBITCOIN_CRYPTO_ARM_SHANI)
 endif
+
+$(LIBDASHBLS):
+	$(AM_V_at)$(MAKE) $(AM_MAKEFLAGS) -C $(@D)
 
 $(LIBSECP256K1): $(wildcard secp256k1/src/*.h) $(wildcard secp256k1/src/*.c) $(wildcard secp256k1/include/*)
 	$(AM_V_at)$(MAKE) $(AM_MAKEFLAGS) -C $(@D) $(@F)
@@ -164,6 +169,7 @@ BITCOIN_CORE_H = \
   compat/sanity.h \
   compressor.h \
   consensus/consensus.h \
+  consensus/params.h \
   consensus/tx_check.h \
   consensus/tx_verify.h \
   core_io.h \
@@ -664,6 +670,7 @@ libscc_consensus_a_SOURCES = \
   util/strencodings.h \
   version.h
 
+
 # common: shared between sccd, and scc-qt and non-server tools
 libscc_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libscc_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
@@ -744,6 +751,7 @@ libscc_util_a_SOURCES = \
   util/threadnames.cpp \
   util/url.cpp \
   util/validation.cpp \
+  batchedlogger.cpp \
   $(BITCOIN_CORE_H)
 
 if GLIBC_BACK_COMPAT
@@ -763,6 +771,25 @@ libscc_cli_a_SOURCES = \
   $(BITCOIN_CORE_H)
 
 nodist_libscc_util_a_SOURCES = $(srcdir)/obj/build.h
+#
+
+# sccconsensus library #
+if BUILD_BITCOIN_LIBS
+include_HEADERS = script/sccconsensus.h
+libsccconsensus_la_SOURCES = support/cleanse.cpp  $(libscc_consensus_a_SOURCES) $(crypto_libscc_crypto_base_a_SOURCES)
+
+if GLIBC_BACK_COMPAT
+  libsccconsensus_la_SOURCES += compat/glibc_compat.cpp
+endif
+
+libsccconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+libsccconsensus_la_LIBADD = $(LIBDASHBLS) $(LIBSECP256K1) $(GMP_LIBS) $(BOOST_LIBS)
+libsccconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -I$(srcdir)/univalue/include -DBUILD_BITCOIN_INTERNAL
+libsccconsensus_la_CPPFLAGS += -isystem$(srcdir)/dashbls/include -isystem$(srcdir)/dashbls/depends/relic/include -isystem$(srcdir)/dashbls/depends/minialloc/include
+libsccconsensus_la_CPPFLAGS += -I$(srcdir)/immer
+libsccconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+
+endif
 #
 
 # sccd binary #
@@ -787,12 +814,13 @@ sccd_LDADD = \
   $(LIBBITCOIN_ZMQ) \
   $(LIBBITCOIN_CONSENSUS) \
   $(LIBBITCOIN_CRYPTO) \
+  $(LIBDASHBLS) \
   $(LIBLEVELDB) \
   $(LIBLEVELDB_SSE42) \
   $(LIBMEMENV) \
   $(LIBSECP256K1)
 
-sccd_LDADD += $(BACKTRACE_LIB) $(BOOST_LIBS) $(BDB_LIBS) $(MINIUPNPC_LIBS) $(NATPMP_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(BLS_LIBS) $(GMP_LIBS)
+sccd_LDADD += $(BACKTRACE_LIB) $(BOOST_LIBS) $(BDB_LIBS) $(MINIUPNPC_LIBS) $(NATPMP_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(LIBDASHBLS) $(GMP_LIBS)
 
 # scc-cli binary #
 scc_cli_SOURCES = scc-cli.cpp
@@ -809,7 +837,7 @@ scc_cli_LDADD = \
   $(LIBUNIVALUE) \
   $(LIBBITCOIN_UTIL) \
   $(LIBBITCOIN_CRYPTO)
-scc_cli_LDADD += $(BACKTRACE_LIB) $(BOOST_LIBS) $(EVENT_LIBS) $(BLS_LIBS) $(GMP_LIBS)
+scc_cli_LDADD += $(BACKTRACE_LIB) $(BOOST_LIBS) $(EVENT_LIBS) $(LIBDASHBLS) $(GMP_LIBS)
 #
 
 # scc-tx binary #
@@ -828,9 +856,10 @@ scc_tx_LDADD = \
   $(LIBBITCOIN_UTIL) \
   $(LIBBITCOIN_CONSENSUS) \
   $(LIBBITCOIN_CRYPTO) \
+  $(LIBDASHBLS) \
   $(LIBSECP256K1)
 
-scc_tx_LDADD += $(BACKTRACE_LIB) $(BOOST_LIBS) $(BLS_LIBS) $(GMP_LIBS)
+scc_tx_LDADD += $(BACKTRACE_LIB) $(BOOST_LIBS) $(LIBDASHBLS) $(GMP_LIBS)
 #
 
 # scc-wallet binary #
@@ -861,25 +890,7 @@ scc_wallet_LDADD = \
   $(LIBSECP256K1) \
   $(LIBUNIVALUE)
 
-scc_wallet_LDADD += $(BACKTRACE_LIB) $(BOOST_LIBS) $(BDB_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(MINIUPNPC_LIBS) $(NATPMP_LIBS) $(ZMQ_LIBS) $(BLS_LIBS) $(GMP_LIBS)
-#
-
-# sccconsensus library #
-if BUILD_BITCOIN_LIBS
-include_HEADERS = script/sccconsensus.h
-libsccconsensus_la_SOURCES = support/cleanse.cpp $(crypto_libscc_crypto_base_a_SOURCES) $(libscc_consensus_a_SOURCES)
-
-if GLIBC_BACK_COMPAT
-  libsccconsensus_la_SOURCES += compat/glibc_compat.cpp
-endif
-
-libsccconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS) $(LIBTOOL_APP_LDFLAGS)
-libsccconsensus_la_LIBADD = $(LIBSECP256K1) $(BLS_LIBS) $(GMP_LIBS) $(BOOST_LIBS)
-libsccconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(srcdir)/secp256k1/include -DBUILD_BITCOIN_INTERNAL
-libsccconsensus_la_CPPFLAGS += -I$(srcdir)/immer
-libsccconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-
-endif
+scc_wallet_LDADD += $(BACKTRACE_LIB) $(BOOST_LIBS) $(BDB_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(MINIUPNPC_LIBS) $(NATPMP_LIBS) $(ZMQ_LIBS) $(LIBDASHBLS) $(GMP_LIBS)
 #
 
 CTAES_DIST =  crypto/ctaes/bench.c
@@ -911,7 +922,12 @@ CLEANFILES += zmq/*.gcda zmq/*.gcno
 CLEANFILES += obj/build.h
 
 IMMER_DIST = immer/immer
-EXTRA_DIST = $(CTAES_DIST) $(IMMER_DIST)
+LIBDASHBLS_DIST = dashbls
+
+EXTRA_DIST = \
+  $(CTAES_DIST)   \
+  $(IMMER_DIST)   \
+  $(LIBDASHBLS_DIST)
 
 config/scc-config.h: config/stamp-h1
 	@$(MAKE) -C $(top_builddir) $(subdir)/$(@)
@@ -922,6 +938,7 @@ $(top_srcdir)/$(subdir)/config/scc-config.h.in:  $(am__configure_deps)
 
 
 clean-local:
+	-$(MAKE) -C dashbls clean
 	-$(MAKE) -C secp256k1 clean
 	-$(MAKE) -C univalue clean
 	-rm -f leveldb/*/*.gcda leveldb/*/*.gcno leveldb/helpers/memenv/*.gcda leveldb/helpers/memenv/*.gcno

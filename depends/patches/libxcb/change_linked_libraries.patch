@@ -1,0 +1,11 @@
+--- xcb.pc.in
++++ xcb.pc.in
+@@ -8,6 +8,6 @@
+ Description: X-protocol C Binding
+ Version: @PACKAGE_VERSION@
+ Requires.private: @NEEDED@
+-Libs: -L${libdir} -lxcb
++Libs: -L${libdir} -lxcb -lXau
+ Libs.private: @LIBS@
+ Cflags: -I${includedir}
+

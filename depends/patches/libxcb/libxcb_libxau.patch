@@ -1,0 +1,11 @@
+--- xcb.pc	2025-08-20 22:13:25.305802093 +0000
++++ xcb.pc	2025-08-20 22:13:13.329882483 +0000
+@@ -8,6 +8,6 @@
+ Description: X-protocol C Binding
+ Version: 1.17.0
+ Requires.private: xau >= 0.99.2
+-Libs: -L${libdir} -lxcb
++Libs: -L${libdir} -lxcb -lXau
+ Libs.private: 
+ Cflags: -I${includedir}
+

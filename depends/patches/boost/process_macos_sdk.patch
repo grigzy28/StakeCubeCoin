@@ -1,0 +1,11 @@
+Patch
+
+--- a/libs/filesystem/src/directory.cpp
++++ b/libs/filesystem/src/directory.cpp
+@@ -272,3 +272,3 @@
+-{
++{
+-    int fd = ::dirfd(static_cast< DIR* >(imp.handle));
++    int fd = dirfd(static_cast< DIR* >(imp.handle));
+    if (BOOST_UNLIKELY(fd < 0))
+
