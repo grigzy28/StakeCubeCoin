@@ -577,11 +577,8 @@ void RPCRunLater(const std::string& name, std::function<void()> func, int64_t nS
 {
     if (!timerInterface)
         throw JSONRPCError(RPC_INTERNAL_ERROR, "No timer handler registered for RPC");
-
     deadlineTimers.erase(name);
-
-    LogPrint(BCLog::RPC, "queue run of timer %s in %i seconds (using %s)\n", name, nSeconds, timerInterface->Name());
-
+    LogPrint(BCLog::RPC, "Queue run of timer %s in %i seconds (using %s)\n", name, nSeconds, timerInterface->Name());
     deadlineTimers.emplace(name, std::unique_ptr<RPCTimerBase>(timerInterface->NewTimer(func, nSeconds*1000)));
 }
 
