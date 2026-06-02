@@ -1,4 +1,4 @@
-packages:=boost cmake libevent gmp backtrace cmake bdb
+packages:=boost cmake libevent gmp backtrace bdb
 
 qt_packages = libqrencode
 
