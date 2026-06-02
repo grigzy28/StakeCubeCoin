@@ -2611,7 +2611,7 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
                           lookback,
                           static_cast<Consensus::DeploymentPos>(bit));
                 if (!consistent) {
-                    LogPrintf("Warning: Detected unexpected GOV_FEE versionbits state change within last %n blocks.\n", loopback);
+                    LogPrintf("Warning: Detected unexpected GOV_FEE versionbits state change within last %n blocks.\n", lookback);
                     const std::string strWarning = strprintf(_("Warning: GOV_FEE versionbits inconsistency detected").translated);
                     DoWarning(strWarning);
                 }
