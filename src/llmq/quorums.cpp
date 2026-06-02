@@ -757,7 +757,7 @@ void CQuorumManager::StartQuorumDataRecoveryThread(const CQuorumCPtr pQuorum, co
     pQuorum->fQuorumDataRecoveryThreadRunning = true;
 
     cxxtimer::Timer tdr(true);
-    workerPool.push([pQuorum, pIndex, nDataMaskIn, this](int threadId) {
+    workerPool.push([pQuorum, pIndex, nDataMaskIn, tdr, this](int threadId) {
         size_t nTries{0};
         uint16_t nDataMask{nDataMaskIn};
         int64_t nTimeLastSuccess{0};
