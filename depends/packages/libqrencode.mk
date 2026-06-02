@@ -3,6 +3,7 @@ $(package)_version=4.1.1
 $(package)_download_path=https://github.com/fukuchi/libqrencode/archive/refs/tags/
 $(package)_file_name=v$($(package)_version).tar.gz
 $(package)_sha256_hash=5385BC1B8C2F20F3B91D258BF8CCC8CF62023935DF2D2676B5B67049F31A049C
+$(package)_dependencies=cmake
 $(package)_patches=cmake_fixups.patch
 
 define $(package)_set_vars
