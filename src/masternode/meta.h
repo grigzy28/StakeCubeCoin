@@ -104,6 +104,8 @@ private:
 
     mutable CCriticalSection cs;
 
+    bool is_valid{false};
+
     std::map<uint256, CMasternodeMetaInfoPtr> metaInfos GUARDED_BY(cs);
     std::vector<uint256> vecDirtyGovernanceObjectHashes GUARDED_BY(cs);
 
