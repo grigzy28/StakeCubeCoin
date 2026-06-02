@@ -2594,41 +2594,40 @@ void static UpdateTip(const CBlockIndex *pindexNew, const CChainParams& chainPar
 
         for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
 
-                        WarningBitsConditionChecker checker(bit);
+            WarningBitsConditionChecker checker(bit);
 
-                        LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
+//            LogPrint(BCLog::BENCHMARK, "bit: %s\n", bit);
 
-ThresholdState state = ThresholdState::DEFINED;
+            ThresholdState state = ThresholdState::DEFINED;
 
-if (bit == Consensus::DEPLOYMENT_GOV_FEE) {
-    const int activation_h = chainParams.GetConsensus().GOV_FEEHeight;
-    if ((activation_h > 0) && (pindex->nHeight >= activation_h)) {
-        ThresholdState state = ThresholdState::ACTIVE;
-    }
-    bool consistent = CheckRecentVersionBitsConsistency(
+            if (bit == Consensus::DEPLOYMENT_GOV_FEE) {
+                const int activation_h = chainParams.GetConsensus().GOV_FEEHeight;
+                if ((activation_h > 0) && (pindex->nHeight >= activation_h)) {
+                    ThresholdState state = ThresholdState::ACTIVE;
+                }
+                bool consistent = CheckRecentVersionBitsConsistency(
                           pindex,
                           chainParams.GetConsensus(),
                           lookback,
-                          static_cast<Consensus::DeploymentPos>(bit)); // or whatever cache object your system uses
-    if (!consistent) {
-        LogPrintf("Warning: Detected unexpected GOV_FEE versionbits state change within last 1500 blocks.\n");
-        const std::string strWarning = strprintf(_("Warning: GOV_FEE versionbits inconsistency detected").translated);
-        DoWarning(strWarning);
-    }
-} else 
-{
-    ThresholdState state = checker.GetStateFor(pindex, chainParams.GetConsensus(), warningcache[bit]);
-}
+                          static_cast<Consensus::DeploymentPos>(bit));
+                if (!consistent) {
+                    LogPrintf("Warning: Detected unexpected GOV_FEE versionbits state change within last %n blocks.\n", loopback);
+                    const std::string strWarning = strprintf(_("Warning: GOV_FEE versionbits inconsistency detected").translated);
+                    DoWarning(strWarning);
+                }
+            } else 
+            {
+                ThresholdState state = checker.GetStateFor(pindex, chainParams.GetConsensus(), warningcache[bit]);
+            }
 
-
-              if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
+            if (state == ThresholdState::ACTIVE || state == ThresholdState::LOCKED_IN) {
                 const std::string strWarning = strprintf(_("Warning: unknown new rules activated (versionbit %i)").translated, bit);
                 if (state == ThresholdState::ACTIVE) {
                     DoWarning(strWarning);
                 } else {
                     AppendWarning(warningMessages, strWarning);
                 }
-              }
+            }
         }
     }
 
