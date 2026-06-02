@@ -428,6 +428,8 @@ void CDKGSession::VerifyAndComplain(CDKGPendingMessages& pendingMessages)
 
 void CDKGSession::VerifyConnectionAndMinProtoVersions() const
 {
+    assert(m_mn_metaman.IsValid());
+
     if (!CLLMQUtils::IsQuorumPoseEnabled(params.type)) {
         return;
     }
@@ -444,23 +446,32 @@ void CDKGSession::VerifyConnectionAndMinProtoVersions() const
     });
 
     bool fShouldAllMembersBeConnected = CLLMQUtils::IsAllMembersConnectedEnabled(params.type);
-    for (auto& m : members) {
+    for (const auto& m : members) {
         if (m->dmn->proTxHash == myProTxHash) {
             continue;
         }
         if (auto it = protoMap.find(m->dmn->proTxHash); it == protoMap.end()) {
             m->badConnection = fShouldAllMembersBeConnected;
-            logger.Batch("%s is not connected to us, badConnection=%b", m->dmn->proTxHash.ToString(), m->badConnection);
+            if (m->badConnection) {
+                logger.Batch("%s is not connected to us, badConnection=%b", m->dmn->proTxHash.ToString(), m->badConnection);
+            }
         } else if (it->second < MIN_MASTERNODE_PROTO_VERSION) {
             m->badConnection = true;
             logger.Batch("%s does not have min proto version %d (has %d)", m->dmn->proTxHash.ToString(), MIN_MASTERNODE_PROTO_VERSION, it->second);
         }
 
+        if (m_mn_metaman.GetMetaInfo(m->dmn->proTxHash)->OutboundFailedTooManyTimes()) {
+            m->badConnection = true;
+            logger.Batch("%s failed to connect to it too many times", m->dmn->proTxHash.ToString());
+        }
+
+/*
         auto lastOutbound = mmetaman.GetMetaInfo(m->dmn->proTxHash)->GetLastOutboundSuccess();
         if (GetAdjustedTime() - lastOutbound > 60 * 60) {
             m->badConnection = true;
             logger.Batch("%s no outbound connection since %d seconds", m->dmn->proTxHash.ToString(), GetAdjustedTime() - lastOutbound);
         }
+*/
     }
 }
 

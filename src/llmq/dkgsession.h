@@ -234,6 +234,7 @@ private:
     CBLSWorker& blsWorker;
     CBLSWorkerCache cache;
     CDKGSessionManager& dkgManager;
+    CMasternodeMetaMan& m_mn_metaman;
 
     const CBlockIndex* m_quorum_base_block_index{nullptr};
 

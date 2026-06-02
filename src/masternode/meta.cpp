@@ -18,6 +18,7 @@ UniValue CMasternodeMetaInfo::ToJson() const
 
     ret.pushKV("lastDSQ", nLastDsq);
     ret.pushKV("mixingTxCount", nMixingTxCount);
+    ret.pushKV("outboundAttemptCount", outboundAttemptCount);
     ret.pushKV("lastOutboundAttempt", lastOutboundAttempt);
     ret.pushKV("lastOutboundAttemptElapsed", now - lastOutboundAttempt);
     ret.pushKV("lastOutboundSuccess", lastOutboundSuccess);

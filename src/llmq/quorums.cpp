@@ -756,6 +756,7 @@ void CQuorumManager::StartQuorumDataRecoveryThread(const CQuorumCPtr pQuorum, co
     }
     pQuorum->fQuorumDataRecoveryThreadRunning = true;
 
+    cxxtimer::Timer tdr(true);
     workerPool.push([pQuorum, pIndex, nDataMaskIn, this](int threadId) {
         size_t nTries{0};
         uint16_t nDataMask{nDataMaskIn};
@@ -862,9 +863,12 @@ void CQuorumManager::StartQuorumDataRecoveryThread(const CQuorumCPtr pQuorum, co
             });
             quorumThreadInterrupt.sleep_for(std::chrono::seconds(1));
         }
-        printLog("Done");
-    });
         pQuorum->fQuorumDataRecoveryThreadRunning = false;
+
+        printLog("Done");
+        LogPrint(BCLog::LLMQ,"Done Datarecovery time=%d\n", tdr.count());
+       
+    });
 }
 
 } // namespace llmq
