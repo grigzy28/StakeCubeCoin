@@ -143,6 +143,8 @@ public:
 public:
     CMasternodeMetaInfoPtr GetMetaInfo(const uint256& proTxHash, bool fCreate = true);
 
+    bool IsValid() const { return is_valid; }
+
     int64_t GetDsqCount() const { return nDsqCount; }
     int64_t GetDsqThreshold(const uint256& proTxHash, int nMnCount);
 
