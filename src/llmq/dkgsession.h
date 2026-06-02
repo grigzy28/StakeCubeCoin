@@ -24,6 +24,7 @@ class CFinalCommitment;
 class CDKGSession;
 class CDKGSessionManager;
 class CDKGPendingMessages;
+class CMasternodeMetaMan;
 
 class CDKGContribution
 {
