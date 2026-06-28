@@ -31,6 +31,16 @@ namespace llmq
 static const std::string DB_QUORUM_SK_SHARE = "q_Qsk";
 static const std::string DB_QUORUM_QUORUM_VVEC = "q_Qqvvec";
 
+// TEMPORARY SCC SAFETY LIMIT:
+// Avoid building/scanning very old quorums while quorum recovery is unstable.
+// This prevents old quorum reconstruction from repeatedly loading old DMN lists
+// and causing memory/lock pressure.
+//
+// Remove this once quorum recovery, quorum cache behavior, and banned-node
+// handling are confirmed stable.
+#include <utils/threadnames.h>
+static constexpr bool LIMIT_OLD_QUORUM_SCANS_TEMP = true;
+
 CQuorumManager* quorumManager;
 
 CCriticalSection cs_data_requests;
@@ -185,11 +195,50 @@ void CQuorumManager::Stop()
     workerPool.stop(true);
 }
 
+/ TEMPORARY SCC SAFETY LIMIT:
+// Avoid building/scanning very old quorums while quorum recovery is unstable.
+// This prevents old quorum reconstruction from repeatedly loading old DMN lists
+// and causing memory/lock pressure.
+//
+// Remove this once quorum recovery, quorum cache behavior, and banned-node
+// handling are confirmed stable.
+bool CQuorumManager::ShouldSkipHistoricalQuorumWork(const CBlockIndex* pindex) const
+{
+    const CBlockIndex* tip = m_chainstate.m_chain.Tip();
+    if (!pindex || !tip) return true;
+
+    if (!m_mn_sync.IsBlockchainSynced() || m_chainstate.IsInitialBlockDownload()) {
+        return true;
+    }
+
+    return false;
+}
+
 void CQuorumManager::TriggerQuorumDataRecoveryThreads(const CBlockIndex* pIndex) const
 {
     if (!fMasternodeMode || !CLLMQUtils::QuorumDataRecoveryEnabled() || pIndex == nullptr) {
         return;
     }
+
+// TEMPORARY SCC SAFETY LIMIT:
+// Avoid building/scanning very old quorums while quorum recovery is unstable.
+// This prevents old quorum reconstruction from repeatedly loading old DMN lists
+// and causing memory/lock pressure.
+//
+// Remove this once quorum recovery, quorum cache behavior, and banned-node
+// handling are confirmed stable.
+if (ShouldSkipHistoricalQuorumWork(pIndex)) {
+		return;
+}
+
+if (LIMIT_OLD_QUORUM_SCANS_TEMP) {
+	if (util::ThreadGetInternalName() == "cl-schdlr") {
+  	  LogPrint(BCLog::LLMQ,
+    	         "CQuorumManager::%s -- skipping from cl-schdlr at height %d\n",
+      	       __func__, pIndex ? pIndex->nHeight : -1);
+    	return;
+	}
+}
 
     const std::map<Consensus::LLMQType, QvvecSyncMode> mapQuorumVvecSync = CLLMQUtils::GetEnabledQuorumVvecSyncEntries();
 
@@ -434,6 +483,17 @@ std::vector<CQuorumCPtr> CQuorumManager::ScanQuorums(Consensus::LLMQType llmqTyp
     if (pindexStart == nullptr || nCountRequested == 0) {
         return {};
     }
+
+// TEMPORARY SCC SAFETY LIMIT:
+// Avoid building/scanning very old quorums while quorum recovery is unstable.
+// This prevents old quorum reconstruction from repeatedly loading old DMN lists
+// and causing memory/lock pressure.
+//
+// Remove this once quorum recovery, quorum cache behavior, and banned-node
+// handling are confirmed stable.
+if (ShouldSkipHistoricalQuorumWork(pindexStart)) {
+		return {};
+}
 
     bool fCacheExists{false};
     void* pIndexScanCommitments{(void*)pindexStart};
