@@ -231,8 +231,6 @@ public:
     // this one is cs_main-free
     std::vector<CQuorumCPtr> ScanQuorums(Consensus::LLMQType llmqType, const CBlockIndex* pindexStart, size_t nCountRequested) const;
 
-bool ShouldSkipHistoricalQuorumWork(const CBlockIndex* pindex) const;
-
 private:
     // all private methods here are cs_main-free
     void EnsureQuorumConnections(const Consensus::LLMQParams& llmqParams, const CBlockIndex *pindexNew) const;
