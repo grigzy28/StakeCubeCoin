@@ -39,6 +39,7 @@ static const std::string DB_QUORUM_QUORUM_VVEC = "q_Qqvvec";
 // Remove this once quorum recovery, quorum cache behavior, and banned-node
 // handling are confirmed stable.
 #include <util/threadnames.h>
+#include <chain.h>
 static constexpr bool LIMIT_OLD_QUORUM_SCANS_TEMP = true;
 
 CQuorumManager* quorumManager;
@@ -204,10 +205,10 @@ void CQuorumManager::Stop()
 // handling are confirmed stable.
 bool CQuorumManager::ShouldSkipHistoricalQuorumWork(const CBlockIndex* pindex) const
 {
-    const CBlockIndex* tip = g_chainstate.m_chain.Tip();
+    const CBlockIndex* tip = ::ChainActive().Tip();
     if (!pindex || !tip) return true;
 
-    if (!masternodeSync.IsBlockchainSynced() || g_chainstate.m_chain.IsInitialBlockDownload()) {
+    if (!masternodeSync.IsBlockchainSynced() || g_chainstate.IsInitialBlockDownload()) {
         return true;
     }
 
