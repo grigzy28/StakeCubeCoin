@@ -38,7 +38,7 @@ static const std::string DB_QUORUM_QUORUM_VVEC = "q_Qqvvec";
 //
 // Remove this once quorum recovery, quorum cache behavior, and banned-node
 // handling are confirmed stable.
-#include <utils/threadnames.h>
+#include <util/threadnames.h>
 static constexpr bool LIMIT_OLD_QUORUM_SCANS_TEMP = true;
 
 CQuorumManager* quorumManager;
