@@ -195,7 +195,7 @@ void CQuorumManager::Stop()
     workerPool.stop(true);
 }
 
-/ TEMPORARY SCC SAFETY LIMIT:
+// TEMPORARY SCC SAFETY LIMIT:
 // Avoid building/scanning very old quorums while quorum recovery is unstable.
 // This prevents old quorum reconstruction from repeatedly loading old DMN lists
 // and causing memory/lock pressure.
