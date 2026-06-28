@@ -204,10 +204,10 @@ void CQuorumManager::Stop()
 // handling are confirmed stable.
 bool CQuorumManager::ShouldSkipHistoricalQuorumWork(const CBlockIndex* pindex) const
 {
-    const CBlockIndex* tip = m_chainstate.m_chain.Tip();
+    const CBlockIndex* tip = g_chainstate.m_chain.Tip();
     if (!pindex || !tip) return true;
 
-    if (!masternodeSync.IsBlockchainSynced() || g_chainstate.IsInitialBlockDownload()) {
+    if (!masternodeSync.IsBlockchainSynced() || g_chainstate.m_chain.IsInitialBlockDownload()) {
         return true;
     }
 
