@@ -208,7 +208,7 @@ bool CQuorumManager::ShouldSkipHistoricalQuorumWork(const CBlockIndex* pindex) c
     const CBlockIndex* tip = ::ChainActive().Tip();
     if (!pindex || !tip) return true;
 
-    if (!masternodeSync.IsBlockchainSynced() || g_chainstate.IsInitialBlockDownload()) {
+    if (!masternodeSync.IsBlockchainSynced() || ::ChainState().IsInitialBlockDownload()) {
         return true;
     }
 
