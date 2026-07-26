@@ -175,13 +175,44 @@ bool IsBlockPayeeValid(const CTransaction& txNew, int nBlockHeight, CAmount bloc
 
     const Consensus::Params& consensusParams = Params().GetConsensus();
 
-    if(nBlockHeight < consensusParams.nSuperblockStartBlock) {
+if (nBlockHeight < consensusParams.nSuperblockStartBlock) {
+    // Run deterministic payee calculation for audit logging only.
+    // Ignore the result because historical v3 consensus accepted
+    // any payee before nSuperblockStartBlock.
+    (void)CMasternodePayments::IsTransactionValid(
+        txNew,
+        nBlockHeight,
+        blockReward);
+
+    LogPrintf(
+        "SCC_CONSENSUS_AUDIT "
+        "type=historical-payee-bypass "
+        "height=%d "
+        "coinbase_txid=%s "
+        "superblock_start=%d "
+        "accepted=1\n",
+        nBlockHeight,
+        txNew.GetHash().ToString(),
+        consensusParams.nSuperblockStartBlock);
+
+    LogPrint(
+        BCLog::GOBJECT,
+        "%s -- WARNING: Old budget system is disabled, "
+        "accepting any payee before height %d\n",
+        __func__,
+        consensusParams.nSuperblockStartBlock);
+
+    return true;
+}
+
+/*    if(nBlockHeight < consensusParams.nSuperblockStartBlock) {
         // NOTE: old budget system is disabled since 12.1 and we should never enter this branch
         // anymore when sync is finished (on mainnet). We have no old budget data but these blocks
         // have tons of confirmations and can be safely accepted without payee verification
         LogPrint(BCLog::GOBJECT, "%s -- WARNING: Client synced but old budget system is disabled, accepting any payee\n", __func__);
         return true;
     }
+*/
 
     // superblocks started
     // SEE IF THIS IS A VALID SUPERBLOCK
