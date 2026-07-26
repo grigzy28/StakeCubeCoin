@@ -304,6 +304,159 @@ bool CMasternodePayments::GetBlockTxOuts(int nBlockHeight, CAmount blockReward, 
     return true;
 }
 
+bool CMasternodePayments::IsTransactionValid(
+    const CTransaction& txNew,
+    int nBlockHeight,
+    CAmount blockReward)
+{
+static constexpr bool SCC_AUDIT_ALLOW_PAYEE_MISMATCH = true;
+
+    if (!deterministicMNManager->IsDIP3Enforced(nBlockHeight)) {
+        // Historical pre-DIP3 blocks are not verifiable through the
+        // deterministic masternode payment logic.
+        return true;
+    }
+
+    std::vector<CTxOut> voutMasternodePayments;
+    if (!GetBlockTxOuts(
+            nBlockHeight,
+            blockReward,
+            voutMasternodePayments)) {
+LogPrintf(
+    "SCC_CONSENSUS_AUDIT "
+    "type=mn-payee-mismatch-result "
+    "height=%d "
+    "coinbase_txid=%s "
+    "accepted_for_audit=%d\n",
+    nBlockHeight,
+    txNew.GetHash().ToString(),
+    SCC_AUDIT_ALLOW_PAYEE_MISMATCH);
+
+        for (size_t i = 0; i < txNew.vout.size(); ++i) {
+            const CTxOut& actualOut = txNew.vout[i];
+
+            CTxDestination actualDest;
+            std::string actualAddress{"unknown"};
+
+            if (ExtractDestination(actualOut.scriptPubKey, actualDest)) {
+                actualAddress = EncodeDestination(actualDest);
+            }
+
+            LogPrintf(
+                "SCC_CONSENSUS_AUDIT "
+                "type=payee-calculation-failed-output "
+                "height=%d "
+                "coinbase_txid=%s "
+                "output_index=%d "
+                "value=%d "
+                "address=%s "
+                "script=%s\n",
+                nBlockHeight,
+                txNew.GetHash().ToString(),
+                i,
+                actualOut.nValue,
+                actualAddress,
+                HexStr(actualOut.scriptPubKey));
+        }
+
+        // Existing 3.5.2.0 behavior accepts this condition.
+//        return true;
+return SCC_AUDIT_ALLOW_PAYEE_MISMATCH;
+
+    }
+
+    for (size_t expectedIndex = 0;
+         expectedIndex < voutMasternodePayments.size();
+         ++expectedIndex) {
+        const CTxOut& expectedOut =
+            voutMasternodePayments[expectedIndex];
+
+        const bool found = ranges::any_of(
+            txNew.vout,
+            [&expectedOut](const CTxOut& actualOut) {
+                return expectedOut == actualOut;
+            });
+
+        if (found) {
+            continue;
+        }
+
+        CTxDestination expectedDest;
+        std::string expectedAddress{"unknown"};
+
+        if (ExtractDestination(expectedOut.scriptPubKey, expectedDest)) {
+            expectedAddress = EncodeDestination(expectedDest);
+        }
+
+        LogPrintf(
+            "SCC_CONSENSUS_AUDIT "
+            "type=mn-payee-mismatch "
+            "height=%d "
+            "coinbase_txid=%s "
+            "block_reward=%d "
+            "expected_index=%d "
+            "expected_value=%d "
+            "expected_address=%s "
+            "expected_script=%s "
+            "expected_outputs=%d "
+            "actual_outputs=%d\n",
+            nBlockHeight,
+            txNew.GetHash().ToString(),
+            blockReward,
+            static_cast<int>(expectedIndex),
+            expectedOut.nValue,
+            expectedAddress,
+            HexStr(expectedOut.scriptPubKey),
+            static_cast<int>(voutMasternodePayments.size()),
+            static_cast<int>(txNew.vout.size()));
+
+        for (size_t actualIndex = 0;
+             actualIndex < txNew.vout.size();
+             ++actualIndex) {
+            const CTxOut& actualOut = txNew.vout[actualIndex];
+
+            CTxDestination actualDest;
+            std::string actualAddress{"unknown"};
+
+            if (ExtractDestination(actualOut.scriptPubKey, actualDest)) {
+                actualAddress = EncodeDestination(actualDest);
+            }
+
+            LogPrintf(
+                "SCC_CONSENSUS_AUDIT "
+                "type=mn-payee-mismatch-output "
+                "height=%d "
+                "coinbase_txid=%s "
+                "output_index=%d "
+                "value=%d "
+                "address=%s "
+                "script=%s\n",
+                nBlockHeight,
+                txNew.GetHash().ToString(),
+                static_cast<int>(actualIndex),
+                actualOut.nValue,
+                actualAddress,
+                HexStr(actualOut.scriptPubKey));
+        }
+
+        /*
+         * AUDIT BUILD:
+         *
+         * Accept the block so the sync continues and all historical
+         * exceptions can be collected.
+         *
+         * Change this back to `return false` after the exact historical
+         * exception list has been determined.
+         */
+        return true;
+    }
+
+return SCC_AUDIT_ALLOW_PAYEE_MISMATCH;
+
+//    return true;
+}
+
+/*
 bool CMasternodePayments::IsTransactionValid(const CTransaction& txNew, int nBlockHeight, CAmount blockReward)
 {
     if (!deterministicMNManager->IsDIP3Enforced(nBlockHeight)) {
@@ -329,3 +482,4 @@ bool CMasternodePayments::IsTransactionValid(const CTransaction& txNew, int nBlo
     }
     return true;
 }
+*/
