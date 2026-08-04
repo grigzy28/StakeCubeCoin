@@ -2573,7 +2573,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             PushNodeVersion(pfrom, connman, GetAdjustedTime());
 
         if (Params().NetworkIDString() == CBaseChainParams::DEVNET) {
-            auto expected_version = strprintf("devnet.%d.%s", Params().DevNetVersion(), gArgs.GetDevNetName());
+            auto expected_version = strprintf("devnet.%s", gArgs.GetDevNetName());
             if (cleanSubVer.find(expected_version) == std::string::npos) {
                 LOCK(cs_main);
                 LogPrintf("connected to wrong devnet. Reported version is %s, expected devnet name is %s\n", cleanSubVer, expected_version);

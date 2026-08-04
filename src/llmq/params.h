@@ -24,7 +24,7 @@ enum class LLMQType : uint8_t
     LLMQ_TEST = 100, // 3 members, 2 (66%) threshold, one per hour. Params might differ when -llmqtestparams is used
 
     // for devnets only
-    LLMQ_DEVNET = 101, // 10 members, 6 (60%) threshold, one per hour. Params might differ when -llmqdevnetparams is used
+    LLMQ_DEVNET = 101, // 12 members, 6 (50%) threshold, one per hour. Params might differ when -llmqdevnetparams is used
 
     // for testing activation of new quorums only
     LLMQ_TEST_V17 = 102, // 3 members, 2 (66%) threshold, one per hour. Params might differ when -llmqtestparams is used
@@ -168,7 +168,7 @@ static constexpr std::array<LLMQParams, 7> available_llmqs = {
     LLMQParams{
         .type = LLMQType::LLMQ_DEVNET,
         .name = "llmq_devnet",
-        .size = 10,
+        .size = 12,
         .minSize = 7,
         .threshold = 6,
 
@@ -178,9 +178,9 @@ static constexpr std::array<LLMQParams, 7> available_llmqs = {
         .dkgMiningWindowEnd = 18,
         .dkgBadVotesThreshold = 7,
 
-        .signingActiveQuorumCount = 3, // just a few ones to allow easier testing
+        .signingActiveQuorumCount = 4, // match Batch11A devnet
 
-        .keepOldConnections = 4,
+        .keepOldConnections = 5,
         .recoveryMembers = 6,
     },
 
