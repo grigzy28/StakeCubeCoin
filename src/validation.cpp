@@ -5087,11 +5087,29 @@ void CChainState::CheckBlockIndex(const Consensus::Params& consensusParams)
 
     LOCK(cs_main);
 
-    // During a reindex, we read the genesis block and call CheckBlockIndex before ActivateBestChain,
-    // so we have the genesis block in m_blockman.m_block_index but no active chain. (A few of the
-    // tests when iterating the block tree require that m_chain has been initialized.)
+    // During initialization or a reindex, block-index entries can exist before
+    // ActivateBestChain initializes m_chain. Normal networks have only the
+    // height-0 genesis at this point, while a named devnet also inserts its
+    // height-1 genesis. Validate that special two-block layout instead of
+    // asserting that every network can have at most one entry.
     if (m_chain.Height() < 0) {
-        assert(m_blockman.m_block_index.size() <= 1);
+        if (consensusParams.hashDevnetGenesisBlock.IsNull()) {
+            assert(m_blockman.m_block_index.size() <= 1);
+        } else {
+            assert(m_blockman.m_block_index.size() <= 2);
+
+            if (m_blockman.m_block_index.size() == 2) {
+                const auto itGenesis = m_blockman.m_block_index.find(consensusParams.hashGenesisBlock);
+                const auto itDevnetGenesis = m_blockman.m_block_index.find(consensusParams.hashDevnetGenesisBlock);
+
+                assert(itGenesis != m_blockman.m_block_index.end());
+                assert(itDevnetGenesis != m_blockman.m_block_index.end());
+                assert(itGenesis->second->pprev == nullptr);
+                assert(itGenesis->second->nHeight == 0);
+                assert(itDevnetGenesis->second->pprev == itGenesis->second);
+                assert(itDevnetGenesis->second->nHeight == 1);
+            }
+        }
         return;
     }
 
