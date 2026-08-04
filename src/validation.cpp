@@ -4162,20 +4162,16 @@ bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CVali
         return AbortNode(state, std::string("System error: ") + e.what());
     }
 
-	bool fInitialDownload = IsInitialBlockDownload();
-
-    if (fInitialDownload) {
-		g_chainstate->FlushStateToDisk(chainparams, state, FlushStateMode::MEMORY);
-	} else {
-		g_chainstate->FlushStateToDisk(chainparams, state, FlushStateMode::PERIODIC);
-	}
-		
-
-/*
-	if (g_chainstate && g_chainstate->CanFlushToDisk()) {
-        g_chainstate->FlushStateToDisk(chainparams, state, FlushStateMode::PERIODIC);
+    // During named-devnet genesis insertion, AcceptBlock() runs before the
+    // coins database/cache is initialized. FlushStateToDisk() asserts that
+    // CanFlushToDisk() is true, so only flush after the chainstate views are
+    // ready. Preserve the existing MEMORY/PERIODIC behavior for normal blocks.
+    if (this->CanFlushToDisk()) {
+        const FlushStateMode flush_mode = IsInitialBlockDownload()
+            ? FlushStateMode::MEMORY
+            : FlushStateMode::PERIODIC;
+        this->FlushStateToDisk(chainparams, state, flush_mode);
     }
-*/
 
     CheckBlockIndex(chainparams.GetConsensus());
 
