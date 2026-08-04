@@ -1092,6 +1092,16 @@ CAmount GetBlockSubsidy(int nPrevHeight)
     } else if (nHeight > 2000000 && nHeight <= 2250000) { nSubsidy = 1 * COIN;
     } else if (nHeight > 2250000)                       { nSubsidy = 0.5 * COIN; }      // Until max supply (18.000.000 SCC) reached in ~10 years / at block ~2 500 000
 
+    const auto& consensusParams = Params().GetConsensus();
+    if (nHeight > 1 &&
+        nHeight <= consensusParams.nHighSubsidyBlocks &&
+        consensusParams.nHighSubsidyFactor > 1) {
+        if (nSubsidy > MAX_MONEY / consensusParams.nHighSubsidyFactor) {
+            throw std::runtime_error("devnet high subsidy overflows MAX_MONEY");
+        }
+        nSubsidy *= consensusParams.nHighSubsidyFactor;
+    }
+
     return nSubsidy;
 }
 
