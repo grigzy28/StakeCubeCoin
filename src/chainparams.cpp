@@ -44,7 +44,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
     return genesis;
 }
 
-static CBlock CreateDevNetGenesisBlock(const uint256 &prevBlockHash, const std::string& devNetName, uint32_t nTime, uint32_t nNonce, uint32_t nBits, const CAmount& genesisReward)
+static CBlock CreateDevNetGenesisBlock(const uint256 &prevBlockHash, const std::string& devNetName, int devnet_version, uint32_t nTime, uint32_t nNonce, uint32_t nBits, const CAmount& genesisReward)
 {
     assert(!devNetName.empty());
 
@@ -53,7 +53,7 @@ static CBlock CreateDevNetGenesisBlock(const uint256 &prevBlockHash, const std::
     txNew.vin.resize(1);
     txNew.vout.resize(1);
     // put height (BIP34) and devnet name into coinbase
-    txNew.vin[0].scriptSig = CScript() << 1 << std::vector<unsigned char>(devNetName.begin(), devNetName.end());
+    txNew.vin[0].scriptSig = CScript() << 1 << std::vector<unsigned char>(devNetName.begin(), devNetName.end()) << devnet_version;
     txNew.vout[0].nValue = genesisReward;
     txNew.vout[0].scriptPubKey = CScript() << OP_RETURN;
 
@@ -86,12 +86,12 @@ static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits
     return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
 }
 
-static CBlock FindDevNetGenesisBlock(const CBlock &prevBlock, const CAmount& reward)
+static CBlock FindDevNetGenesisBlock(const CBlock &prevBlock, const CAmount& reward, int devnet_version)
 {
     std::string devNetName = gArgs.GetDevNetName();
     assert(!devNetName.empty());
 
-    CBlock block = CreateDevNetGenesisBlock(prevBlock.GetHash(), devNetName, prevBlock.nTime + 1, 0, prevBlock.nBits, reward);
+    CBlock block = CreateDevNetGenesisBlock(prevBlock.GetHash(), devNetName, devnet_version, prevBlock.nTime + 1, 0, prevBlock.nBits, reward);
 
     arith_uint256 bnTarget;
     bnTarget.SetCompact(block.nBits);
@@ -663,35 +663,21 @@ public:
         consensus.DIP0003EnforcementHeight = 2; // DIP0003 activated immediately on devnet
         consensus.DIP0003EnforcementHash = uint256();
         consensus.DIP0008Height = 2; // DIP0008 activated immediately on devnet
-
-        // Match Batch11A's pre-V19 script and special-transaction rules.
-        // The v3 code uses this direct height to enable CSV, BIP147 and
-        // DIP0020 opcodes without waiting for versionbits signalling.
-        consensus.SoftforkFasttrackHeight = 2;
-
-        // The 70224 binary is intentionally disconnected at Batch11A V19
-        // height 480. Keep governance-fee rules inactive before that point.
-        consensus.GOV_FEEHeight = 624;
-
-        consensus.MinBIP9WarningHeight = 2640;
+        consensus.MinBIP9WarningHeight = 2018; // dip8 activation height + miner confirmation window
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); // ~uint256(0) >> 1
         consensus.nPowTargetTimespan = 24 * 60 * 60; // SCC: 1 day
         consensus.nPowTargetSpacing = 2.5 * 60; // SCC: 2.5 minutes
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = false;
-        // Match Batch11A. These algorithms are not reached during the
-        // first 10,000 minimum-difficulty blocks, but the consensus values
-        // still need to be identical across old and new nodes.
-        consensus.nPowKGWHeight = 4001;
-        consensus.nPowDGWHeight = 4001;
+        consensus.nPowKGWHeight = 0; // nPowKGWHeight >= nPowDGWHeight means "no KGW"
+        consensus.nPowDGWHeight = 0;
         consensus.nRuleChangeActivationThreshold = 1512; // 75% for testchains
         consensus.nMinerConfirmationWindow = 2016; // nPowTargetTimespan / nPowTargetSpacing
 
-        // Match Batch11A's SCC ProgPoW transition. The historical base
-        // genesis and named height-1 genesis remain X11; contemporary blocks
-        // beginning at height 2 use the easy development ProgPoW target.
-        consensus.nPPSwitchTime = 1666350000;
-        consensus.nInitialPPDifficulty = 0x207fffff;
+        //** Prog PoW **/
+        // this can be overridden with either -ppswitchtime or -ppswitchtimefromnow flags
+        consensus.nPPSwitchTime = INT_MAX;
+        consensus.nInitialPPDifficulty = 0x2000ffff;
 
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008
@@ -699,41 +685,41 @@ public:
 
         // Deployment of BIP68, BIP112, and BIP113.
         consensus.vDeployments[Consensus::DEPLOYMENT_CSV].bit = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE;
-        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
+        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nStartTime = 1506556800; // September 28th, 2017
+        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nTimeout = 999999999999ULL;
 
         // Deployment of DIP0001
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0001].bit = 1;
-        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0001].nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE;
-        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0001].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
+        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0001].nStartTime = 1505692800; // Sep 18th, 2017
+        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0001].nTimeout = 999999999999ULL;
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0001].nWindowSize = 100;
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0001].nThresholdStart = 50; // 50% of 100
 
         // Deployment of BIP147
         consensus.vDeployments[Consensus::DEPLOYMENT_BIP147].bit = 2;
-        consensus.vDeployments[Consensus::DEPLOYMENT_BIP147].nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE;
-        consensus.vDeployments[Consensus::DEPLOYMENT_BIP147].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
+        consensus.vDeployments[Consensus::DEPLOYMENT_BIP147].nStartTime = 1517792400; // Feb 5th, 2018
+        consensus.vDeployments[Consensus::DEPLOYMENT_BIP147].nTimeout = 999999999999ULL;
         consensus.vDeployments[Consensus::DEPLOYMENT_BIP147].nWindowSize = 100;
         consensus.vDeployments[Consensus::DEPLOYMENT_BIP147].nThresholdStart = 50; // 50% of 100
 
         // Deployment of DIP0003
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0003].bit = 3;
-        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0003].nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE;
-        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0003].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
+        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0003].nStartTime = 1535752800; // Sep 1st, 2018
+        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0003].nTimeout = 999999999999ULL;
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0003].nWindowSize = 100;
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0003].nThresholdStart = 50; // 50% of 100
 
         // Deployment of DIP0008
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0008].bit = 4;
-        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0008].nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE;
-        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0008].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
+        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0008].nStartTime = 1553126400; // Mar 21st, 2019
+        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0008].nTimeout = 999999999999ULL;
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0008].nWindowSize = 100;
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0008].nThresholdStart = 50; // 50% of 100
 
         // Deployment of DIP0020, DIP0021 and LLMQ_100_67 quorums
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0020].bit = 6;
-        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0020].nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE;
-        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0020].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
+        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0020].nStartTime = 1604188800; // November 1st, 2020
+        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0020].nTimeout = 999999999999ULL;
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0020].nWindowSize = 100;
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0020].nThresholdStart = 80; // 80% of 100
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0020].nThresholdMin = 60; // 60% of 100
@@ -741,8 +727,8 @@ public:
 
         // Deployment of decreased proposal fee, script addresses for Governance Proposals
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].bit = 7;
-        consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nStartTime = Consensus::BIP9Deployment::NO_TIMEOUT - 1;
-        consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
+        consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nStartTime = 1635724800; // Nov 1st, 2021
+        consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nTimeout = 999999999999ULL;
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nWindowSize = 100;
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nThresholdStart = 80;
         consensus.vDeployments[Consensus::DEPLOYMENT_GOV_FEE].nThresholdMin = 60;
@@ -769,11 +755,8 @@ public:
         assert(consensus.hashGenesisBlock == uint256S("00000c2a7cb366c1c75154a8570ab511491662e185311460123869b917fb59ed"));
         assert(genesis.hashMerkleRoot == uint256S("361a210a8b44c51526bd08d50cfe2d272d9b1e65837d6e4c456d327106334e48"));
 
-        // Batch11A derives the named genesis solely from the devnet name.
-        // Do not append the old v3 devnetVersion integer to the coinbase,
-        // otherwise height 1 has a different merkle root and block hash.
-        devnetVersion = 0;
-        devnetGenesis = FindDevNetGenesisBlock(genesis, /*reward=*/50 * COIN);
+        devnetVersion = 1; // This should be bumped every time there is some breaking change to devnets
+        devnetGenesis = FindDevNetGenesisBlock(genesis, /*reward=*/50 * COIN, /*devnet_version=*/devnetVersion);
         consensus.hashDevnetGenesisBlock = devnetGenesis.GetHash();
 
         vFixedSeeds.clear();
@@ -799,15 +782,14 @@ public:
         AddLLMQ(Consensus::LLMQType::LLMQ_400_85);
         AddLLMQ(Consensus::LLMQType::LLMQ_100_67);
         AddLLMQ(Consensus::LLMQType::LLMQ_DEVNET);
-        consensus.llmqTypeChainLocks = Consensus::LLMQType::LLMQ_DEVNET;
+        consensus.llmqTypeChainLocks = Consensus::LLMQType::LLMQ_50_60;
         consensus.llmqTypeInstantSend = Consensus::LLMQType::LLMQ_50_60;
         consensus.llmqTypePlatform = Consensus::LLMQType::LLMQ_100_67;
-        consensus.llmqTypeMnhf = Consensus::LLMQType::LLMQ_DEVNET;
+        consensus.llmqTypeMnhf = Consensus::LLMQType::LLMQ_50_60;
 
         UpdateDevnetLLMQChainLocksFromArgs(args);
         UpdateDevnetLLMQInstantSendFromArgs(args);
         UpdateLLMQDevnetParametersFromArgs(args);
-        UpdateDevnetPowTargetSpacingFromArgs(args);
 
         fDefaultConsistencyChecks = false;
         fRequireStandard = false;
@@ -831,7 +813,7 @@ public:
 
         checkpointData = (CCheckpointData) {
             {
-                { 0, consensus.hashGenesisBlock },
+                { 0, uint256S("000008ca1832a4baf228eb1553c03d3a2c8e02399550dd6ea8d65cec3ef23d2e")},
                 { 1, devnetGenesis.GetHash() },
             }
         };
@@ -885,12 +867,6 @@ public:
         params->dkgBadVotesThreshold = threshold;
     }
     void UpdateLLMQDevnetParametersFromArgs(const ArgsManager& args);
-
-    void UpdateDevnetPowTargetSpacing(int64_t nPowTargetSpacing)
-    {
-        consensus.nPowTargetSpacing = nPowTargetSpacing;
-    }
-    void UpdateDevnetPowTargetSpacingFromArgs(const ArgsManager& args);
 };
 
 /**
@@ -1324,19 +1300,6 @@ void CDevNetParams::UpdateLLMQDevnetParametersFromArgs(const ArgsManager& args)
     }
     LogPrintf("Setting LLMQ_DEVNET parameters to size=%ld, threshold=%ld\n", size, threshold);
     UpdateLLMQDevnetParameters(size, threshold);
-}
-
-void CDevNetParams::UpdateDevnetPowTargetSpacingFromArgs(const ArgsManager& args)
-{
-    if (!args.IsArgSet("-powtargetspacing")) return;
-
-    const int64_t nPowTargetSpacing = args.GetArg("-powtargetspacing", consensus.nPowTargetSpacing);
-    if (nPowTargetSpacing <= 0) {
-        throw std::runtime_error("powtargetspacing must be greater than zero");
-    }
-
-    LogPrintf("Setting powtargetspacing=%ld seconds\n", nPowTargetSpacing);
-    UpdateDevnetPowTargetSpacing(nPowTargetSpacing);
 }
 
 static std::unique_ptr<const CChainParams> globalChainParams;

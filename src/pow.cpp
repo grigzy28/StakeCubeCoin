@@ -213,27 +213,14 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     assert(pindexLast != nullptr);
     assert(pblock != nullptr);
     const arith_uint256 bnPowLimit = UintToArith256(params.powLimit);
-    const int nextHeight = pindexLast->nHeight + 1;
 
-    // The named devnet genesis at height 1 intentionally inherits the
-    // historical SCC base-genesis nBits. Applying the startup minimum target
-    // to height 1 makes a fresh node reject its own named genesis.
-    if (!params.hashDevnetGenesisBlock.IsNull() && nextHeight == 1) {
-        return pindexLast->nBits;
-    }
-
-    // Match Batch11A's configurable easy-mining bootstrap window.
-    if (pindexLast->nHeight < params.nMinimumDifficultyBlocks) {
-        return bnPowLimit.GetCompact();
-    }
-
-    // Original Bitcoin retargeting period.
-    if (nextHeight < params.nPowKGWHeight) {
+    // this is only active on devnets
+    if (pindexLast->nHeight + 1 < params.nPowKGWHeight) {
         return GetNextWorkRequiredBTC(pindexLast, pblock, params);
     }
 
     // KimotoGravityWell
-    if (nextHeight < params.nPowDGWHeight) {
+    if (pindexLast->nHeight + 1 < params.nPowDGWHeight) {
         return KimotoGravityWell(pindexLast, params);
     }
 
