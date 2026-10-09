@@ -214,15 +214,18 @@ bool CLLMQUtils::EnsureQuorumConnections(const Consensus::LLMQParams& llmqParams
     }
 
     std::set<uint256> connections;
+    std::set<uint256> allConnections;
     std::set<uint256> relayMembers;
     if (isMember) {
         connections = CLLMQUtils::GetQuorumConnections(llmqParams, pQuorumBaseBlockIndex, myProTxHash, true);
+        allConnections = CLLMQUtils::GetQuorumConnections(llmqParams, pQuorumBaseBlockIndex, myProTxHash, false);
         relayMembers = CLLMQUtils::GetQuorumRelayMembers(llmqParams, pQuorumBaseBlockIndex, myProTxHash, true);
     } else {
         auto cindexes = CLLMQUtils::CalcDeterministicWatchConnections(llmqParams.type, pQuorumBaseBlockIndex, members.size(), 1);
         for (auto idx : cindexes) {
             connections.emplace(members[idx]->proTxHash);
         }
+        allConnections = connections;
         relayMembers = connections;
     }
     if (!connections.empty()) {
@@ -240,6 +243,11 @@ bool CLLMQUtils::EnsureQuorumConnections(const Consensus::LLMQParams& llmqParams
             LogPrint(BCLog::NET_NETCONN, debugMsg.c_str()); /* Continued */
         }
         g_connman->SetMasternodeQuorumNodes(llmqParams.type, pQuorumBaseBlockIndex->GetBlockHash(), connections);
+    }
+    if (!allConnections.empty()) {
+        // Keep a separate all-direction set for eviction protection. The outbound-only set above must remain
+        // unchanged or ThreadOpenMasternodeConnections would initiate connections in both directions.
+        g_connman->SetMasternodeQuorumConnectionNodes(llmqParams.type, pQuorumBaseBlockIndex->GetBlockHash(), allConnections);
     }
     if (!relayMembers.empty()) {
         g_connman->SetMasternodeQuorumRelayMembers(llmqParams.type, pQuorumBaseBlockIndex->GetBlockHash(), relayMembers);

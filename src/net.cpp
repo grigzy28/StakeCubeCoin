@@ -895,6 +895,72 @@ static void EraseLastKElements(std::vector<T> &elements, Comparator comparator, 
     elements.erase(elements.end() - eraseSize, elements.end());
 }
 
+bool CConnman::AttemptToEvictNonQuorumMasternodeConnection(bool ignoreGracePeriod)
+{
+    CNode* nodeToEvict = nullptr;
+    const int64_t now = GetSystemTimeInSeconds();
+
+    LOCK(cs_vNodes);
+    for (CNode* node : vNodes) {
+        if (node->fDisconnect || node->HasPermission(PF_NOBAN) || node->m_manual_connection) {
+            continue;
+        }
+
+        if (node->GetVerifiedProRegTxHash().IsNull()) {
+            continue;
+        }
+
+        // Quorum connections are the reason for the MNAUTH exemption and must remain protected.
+        if (IsMasternodeQuorumConnectionNode(node)) {
+            continue;
+        }
+
+        const int64_t connectionAge = now - node->nTimeConnected;
+        if (!ignoreGracePeriod && connectionAge < MASTERNODE_EVICTION_PROTECTION_TIME) {
+            continue;
+        }
+
+        // Prefer the oldest authenticated connection that is no longer needed by a quorum.
+        if (nodeToEvict == nullptr || node->nTimeConnected < nodeToEvict->nTimeConnected) {
+            nodeToEvict = node;
+        }
+    }
+
+    if (nodeToEvict == nullptr) {
+        return false;
+    }
+
+    LogPrint(BCLog::NET,
+             "evicting non-quorum masternode connection peer=%d proTxHash=%s age=%d%s\n",
+             nodeToEvict->GetId(), nodeToEvict->GetVerifiedProRegTxHash().ToString(),
+             now - nodeToEvict->nTimeConnected, ignoreGracePeriod ? " (hard cap)" : "");
+    nodeToEvict->fDisconnect = true;
+    return true;
+}
+
+bool CConnman::EnsureMasternodeConnectionCapacity()
+{
+    if (!fMasternodeMode) {
+        return true;
+    }
+
+    while (GetNodeCount(CONNECTIONS_ALL) >= MAX_MASTERNODE_PEER_CONNECTIONS) {
+        // At the absolute ceiling, quorum safety has priority over the 30 minute grace period.
+        if (AttemptToEvictNonQuorumMasternodeConnection(true)) {
+            continue;
+        }
+
+        // Fall back to the normal inbound eviction policy for non-masternode peers.
+        if (AttemptToEvictConnection()) {
+            continue;
+        }
+
+        return false;
+    }
+
+    return true;
+}
+
 /** Try to find a connection to evict when the node is full.
  *  Extreme care must be taken to avoid opening the node to attacker
  *   triggered network partitioning.
@@ -917,20 +983,33 @@ bool CConnman::AttemptToEvictConnection()
             if (node->fDisconnect)
                 continue;
 
+            bool preferEvict = node->m_prefer_evict;
             if (fMasternodeMode) {
                 // This handles eviction protected nodes. Nodes are always protected for a short time after the connection
                 // was accepted. This short time is meant for the VERSION/VERACK exchange and the possible MNAUTH that might
                 // follow when the incoming connection is from another masternode. When a message other than MNAUTH
                 // is received after VERSION/VERACK, the protection is lifted immediately.
-                bool isProtected = GetSystemTimeInSeconds() - node->nTimeConnected < INBOUND_EVICTION_PROTECTION_TIME;
+                const int64_t connectionAge = GetSystemTimeInSeconds() - node->nTimeConnected;
+                bool isProtected = connectionAge < INBOUND_EVICTION_PROTECTION_TIME;
                 if (node->nTimeFirstMessageReceived != 0 && !node->fFirstMessageIsMNAUTH) {
                     isProtected = false;
                 }
-                // if MNAUTH was valid, the node is always protected (and at the same time not accounted when
-                // checking incoming connection limits)
-                if (!node->GetVerifiedProRegTxHash().IsNull()) {
-                    isProtected = true;
+
+                const bool isVerifiedMasternode = !node->GetVerifiedProRegTxHash().IsNull();
+                const bool isQuorumMasternode = isVerifiedMasternode && IsMasternodeQuorumConnectionNode(node);
+                const bool isInMasternodeGracePeriod = isVerifiedMasternode &&
+                        connectionAge < MASTERNODE_EVICTION_PROTECTION_TIME;
+
+                // MNAUTH proves identity, but only quorum membership warrants indefinite protection.
+                // Other authenticated masternodes receive a short grace period and then become preferred
+                // eviction candidates when connection pressure requires room.
+                if (isVerifiedMasternode) {
+                    isProtected = isQuorumMasternode || isInMasternodeGracePeriod;
+                    if (!isProtected) {
+                        preferEvict = true;
+                    }
                 }
+
                 if (isProtected) {
                     continue;
                 }
@@ -941,7 +1020,7 @@ bool CConnman::AttemptToEvictConnection()
                                                node->nLastBlockTime, node->nLastTXTime,
                                                HasAllDesirableServiceFlags(node->nServices),
                                                node->fRelayTxes, node->pfilter != nullptr, node->nKeyedNetGroup,
-                                               node->m_prefer_evict};
+                                               preferEvict};
             vEvictionCandidates.push_back(candidate);
         }
     }
@@ -1013,7 +1092,7 @@ void CConnman::AcceptConnection(const ListenSocket& hListenSocket) {
     SOCKET hSocket = accept(hListenSocket.socket, (struct sockaddr*)&sockaddr, &len);
     CAddress addr;
     int nInbound = 0;
-    int nVerifiedInboundMasternodes = 0;
+    int nProtectedInboundMasternodes = 0;
     int nMaxInbound = nMaxConnections - (nMaxOutbound + nMaxFeeler);
 
     if (hSocket != INVALID_SOCKET) {
@@ -1035,19 +1114,6 @@ void CConnman::AcceptConnection(const ListenSocket& hListenSocket) {
         legacyWhitelisted = true;
     }
 
-    {
-        LOCK(cs_vNodes);
-        for (const CNode* pnode : vNodes) {
-            if (pnode->fInbound) {
-                nInbound++;
-                if (!pnode->GetVerifiedProRegTxHash().IsNull()) {
-                    nVerifiedInboundMasternodes++;
-                }
-            }
-        }
-
-    }
-
     if (hSocket == INVALID_SOCKET)
     {
         int nErr = WSAGetLastError();
@@ -1067,6 +1133,33 @@ void CConnman::AcceptConnection(const ListenSocket& hListenSocket) {
         LogPrintf("%s: not accepting new connections\n", strDropped);
         CloseSocket(hSocket);
         return;
+    }
+
+    if (!EnsureMasternodeConnectionCapacity()) {
+        LogPrint(BCLog::NET, "%s: masternode connection hard cap reached (%u)\n",
+                 strDropped, MAX_MASTERNODE_PEER_CONNECTIONS);
+        CloseSocket(hSocket);
+        return;
+    }
+
+    const int64_t now = GetSystemTimeInSeconds();
+    {
+        LOCK(cs_vNodes);
+        for (const CNode* pnode : vNodes) {
+            if (pnode->fDisconnect || !pnode->fInbound) {
+                continue;
+            }
+
+            nInbound++;
+            if (!pnode->GetVerifiedProRegTxHash().IsNull()) {
+                const bool isQuorumMasternode = IsMasternodeQuorumConnectionNode(pnode);
+                const bool isInMasternodeGracePeriod =
+                        now - pnode->nTimeConnected < MASTERNODE_EVICTION_PROTECTION_TIME;
+                if (isQuorumMasternode || isInMasternodeGracePeriod) {
+                    nProtectedInboundMasternodes++;
+                }
+            }
+        }
     }
 
     if (!IsSelectableSocket(hSocket))
@@ -1091,12 +1184,10 @@ void CConnman::AcceptConnection(const ListenSocket& hListenSocket) {
         return;
     }
 
-    // Evict connections until we are below nMaxInbound. In case eviction protection resulted in nodes to not be evicted
-    // before, they might get evicted in batches now (after the protection timeout).
-    // We don't evict verified MN connections and also don't take them into account when checking limits. We can do this
-    // because we know that such connections are naturally limited by the total number of MNs, so this is not usable
-    // for attacks.
-    while (nInbound - nVerifiedInboundMasternodes >= nMaxInbound)
+    // Evict connections until we are below nMaxInbound. Quorum-required masternodes and recently authenticated
+    // masternodes are temporarily excluded from this accounting. MNAUTH by itself no longer grants permanent
+    // protection; after the grace period, non-quorum masternodes are counted and become eviction candidates.
+    while (nInbound - nProtectedInboundMasternodes >= nMaxInbound)
     {
         if (!AttemptToEvictConnection()) {
             // No connection to evict, disconnect the new connection
@@ -2494,6 +2585,11 @@ void CConnman::OpenNetworkConnection(const CAddress& addrConnect, bool fCountFai
     if (!fNetworkActive) {
         return;
     }
+    if (!EnsureMasternodeConnectionCapacity()) {
+        LogPrint(BCLog::NET, "CConnman::%s -- masternode connection hard cap reached (%u), not opening new connection\n",
+                 __func__, MAX_MASTERNODE_PEER_CONNECTIONS);
+        return;
+    }
     if (!pszDest) {
         // banned or exact match?
         if ((m_banman && m_banman->IsBanned(addrConnect)) || FindNode(addrConnect.ToStringIPPort()))
@@ -3218,6 +3314,15 @@ void CConnman::SetMasternodeQuorumNodes(Consensus::LLMQType llmqType, const uint
     }
 }
 
+void CConnman::SetMasternodeQuorumConnectionNodes(Consensus::LLMQType llmqType, const uint256& quorumHash, const std::set<uint256>& proTxHashes)
+{
+    LOCK(cs_vPendingMasternodes);
+    auto it = masternodeQuorumConnectionNodes.emplace(std::make_pair(llmqType, quorumHash), proTxHashes);
+    if (!it.second) {
+        it.first->second = proTxHashes;
+    }
+}
+
 void CConnman::SetMasternodeQuorumRelayMembers(Consensus::LLMQType llmqType, const uint256& quorumHash, const std::set<uint256>& proTxHashes)
 {
     {
@@ -3289,6 +3394,7 @@ void CConnman::RemoveMasternodeQuorumNodes(Consensus::LLMQType llmqType, const u
 {
     LOCK(cs_vPendingMasternodes);
     masternodeQuorumNodes.erase(std::make_pair(llmqType, quorumHash));
+    masternodeQuorumConnectionNodes.erase(std::make_pair(llmqType, quorumHash));
     masternodeQuorumRelayMembers.erase(std::make_pair(llmqType, quorumHash));
 }
 
@@ -3309,6 +3415,33 @@ bool CConnman::IsMasternodeQuorumNode(const CNode* pnode)
 
     LOCK(cs_vPendingMasternodes);
     for (const auto& p : masternodeQuorumNodes) {
+        if (!pnode->GetVerifiedProRegTxHash().IsNull()) {
+            if (p.second.count(pnode->GetVerifiedProRegTxHash())) {
+                return true;
+            }
+        } else if (!assumedProTxHash.IsNull()) {
+            if (p.second.count(assumedProTxHash)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool CConnman::IsMasternodeQuorumConnectionNode(const CNode* pnode)
+{
+    uint256 assumedProTxHash;
+    if (pnode->GetVerifiedProRegTxHash().IsNull() && !pnode->fInbound) {
+        auto mnList = deterministicMNManager->GetListAtChainTip();
+        auto dmn = mnList.GetMNByService(pnode->addr);
+        if (dmn == nullptr) {
+            return false;
+        }
+        assumedProTxHash = dmn->proTxHash;
+    }
+
+    LOCK(cs_vPendingMasternodes);
+    for (const auto& p : masternodeQuorumConnectionNodes) {
         if (!pnode->GetVerifiedProRegTxHash().IsNull()) {
             if (p.second.count(pnode->GetVerifiedProRegTxHash())) {
                 return true;

@@ -1343,9 +1343,16 @@ bool AppInitParameterInteraction()
     nUserMaxConnections = gArgs.GetArg("-maxconnections", DEFAULT_MAX_PEER_CONNECTIONS);
     nMaxConnections = std::max(nUserMaxConnections, 0);
 
+    // Masternodes may temporarily exceed -maxconnections for authenticated quorum traffic. Reserve enough
+    // descriptors for the absolute masternode connection safety ceiling so the OS limit cannot be reached first.
+    const bool masternodeConfigured = !gArgs.GetArg("-masternodeblsprivkey", "").empty();
+    const int nFDConnectionTarget = masternodeConfigured
+            ? std::max<int>(nMaxConnections, MAX_MASTERNODE_PEER_CONNECTIONS)
+            : nMaxConnections;
+
     // Trim requested connection counts, to fit into system limitations
     // <int> in std::min<int>(...) to work around FreeBSD compilation issue described in #2695
-    nFD = RaiseFileDescriptorLimit(nMaxConnections + MIN_CORE_FILEDESCRIPTORS + MAX_ADDNODE_CONNECTIONS + nBind);
+    nFD = RaiseFileDescriptorLimit(nFDConnectionTarget + MIN_CORE_FILEDESCRIPTORS + MAX_ADDNODE_CONNECTIONS + nBind);
 #ifdef USE_POLL
     int fd_max = nFD;
 #else
