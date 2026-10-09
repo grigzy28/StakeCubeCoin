@@ -944,21 +944,10 @@ bool CConnman::EnsureMasternodeConnectionCapacity()
         return true;
     }
 
-    while (GetNodeCount(CONNECTIONS_ALL) >= MAX_MASTERNODE_PEER_CONNECTIONS) {
-        // At the absolute ceiling, quorum safety has priority over the 30 minute grace period.
-        if (AttemptToEvictNonQuorumMasternodeConnection(true)) {
-            continue;
-        }
-
-        // Fall back to the normal inbound eviction policy for non-masternode peers.
-        if (AttemptToEvictConnection()) {
-            continue;
-        }
-
-        return false;
-    }
-
-    return true;
+    // Never evict an established peer merely to make room for an unidentified connection.
+    // Admission decisions for new inbound masternodes are made after MNAUTH in the
+    // handshake reserve. Required quorum peers can then make room deliberately.
+    return GetNodeCount(CONNECTIONS_ALL) < MAX_MASTERNODE_PEER_CONNECTIONS;
 }
 
 /** Try to find a connection to evict when the node is full.
@@ -1092,7 +1081,10 @@ void CConnman::AcceptConnection(const ListenSocket& hListenSocket) {
     SOCKET hSocket = accept(hListenSocket.socket, (struct sockaddr*)&sockaddr, &len);
     CAddress addr;
     int nInbound = 0;
-    int nProtectedInboundMasternodes = 0;
+    int nQuorumInboundMasternodes = 0;
+    int nMasternodeHandshakeReserve = 0;
+    int nRetainedConnections = 0;
+    bool useMasternodeHandshakeReserve = false;
     int nMaxInbound = nMaxConnections - (nMaxOutbound + nMaxFeeler);
 
     if (hSocket != INVALID_SOCKET) {
@@ -1142,24 +1134,49 @@ void CConnman::AcceptConnection(const ListenSocket& hListenSocket) {
         return;
     }
 
-    const int64_t now = GetSystemTimeInSeconds();
     {
         LOCK(cs_vNodes);
         for (const CNode* pnode : vNodes) {
-            if (pnode->fDisconnect || !pnode->fInbound) {
+            if (pnode->fDisconnect) {
+                continue;
+            }
+
+            if (pnode->m_masternode_handshake_reserve) {
+                nMasternodeHandshakeReserve++;
+            } else {
+                nRetainedConnections++;
+            }
+
+            if (!pnode->fInbound) {
                 continue;
             }
 
             nInbound++;
             if (!pnode->GetVerifiedProRegTxHash().IsNull()) {
                 const bool isQuorumMasternode = IsMasternodeQuorumConnectionNode(pnode);
-                const bool isInMasternodeGracePeriod =
-                        now - pnode->nTimeConnected < MASTERNODE_EVICTION_PROTECTION_TIME;
-                if (isQuorumMasternode || isInMasternodeGracePeriod) {
-                    nProtectedInboundMasternodes++;
+                if (isQuorumMasternode) {
+                    nQuorumInboundMasternodes++;
                 }
             }
         }
+    }
+
+    // MNAUTH grace protects a newly authenticated non-quorum masternode from eviction,
+    // but it must not make that connection free for inbound slot accounting. Once the
+    // normal inbound target or the retained high-water mark is reached, admit at most a
+    // small number of unidentified peers into a temporary handshake reserve. They are
+    // kept only if MNAUTH proves they are actually required by a current/retained quorum.
+    if (fMasternodeMode && !NetPermissions::HasFlag(permissionFlags, PF_NOBAN) &&
+        (nInbound - nQuorumInboundMasternodes >= nMaxInbound ||
+         nRetainedConnections >= (int)MAX_MASTERNODE_RETAINED_CONNECTIONS)) {
+        if (nMasternodeHandshakeReserve >= (int)MASTERNODE_HANDSHAKE_RESERVE) {
+            LogPrint(BCLog::NET,
+                     "%s: masternode handshake reserve full (%d/%u)\n",
+                     strDropped, nMasternodeHandshakeReserve, MASTERNODE_HANDSHAKE_RESERVE);
+            CloseSocket(hSocket);
+            return;
+        }
+        useMasternodeHandshakeReserve = true;
     }
 
     if (!IsSelectableSocket(hSocket))
@@ -1184,18 +1201,19 @@ void CConnman::AcceptConnection(const ListenSocket& hListenSocket) {
         return;
     }
 
-    // Evict connections until we are below nMaxInbound. Quorum-required masternodes and recently authenticated
-    // masternodes are temporarily excluded from this accounting. MNAUTH by itself no longer grants permanent
-    // protection; after the grace period, non-quorum masternodes are counted and become eviction candidates.
-    while (nInbound - nProtectedInboundMasternodes >= nMaxInbound)
-    {
-        if (!AttemptToEvictConnection()) {
-            // No connection to evict, disconnect the new connection
-            LogPrint(BCLog::NET, "failed to find an eviction candidate - connection dropped (full)\n");
-            CloseSocket(hSocket);
-            return;
+    // For a normal admission keep the original eviction behavior. A reserve admission,
+    // however, must never evict an established peer before we know who the newcomer is.
+    if (!useMasternodeHandshakeReserve) {
+        while (nInbound - nQuorumInboundMasternodes >= nMaxInbound)
+        {
+            if (!AttemptToEvictConnection()) {
+                // No connection to evict, disconnect the new connection
+                LogPrint(BCLog::NET, "failed to find an eviction candidate - connection dropped (full)\n");
+                CloseSocket(hSocket);
+                return;
+            }
+            nInbound--;
         }
-        nInbound--;
     }
 
     // don't accept incoming connections until fully synced
@@ -1216,6 +1234,7 @@ void CConnman::AcceptConnection(const ListenSocket& hListenSocket) {
     CNode* pnode = new CNode(id, nodeServices, GetBestHeight(), hSocket, addr, CalculateKeyedNetGroup(addr), nonce, addr_bind, "", true);
     pnode->AddRef();
     pnode->m_permissionFlags = permissionFlags;
+    pnode->m_masternode_handshake_reserve = useMasternodeHandshakeReserve;
     // If this flag is present, the user probably expect that RPC and QT report it as whitelisted (backward compatibility)
     pnode->m_legacyWhitelisted = legacyWhitelisted;
     pnode->m_prefer_evict = bannedlevel > 0;
@@ -1429,6 +1448,15 @@ void CConnman::CalculateNumConnectionsChangedStats()
 void CConnman::InactivityCheck(CNode *pnode)
 {
     int64_t nTime = GetSystemTimeInSeconds();
+    if (fMasternodeMode && pnode->m_masternode_handshake_reserve &&
+        nTime - pnode->nTimeConnected > MASTERNODE_HANDSHAKE_TIMEOUT) {
+        LogPrint(BCLog::NET,
+                 "masternode handshake reserve timeout after %d seconds, disconnecting peer=%d\n",
+                 MASTERNODE_HANDSHAKE_TIMEOUT, pnode->GetId());
+        pnode->fDisconnect = true;
+        return;
+    }
+
     if (nTime - pnode->nTimeConnected > m_peer_connect_timeout)
     {
         if (pnode->nLastRecv == 0 || pnode->nLastSend == 0)
@@ -3440,19 +3468,62 @@ bool CConnman::IsMasternodeQuorumConnectionNode(const CNode* pnode)
         assumedProTxHash = dmn->proTxHash;
     }
 
+    if (!pnode->GetVerifiedProRegTxHash().IsNull()) {
+        return IsMasternodeQuorumConnection(pnode->GetVerifiedProRegTxHash());
+    }
+    if (!assumedProTxHash.IsNull()) {
+        return IsMasternodeQuorumConnection(assumedProTxHash);
+    }
+    return false;
+}
+
+bool CConnman::IsMasternodeQuorumConnection(const uint256& proTxHash)
+{
+    if (proTxHash.IsNull()) {
+        return false;
+    }
+
     LOCK(cs_vPendingMasternodes);
     for (const auto& p : masternodeQuorumConnectionNodes) {
-        if (!pnode->GetVerifiedProRegTxHash().IsNull()) {
-            if (p.second.count(pnode->GetVerifiedProRegTxHash())) {
-                return true;
-            }
-        } else if (!assumedProTxHash.IsNull()) {
-            if (p.second.count(assumedProTxHash)) {
-                return true;
-            }
+        if (p.second.count(proTxHash)) {
+            return true;
         }
     }
     return false;
+}
+
+void CConnman::PromoteMasternodeHandshakeReserve(CNode* pnode)
+{
+    if (!pnode->m_masternode_handshake_reserve) {
+        return;
+    }
+
+    // This method is only called after a valid MNAUTH which has already been checked
+    // against the current/retained quorum connection sets. If the retained population
+    // is at its high-water mark, make room for the required quorum peer. Prefer an old
+    // non-quorum authenticated connection, but quorum necessity overrides its grace.
+    size_t retainedConnections = 0;
+    {
+        LOCK(cs_vNodes);
+        for (const CNode* node : vNodes) {
+            if (!node->fDisconnect && !node->m_masternode_handshake_reserve) {
+                retainedConnections++;
+            }
+        }
+    }
+
+    if (retainedConnections >= MAX_MASTERNODE_RETAINED_CONNECTIONS) {
+        if (!AttemptToEvictNonQuorumMasternodeConnection(true)) {
+            // There may be no authenticated non-quorum MN to remove. Fall back to the
+            // normal inbound eviction policy, which preserves its existing protections.
+            AttemptToEvictConnection();
+        }
+    }
+
+    pnode->m_masternode_handshake_reserve = false;
+    LogPrint(BCLog::NET,
+             "promoted quorum masternode from handshake reserve peer=%d proTxHash=%s\n",
+             pnode->GetId(), pnode->GetVerifiedProRegTxHash().ToString());
 }
 
 bool CConnman::IsMasternodeQuorumRelayMember(const uint256& protxHash)

@@ -2749,6 +2749,14 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             pfrom->fDisconnect = true;
             return false;
         }
+
+        if (pfrom->m_masternode_handshake_reserve && !pfrom->fFirstMessageIsMNAUTH) {
+            LogPrint(BCLog::NET,
+                     "masternode handshake reserve peer did not send MNAUTH first, disconnecting peer=%d\n",
+                     pfrom->GetId());
+            pfrom->fDisconnect = true;
+            return false;
+        }
     }
 
     if (strCommand == NetMsgType::ADDR || strCommand == NetMsgType::ADDRV2) {
@@ -3964,6 +3972,17 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         masternodeSync.ProcessMessage(pfrom, strCommand, vRecv);
         governance.ProcessMessage(pfrom, strCommand, vRecv, *connman, enable_bip61);
         CMNAuth::ProcessMessage(pfrom, strCommand, vRecv, *connman);
+        if (strCommand == NetMsgType::MNAUTH &&
+            pfrom->m_masternode_handshake_reserve &&
+            pfrom->GetVerifiedProRegTxHash().IsNull() &&
+            !pfrom->fDisconnect) {
+            // A reserve connection gets exactly one chance to identify itself with a
+            // valid MNAUTH. Do not let invalid/unverifiable handshakes occupy reserve slots.
+            LogPrint(BCLog::NET,
+                     "masternode handshake reserve MNAUTH did not verify, disconnecting peer=%d\n",
+                     pfrom->GetId());
+            pfrom->fDisconnect = true;
+        }
         llmq::quorumBlockProcessor->ProcessMessage(pfrom, strCommand, vRecv);
         llmq::quorumDKGSessionManager->ProcessMessage(pfrom, strCommand, vRecv);
         llmq::quorumManager->ProcessMessage(pfrom, strCommand, vRecv);

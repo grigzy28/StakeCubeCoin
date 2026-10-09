@@ -78,6 +78,13 @@ static const int INBOUND_EVICTION_PROTECTION_TIME = 1;
 static const int MASTERNODE_EVICTION_PROTECTION_TIME = 30 * 60;
 /** Absolute safety ceiling for peer connections while operating as a masternode. */
 static const unsigned int MAX_MASTERNODE_PEER_CONNECTIONS = 512;
+/** Keep a small part of the hard ceiling free so a new inbound can authenticate before admission is decided. */
+static const unsigned int MASTERNODE_HANDSHAKE_RESERVE = 16;
+/** Do not let unidentified inbound peers hold handshake-reserve slots indefinitely. */
+static const int MASTERNODE_HANDSHAKE_TIMEOUT = 10;
+/** Maximum retained peer population before only handshake-reserve admissions are allowed. */
+static const unsigned int MAX_MASTERNODE_RETAINED_CONNECTIONS =
+        MAX_MASTERNODE_PEER_CONNECTIONS - MASTERNODE_HANDSHAKE_RESERVE;
 /** -listen default */
 static const bool DEFAULT_LISTEN = true;
 /** The maximum number of peer connections to maintain.
@@ -416,8 +423,10 @@ public:
     std::set<NodeId> GetMasternodeQuorumNodes(Consensus::LLMQType llmqType, const uint256& quorumHash) const;
     void RemoveMasternodeQuorumNodes(Consensus::LLMQType llmqType, const uint256& quorumHash);
     bool IsMasternodeQuorumNode(const CNode* pnode);
+    bool IsMasternodeQuorumConnection(const uint256& proTxHash);
     bool IsMasternodeQuorumConnectionNode(const CNode* pnode);
     bool IsMasternodeQuorumRelayMember(const uint256& protxHash);
+    void PromoteMasternodeHandshakeReserve(CNode* pnode);
     void AddPendingProbeConnections(const std::set<uint256>& proTxHashes);
 
     size_t GetNodeCount(NumConnections num);
@@ -990,6 +999,8 @@ public:
     std::atomic<bool> m_masternode_connection{false};
     // If 'true' this node will be disconnected after MNAUTH
     std::atomic<bool> m_masternode_probe_connection{false};
+    // If 'true', this inbound was accepted only so MNAUTH can identify it before admission is decided.
+    std::atomic<bool> m_masternode_handshake_reserve{false};
     // If 'true', we identified it as an intra-quorum relay connection
     std::atomic<bool> m_masternode_iqr_connection{false};
     CSemaphoreGrant grantOutbound;

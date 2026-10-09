@@ -121,6 +121,19 @@ void CMNAuth::ProcessMessage(CNode* pnode, const std::string& strCommand, CDataS
         return;
     }
 
+    // Connections admitted through the small handshake reserve are unidentified when
+    // accepted. After the signature is verified we can make the admission decision
+    // without evicting an established peer first. Only a masternode that is actually
+    // required by a current/retained quorum may consume a retained slot from the reserve.
+    if (pnode->m_masternode_handshake_reserve &&
+        !connman.IsMasternodeQuorumConnection(mnauth.proRegTxHash)) {
+        LogPrint(BCLog::NET,
+                 "CMNAuth::%s -- non-quorum masternode rejected from handshake reserve %s, peer=%d\n",
+                 __func__, mnauth.proRegTxHash.ToString(), pnode->GetId());
+        pnode->fDisconnect = true;
+        return;
+    }
+
     if (!pnode->fInbound) {
         mmetaman.GetMetaInfo(mnauth.proRegTxHash)->SetLastOutboundSuccess(GetAdjustedTime());
         if (pnode->m_masternode_probe_connection) {
@@ -173,6 +186,10 @@ void CMNAuth::ProcessMessage(CNode* pnode, const std::string& strCommand, CDataS
 
     pnode->SetVerifiedProRegTxHash(mnauth.proRegTxHash);
     pnode->SetVerifiedPubKeyHash(dmn->pdmnState->pubKeyOperator.GetHash());
+
+    if (pnode->m_masternode_handshake_reserve) {
+        connman.PromoteMasternodeHandshakeReserve(pnode);
+    }
 
     if (!pnode->m_masternode_iqr_connection && connman.IsMasternodeQuorumRelayMember(pnode->GetVerifiedProRegTxHash())) {
         // Tell our peer that we're interested in plain LLMQ recovered signatures.
