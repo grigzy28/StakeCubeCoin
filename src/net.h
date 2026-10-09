@@ -81,7 +81,7 @@ static const unsigned int MAX_MASTERNODE_PEER_CONNECTIONS = 512;
 /** Keep a small part of the hard ceiling free so a new inbound can authenticate before admission is decided. */
 static const unsigned int MASTERNODE_HANDSHAKE_RESERVE = 16;
 /** Do not let unidentified inbound peers hold handshake-reserve slots indefinitely. */
-static const int MASTERNODE_HANDSHAKE_TIMEOUT = 10;
+static const int MASTERNODE_HANDSHAKE_TIMEOUT = 5;
 /** Maximum retained peer population before only handshake-reserve admissions are allowed. */
 static const unsigned int MAX_MASTERNODE_RETAINED_CONNECTIONS =
         MAX_MASTERNODE_PEER_CONNECTIONS - MASTERNODE_HANDSHAKE_RESERVE;
