@@ -2749,11 +2749,24 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             pfrom->fDisconnect = true;
             return false;
         }
+    }
 
-        if (pfrom->m_masternode_handshake_reserve && !pfrom->fFirstMessageIsMNAUTH) {
+    // A reserve connection is admitted before we know whether it is a masternode
+    // required by one of our current/retained quorums. Legacy SCC and SCC 5.x can
+    // legitimately queue GETADDR before MNAUTH on an outbound connection, and the
+    // normal ping scheduler can also race with MNAUTH. Allow only these lightweight
+    // pre-auth messages while the short reserve timeout is running. Everything else
+    // must wait until MNAUTH identifies and admits the peer.
+    if (pfrom->m_masternode_handshake_reserve &&
+        pfrom->GetVerifiedProRegTxHash().IsNull() &&
+        strCommand != NetMsgType::MNAUTH) {
+        const bool allowGetAddr = strCommand == NetMsgType::GETADDR && !pfrom->fSentAddr;
+        const bool allowPingPong = strCommand == NetMsgType::PING || strCommand == NetMsgType::PONG;
+
+        if (!allowGetAddr && !allowPingPong) {
             LogPrint(BCLog::NET,
-                     "masternode handshake reserve peer did not send MNAUTH first, disconnecting peer=%d\n",
-                     pfrom->GetId());
+                     "masternode handshake reserve peer sent unexpected pre-MNAUTH message %s, disconnecting peer=%d\n",
+                     strCommand, pfrom->GetId());
             pfrom->fDisconnect = true;
             return false;
         }
